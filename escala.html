@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Escala de Domingo — Equipe Efraim | Aliançados</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,500&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --laranja:#F0834A; --laranja-claro:#F9A56E; --laranja-escuro:#D96A32;
+    --preto:#0B0B0D; --preto-card:#151518; --cinza-borda:#2A2A2F;
+    --branco:#F7F3EE; --texto-suave:#B8B2AA; --verde:#3DBB7A; --vermelho:#E05555;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--preto); color:var(--branco);
+    font-family:'Poppins',system-ui,sans-serif; min-height:100vh;
+    background-image:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(240,131,74,.18), transparent 60%);
+  }
+  .hero{text-align:center; padding:36px 20px 10px;}
+  .hero .logo{
+    width:120px; height:120px; object-fit:cover; object-position:50% 45%;
+    border-radius:50%; border:1px solid rgba(240,131,74,.4);
+    box-shadow:0 0 36px rgba(240,131,74,.28);
+  }
+  .hero .logo.recortada{width:130px; height:auto; object-fit:contain; border-radius:0; border:none; box-shadow:none;}
+  .hero h1{font-family:'Playfair Display',serif; font-weight:800; font-size:clamp(1.4rem,5vw,2rem); margin-top:10px;}
+  .hero h1 span{color:var(--laranja);}
+  .hero .lema{color:var(--texto-suave); font-size:.8rem; letter-spacing:3px; text-transform:uppercase; margin-top:4px; font-weight:300;}
+  .data-badge{
+    display:inline-block; margin-top:14px; padding:8px 22px;
+    border:1px solid var(--laranja); border-radius:999px;
+    color:var(--laranja); font-weight:600; font-size:.85rem; letter-spacing:2px; text-transform:uppercase;
+  }
+  .infos{
+    display:flex; gap:10px; flex-wrap:wrap; justify-content:center;
+    max-width:640px; margin:18px auto 0; padding:0 16px;
+  }
+  .infos .chip{
+    background:var(--preto-card); border:1px solid var(--cinza-borda); border-radius:12px;
+    padding:10px 16px; font-size:.78rem; color:var(--texto-suave);
+  }
+  .infos .chip b{color:var(--branco); display:block; font-size:.82rem;}
+  main{max-width:640px; margin:0 auto; padding:26px 18px 50px;}
+
+  .secao{
+    font-family:'Playfair Display',serif; color:var(--laranja); font-size:1.05rem;
+    margin:26px 4px 12px; text-align:center; letter-spacing:.5px;
+  }
+  .faixa{background:linear-gradient(90deg,transparent,var(--laranja),transparent); height:1px; max-width:300px; margin:6px auto 0; opacity:.5;}
+
+  .card{
+    background:var(--preto-card); border:1px solid var(--cinza-borda);
+    border-radius:14px; padding:14px 18px; margin-bottom:10px;
+    display:flex; justify-content:space-between; align-items:center; gap:14px;
+  }
+  .card .funcao{
+    font-size:.72rem; font-weight:600; color:var(--laranja);
+    text-transform:uppercase; letter-spacing:1.5px; flex:1;
+  }
+  .card .nomes{flex:1.4; text-align:right; font-size:.9rem; font-weight:600; line-height:1.5;}
+  .card .nomes small{display:block; font-weight:300; color:var(--texto-suave); font-size:.72rem;}
+  .casal{
+    display:inline-block; background:rgba(240,131,74,.12); border:1px solid rgba(240,131,74,.35);
+    color:var(--laranja-claro); border-radius:999px; padding:1px 9px;
+    font-size:.66rem; font-weight:600; margin-left:5px; vertical-align:middle;
+  }
+  .todos{color:var(--laranja); letter-spacing:2px;}
+  .aviso{
+    background:rgba(224,85,85,.08); border:1px solid rgba(224,85,85,.3);
+    color:#EFA0A0; border-radius:12px; padding:12px 16px; font-size:.78rem;
+    text-align:center; margin-top:8px; line-height:1.6;
+  }
+  .voltar{
+    display:block; text-align:center; margin:30px auto 0; max-width:280px;
+    padding:13px; border:1px solid var(--laranja); border-radius:999px;
+    color:var(--laranja); text-decoration:none; font-weight:600; font-size:.85rem; letter-spacing:1px;
+  }
+  .voltar:hover{background:rgba(240,131,74,.1);}
+  footer{text-align:center; padding:26px 20px 36px; color:var(--texto-suave); font-size:.7rem; letter-spacing:2px; text-transform:uppercase; font-weight:300;}
+  footer span{color:var(--laranja);}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <img src="logo1.png" alt="Aliançados" class="logo" id="logo-img">
+  <h1>ESCALA DE <span>DOMINGO</span></h1>
+  <div class="lema">Equipe Efraim — Obreiros</div>
+  <div class="data-badge">📅 26/07/2026 · Culto 18h00</div>
+  <div class="infos">
+    <div class="chip"><b>⏰ Chegada</b>17h00</div>
+    <div class="chip"><b>👕 Uniforme</b>Camiseta de servo + colete + calça jeans/preta + tênis ou sapato fechado baixo</div>
+    <div class="chip"><b>🙏 Liderança</b>Clebson e Letícia · Colíderes: Antônio e Laura</div>
+  </div>
+</div>
+
+<main>
+  <div class="secao">Funções<div class="faixa"></div></div>
+
+  <div class="card"><div class="funcao">Backstage</div><div class="nomes">Martina Mendes</div></div>
+  <div class="card"><div class="funcao">Mesa de Apoio / Máquinas e Envelopes</div><div class="nomes">Hamilton e Miss Layne<span class="casal">casal</span></div></div>
+  <div class="card"><div class="funcao">Reservados</div><div class="nomes">Letícia e Laura</div></div>
+  <div class="card"><div class="funcao">Bebedouros</div><div class="nomes">Jaqueline e Marco Maia</div></div>
+  <div class="card"><div class="funcao">Caixa da Primícia</div><div class="nomes">Lígia</div></div>
+  <div class="card"><div class="funcao">Ofertório</div><div class="nomes todos">TODOS</div></div>
+  <div class="card"><div class="funcao">Gazofilácio — Frente ao Altar</div><div class="nomes">Lado D: Felipe Bianchezzi<small>Lado E: Denilson</small></div></div>
+  <div class="card"><div class="funcao">Gazofilácio — Meio da Igreja (Pilar)</div><div class="nomes">Lado D: Igor<small>Lado E: José Eduardo</small></div></div>
+  <div class="card"><div class="funcao">Banheiro Feminino</div><div class="nomes">Dri Gamarra e Simone</div></div>
+  <div class="card"><div class="funcao">Banheiro Masculino</div><div class="nomes">Marco Maia e Felipe Bianchezzi</div></div>
+  <div class="card"><div class="funcao">Organização do Templo</div><div class="nomes todos">TODOS</div></div>
+  <div class="card"><div class="funcao">Oração Final</div><div class="nomes todos">TODOS</div></div>
+
+  <div class="secao">Lateral Esquerda — Portas de Entrada<div class="faixa"></div></div>
+  <div class="card"><div class="funcao">Porta da Frente / Meio</div><div class="nomes">Antônio e Laura<span class="casal">casal</span></div></div>
+  <div class="card"><div class="funcao">Porta do Fundo</div><div class="nomes">Alessandra, Janice Aguilhera e Daiane Colman</div></div>
+  <div class="card"><div class="funcao">Porta da Frente / Primeira</div><div class="nomes">Rebeca e Martina Mendes</div></div>
+  <div class="card"><div class="funcao">Fundos</div><div class="nomes">Jugleyde Pompeo e Kátia</div></div>
+
+  <div class="secao">Lado Direito — Banheiros e Mesa de Apoio<div class="faixa"></div></div>
+  <div class="card"><div class="funcao">Mesa de Apoio</div><div class="nomes">José Luis e Marina Corrêa<span class="casal">casal</span><small>Jaqueline e Marco Maia</small></div></div>
+  <div class="card"><div class="funcao">Em Frente ao Altar</div><div class="nomes">Raphael Nunes e Lígia<span class="casal">casal</span></div></div>
+  <div class="card"><div class="funcao">Meio para o Fundo</div><div class="nomes">Wagner e Fernanda<span class="casal">casal</span><small>Reinaldo e Cristiane <span class="casal">casal</span> · Jackson e Thays <span class="casal">casal</span></small></div></div>
+
+  <div class="aviso">
+    ⚠️ Não se aglomerar perto da mesa de apoio — é corredor de acesso aos banheiros e gabinete.<br>
+    Distribuam-se por toda a lateral e fundo da igreja · Evitar conversas paralelas.
+  </div>
+
+  <a class="voltar" href="index.html">← Confirmar disponibilidade</a>
+</main>
+
+<footer>Aliançados · <span>Lugar de Crescimento</span> · 2026 · equipeefraim.com.br</footer>
+
+<script>
+/* Logo: remove o fundo cinza (mantém cruz + brilho) */
+(function(){
+  const img = document.getElementById("logo-img");
+  let feito = false;
+  function processa(){
+    if(feito) return;
+    try{
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      const ctx = c.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      const d = ctx.getImageData(0, 0, c.width, c.height), p = d.data;
+      let minX = c.width, minY = c.height, maxX = 0, maxY = 0;
+      for(let i = 0; i < p.length; i += 4){
+        const mx = Math.max(p[i], p[i+1], p[i+2]), mn = Math.min(p[i], p[i+1], p[i+2]);
+        const a = Math.max(0, Math.min(255, (mx - mn - 6) * 2.2));
+        p[i+3] = a;
+        if(a > 40){
+          const px = (i/4) % c.width, py = Math.floor((i/4) / c.width);
+          if(px < minX) minX = px; if(px > maxX) maxX = px;
+          if(py < minY) minY = py; if(py > maxY) maxY = py;
+        }
+      }
+      if(maxX <= minX || maxY <= minY) return;
+      ctx.putImageData(d, 0, 0);
+      const pad = 40;
+      const sx = Math.max(0, minX - pad), sy = Math.max(0, minY - pad);
+      const sw = Math.min(c.width, maxX + pad) - sx, sh = Math.min(c.height, maxY + pad) - sy;
+      const c2 = document.createElement("canvas");
+      c2.width = sw; c2.height = sh;
+      c2.getContext("2d").drawImage(c, sx, sy, sw, sh, 0, 0, sw, sh);
+      feito = true; img.onload = null;
+      img.src = c2.toDataURL("image/png");
+      img.classList.add("recortada");
+    }catch(e){}
+  }
+  if(img.complete && img.naturalWidth > 0) processa(); else img.onload = processa;
+})();
+</script>
+</body>
+</html>

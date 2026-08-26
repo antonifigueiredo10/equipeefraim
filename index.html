@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0B0B0D">
+<meta name="robots" content="noindex,nofollow">
 <title>Equipe Efraim — Aliançados | Disponibilidade dos Obreiros</title>
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -208,7 +209,7 @@
   </div>
   <div class="faixa"></div>
   <a href="escala.html" style="display:inline-block; margin-top:20px; padding:12px 28px; background:linear-gradient(135deg, var(--laranja), var(--laranja-escuro)); color:#fff; border-radius:999px; text-decoration:none; font-weight:700; font-size:.9rem; letter-spacing:1px; box-shadow:0 6px 24px rgba(240,131,74,.35);">📋 VER ESCALA DE DOMINGO</a>
-  <div class="demo" id="aviso-demo">⚠️ Site ainda não conectado ao banco — funcionando em modo demonstração (respostas só neste aparelho).</div>
+  <div class="demo" id="aviso-demo"></div>
 </div>
 
 <main>
@@ -217,8 +218,9 @@
     <p class="intro">Servo(a), confirme sua <strong>disponibilidade</strong> para as próximas escalas.<br>Sua resposta ajuda a montar a escala e os postos de serviço. 🙏</p>
 
     <div class="card">
-      <label for="nome">Seu nome</label>
-      <select id="nome"><option value="">Selecione seu nome...</option></select>
+      <label>Seu nome</label>
+      <div id="nome-logado" style="font-size:1.05rem; font-weight:600; color:var(--branco);">—</div>
+      <div style="font-size:.72rem; color:var(--texto-suave); margin-top:6px;">Você está identificado pelo seu login. A resposta será registrada neste nome.</div>
     </div>
 
     <div class="card">
@@ -233,7 +235,7 @@
 
     <button class="enviar" id="btn-enviar" onclick="enviar()">CONFIRMAR RESPOSTA</button>
     <div id="msg" class="msg"></div>
-    <span class="link-painel" onclick="abrirPainel()">🔒 ADMIN — Liderança</span>
+    <span class="link-painel" id="link-admin" style="display:none;" onclick="abrirPainel()">🔒 PAINEL — Liderança</span>
   </div>
 
   <!-- ============ PAINEL DO LÍDER (ADMIN) ============ -->
@@ -259,92 +261,14 @@
 
 <footer>Aliançados · <span>Lugar de Crescimento</span> · 2026 · equipeefraim.com.br</footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
 <script>
 /* ================================================================
-   ⚙️ CONFIGURAÇÃO — edite apenas esta parte
+   A configuração (Supabase, lista de nomes) fica em config.js.
+   Esta página exige login — quem não estiver logado vai para login.html
    ================================================================ */
-const TITULO = "Equipe Efraim — Aliançados";
 
-// Senha da liderança para abrir o painel ADMIN
-const PIN_ADMIN = "2026";
-
-// Conexão com o banco (Supabase) — cole os valores do seu projeto:
-const SUPABASE_URL = "SUPABASE_URL_AQUI";        // ex.: https://abcdefgh.supabase.co
-const SUPABASE_ANON_KEY = "SUPABASE_ANON_KEY_AQUI";
-
-// Datas exibidas apenas no modo demonstração (sem banco)
-const DATAS_PADRAO = ["2026-08-05", "2026-08-12", "2026-08-19"];
-
-const NOMES = [
-  "Bruna", "Cristiane", "Denilson", "Dri Gamarra", "Felipe",
-  "Fernanda", "Hamilton", "Igor", "José Eduardo", "Jugleyde Pompeo",
-  "Karina", "Katia", "Laura", "Lígia", "Marco Maia",
-  "Marina", "MissLayne", "Neto", "Pedro", "Raphael",
-  "Rebeca", "Reinaldo", "Taisla", "Wagner", "Zé Luis",
-];
-/* ================================================================ */
-
-const ONLINE = SUPABASE_URL.startsWith("https");
-if(!ONLINE) document.getElementById("aviso-demo").style.display = "block";
-
-/* ---------- Acesso ao banco (REST Supabase) ---------- */
-async function api(caminho, opts = {}){
-  const r = await fetch(SUPABASE_URL + "/rest/v1/" + caminho, {
-    ...opts,
-    headers: {
-      "apikey": SUPABASE_ANON_KEY,
-      "Authorization": "Bearer " + SUPABASE_ANON_KEY,
-      "Content-Type": "application/json",
-      ...(opts.headers || {})
-    }
-  });
-  if(!r.ok) throw new Error("Erro no banco (" + r.status + ")");
-  const txt = await r.text();
-  return txt ? JSON.parse(txt) : null;
-}
-
-/* ---------- Camada de dados (banco ou demonstração) ---------- */
-const KEY = "respostas-escala";
-const KEY_DATAS = "datas-escala";
-
-async function buscarDatas(){
-  if(ONLINE){
-    const linhas = await api("datas?select=data&order=data");
-    return linhas.map(l => l.data);
-  }
-  return JSON.parse(localStorage.getItem(KEY_DATAS) || "null") || DATAS_PADRAO;
-}
-
-async function gravarDatas(lista){
-  if(ONLINE){
-    await api("datas?data=gte.1900-01-01", { method: "DELETE" });
-    await api("datas", { method: "POST", body: JSON.stringify(lista.map(d => ({ data: d }))) });
-  }else{
-    localStorage.setItem(KEY_DATAS, JSON.stringify(lista));
-  }
-}
-
-async function gravarResposta(nome, respostas, obs){
-  if(ONLINE){
-    const linhas = DATAS.map(d => ({ nome, data: d.data, resposta: respostas[d.data], obs }));
-    await api("respostas?on_conflict=nome,data", {
-      method: "POST",
-      headers: { "Prefer": "resolution=merge-duplicates" },
-      body: JSON.stringify(linhas)
-    });
-  }else{
-    const todas = JSON.parse(localStorage.getItem(KEY) || "[]").filter(r => r.nome !== nome);
-    DATAS.forEach(d => todas.push({ nome, data: d.data, resposta: respostas[d.data], obs, em: new Date().toISOString() }));
-    localStorage.setItem(KEY, JSON.stringify(todas));
-  }
-}
-
-async function buscarRespostas(){
-  if(ONLINE) return await api("respostas?select=*&order=em.desc");
-  return JSON.parse(localStorage.getItem(KEY) || "[]");
-}
-
-/* ---------- Formulário ---------- */
 let DATAS = [];
 let respostasSel = {};
 
@@ -354,11 +278,50 @@ function rotuloData(iso){
   return dia.charAt(0).toUpperCase() + dia.slice(1) + ", " + dt.toLocaleDateString("pt-BR", {day:"2-digit", month:"2-digit"});
 }
 
-const selNome = document.getElementById("nome");
-NOMES.forEach(n => selNome.add(new Option(n, n)));
+function avisar(texto){
+  const el = document.getElementById("aviso-demo");
+  el.textContent = texto;
+  el.style.display = texto ? "block" : "none";
+}
 
+/* ---------- Banco (Supabase, já autenticado) ---------- */
+async function buscarDatas(){
+  const { data, error } = await sb.from("datas").select("data").order("data");
+  if(error) throw error;
+  return data.map(l => l.data);
+}
+
+async function gravarDatas(lista){
+  const { error: e1 } = await sb.from("datas").delete().gte("data", "1900-01-01");
+  if(e1) throw e1;
+  if(lista.length){
+    const { error: e2 } = await sb.from("datas").insert(lista.map(d => ({ data: d })));
+    if(e2) throw e2;
+  }
+}
+
+async function gravarResposta(respostas, obs){
+  const linhas = DATAS.map(d => ({
+    user_id: SESSAO.user.id,
+    nome: PERFIL.nome,
+    data: d.data,
+    resposta: respostas[d.data],
+    obs: obs,
+    em: new Date().toISOString()
+  }));
+  const { error } = await sb.from("respostas").upsert(linhas, { onConflict: "user_id,data" });
+  if(error) throw error;
+}
+
+/* Cada obreiro só recebe as próprias linhas; o líder recebe todas (regra no banco). */
+async function buscarRespostas(){
+  const { data, error } = await sb.from("respostas").select("*").order("em", { ascending: false });
+  if(error) throw error;
+  return data || [];
+}
+
+/* ---------- Formulário ---------- */
 function montarForm(){
-  respostasSel = {};
   const cont = document.getElementById("lista-datas");
   cont.innerHTML = "";
   if(DATAS.length === 0){
@@ -371,14 +334,33 @@ function montarForm(){
     div.innerHTML = `
       <div class="data-label">${d.rotulo}<small>${d.data.split("-").reverse().join("/")}</small></div>
       <div class="opcoes">
-        <button class="sim" onclick="marcar(this,'${d.data}','SIM')">SIM</button>
-        <button class="nao" onclick="marcar(this,'${d.data}','NÃO')">NÃO</button>
+        <button type="button" class="sim" data-data="${d.data}" data-valor="SIM" onclick="marcar(this,'${d.data}','SIM')">SIM</button>
+        <button type="button" class="nao" data-data="${d.data}" data-valor="NÃO" onclick="marcar(this,'${d.data}','NÃO')">NÃO</button>
       </div>`;
     cont.appendChild(div);
   });
 }
 
+/* Mostra o que a pessoa já respondeu antes, para poder conferir e mudar */
+async function preencherMinhas(){
+  let linhas = [];
+  try{ linhas = await buscarRespostas(); }catch(e){ return; }
+  const minhas = linhas.filter(l => l.user_id === SESSAO.user.id);
+  if(minhas.length === 0) return;
+  respostasSel = {};
+  minhas.forEach(l => {
+    respostasSel[l.data] = l.resposta;
+    const b = document.querySelector(`.opcoes button[data-data="${l.data}"][data-valor="${l.resposta}"]`);
+    if(b) b.classList.add("ativo");
+    if(l.obs) document.getElementById("obs").value = l.obs;
+  });
+  const msg = document.getElementById("msg");
+  msg.className = "msg ok";
+  msg.textContent = "Você já respondeu. Pode alterar e enviar de novo, se precisar.";
+}
+
 async function carregarTudo(){
+  respostasSel = {};
   try{
     const datas = await buscarDatas();
     DATAS = datas.map(d => ({ data: d, rotulo: rotuloData(d) }));
@@ -389,8 +371,8 @@ async function carregarTudo(){
     return;
   }
   montarForm();
+  await preencherMinhas();
 }
-carregarTudo();
 
 function marcar(btn, data, valor){
   respostasSel[data] = valor;
@@ -399,19 +381,17 @@ function marcar(btn, data, valor){
 }
 
 async function enviar(){
-  const nome = selNome.value;
   const msg = document.getElementById("msg");
   const btn = document.getElementById("btn-enviar");
   msg.className = "msg";
-  if(!nome){ msg.textContent = "Selecione seu nome."; msg.classList.add("erro"); return; }
   if(DATAS.length === 0){ msg.textContent = "Ainda não há datas cadastradas."; msg.classList.add("erro"); return; }
   if(Object.keys(respostasSel).length < DATAS.length){
     msg.textContent = "Responda SIM ou NÃO para todas as datas."; msg.classList.add("erro"); return;
   }
   btn.disabled = true;
   try{
-    await gravarResposta(nome, respostasSel, document.getElementById("obs").value.trim());
-    msg.textContent = "Resposta enviada! Obrigado, " + nome.split(" ")[0] + " 🙏";
+    await gravarResposta(respostasSel, document.getElementById("obs").value.trim());
+    msg.textContent = "Resposta enviada! Obrigado, " + PERFIL.nome.split(" ")[0] + " 🙏";
     msg.classList.add("ok");
   }catch(e){
     msg.textContent = "Erro ao enviar. Tente novamente.";
@@ -420,15 +400,9 @@ async function enviar(){
   btn.disabled = false;
 }
 
-/* ---------- Painel (ADMIN) ---------- */
-let adminLiberado = false;
+/* ---------- Painel da liderança (só para papel = lider) ---------- */
 function abrirPainel(){
-  if(!adminLiberado){
-    const s = prompt("Acesso restrito à liderança.\nDigite a senha:");
-    if(s === null) return;
-    if(s !== PIN_ADMIN){ alert("Senha incorreta."); return; }
-    adminLiberado = true;
-  }
+  if(!EH_LIDER()){ alert("Área restrita à liderança."); return; }
   document.getElementById("formulario").style.display = "none";
   document.getElementById("painel").style.display = "block";
   montarDatasAdmin();
@@ -467,7 +441,7 @@ async function salvarDatas(){
     msg.textContent = "Datas salvas! O formulário já foi atualizado para todos.";
     msg.classList.add("ok");
   }catch(e){
-    msg.textContent = "Erro ao salvar as datas. Tente novamente.";
+    msg.textContent = "Erro ao salvar as datas. Só a liderança pode alterá-las.";
     msg.classList.add("erro");
   }
 }
@@ -475,7 +449,6 @@ async function salvarDatas(){
 async function render(){
   let linhas = [];
   try{ linhas = await buscarRespostas(); }catch(e){}
-  // agrupa por nome
   const porNome = {};
   linhas.forEach(l => {
     porNome[l.nome] = porNome[l.nome] || { respostas: {}, obs: l.obs || "" };
@@ -508,7 +481,7 @@ async function exportarCSV(){
   try{ linhas = await buscarRespostas(); }catch(e){}
   const porNome = {};
   linhas.forEach(l => {
-    porNome[l.nome] = porNome[l.nome] || { respostas: {}, obs: l.obs || "", em: l.em || "" };
+    porNome[l.nome] = porNome[l.nome] || { respostas: {}, obs: l.obs || "" };
     porNome[l.nome].respostas[l.data] = l.resposta;
   });
   let csv = "Obreiro;" + DATAS.map(d => d.rotulo).join(";") + ";Observação\n";
@@ -516,10 +489,20 @@ async function exportarCSV(){
     csv += [nome, ...DATAS.map(d => r.respostas[d.data] || ""), r.obs].join(";") + "\n";
   });
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob(["﻿" + csv], {type:"text/csv;charset=utf-8"}));
+  a.href = URL.createObjectURL(new Blob(["\ufeff" + csv], {type:"text/csv;charset=utf-8"}));
   a.download = "respostas-escala.csv";
   a.click();
 }
+
+/* ---------- Início: exige login antes de mostrar qualquer coisa ---------- */
+(async function(){
+  const perfil = await exigirLogin();
+  if(!perfil) return;
+  montarBarraUsuario();
+  document.getElementById("nome-logado").textContent = perfil.nome;
+  if(EH_LIDER()) document.getElementById("link-admin").style.display = "block";
+  await carregarTudo();
+})();
 
 /* ---------- Logo: remove o fundo cinza (mantém cruz + brilho) ---------- */
 (function(){

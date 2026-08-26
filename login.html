@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="logado">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0B0B0D">
+<meta name="robots" content="noindex,nofollow">
+<title>Entrar — Equipe Efraim | Aliançados</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-title" content="EQUIPE EFRAIM">
+<meta name="application-name" content="EQUIPE EFRAIM">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,500&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --laranja:#F0834A; --laranja-claro:#F9A56E; --laranja-escuro:#D96A32;
+    --preto:#0B0B0D; --preto-card:#151518; --cinza-borda:#2A2A2F;
+    --branco:#F7F3EE; --texto-suave:#B8B2AA;
+    --verde:#3DBB7A; --vermelho:#E05555;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--preto); color:var(--branco);
+    font-family:'Poppins',system-ui,sans-serif; min-height:100vh;
+    background-image:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(240,131,74,.18), transparent 60%);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:34px 18px;
+  }
+  .topo{text-align:center; margin-bottom:26px;}
+  .topo img{
+    width:120px; height:120px; object-fit:cover; object-position:50% 45%;
+    border-radius:50%; border:1px solid rgba(240,131,74,.4);
+    box-shadow:0 0 44px rgba(240,131,74,.28);
+  }
+  .topo img.recortada{width:130px; height:auto; object-fit:contain; border-radius:0; border:none; box-shadow:none;}
+  .topo h1{
+    font-family:'Playfair Display',serif; font-weight:800;
+    font-size:clamp(1.4rem,5.5vw,1.9rem); letter-spacing:1px; margin-top:14px;
+  }
+  .topo h1 span{color:var(--laranja);}
+  .topo .lema{
+    color:var(--texto-suave); font-size:.72rem; letter-spacing:3px;
+    text-transform:uppercase; margin-top:6px; font-weight:300;
+  }
+
+  .caixa{
+    width:100%; max-width:400px; background:var(--preto-card);
+    border:1px solid var(--cinza-borda); border-radius:18px; padding:24px;
+  }
+
+  .abas{display:flex; gap:6px; margin-bottom:20px; background:#0F0F12; padding:5px; border-radius:12px;}
+  .abas button{
+    flex:1; padding:10px 6px; border:none; background:transparent; color:var(--texto-suave);
+    border-radius:9px; font-family:inherit; font-size:.76rem; font-weight:600;
+    letter-spacing:.5px; cursor:pointer; transition:.15s;
+  }
+  .abas button.ativa{background:var(--laranja); color:#fff; box-shadow:0 4px 14px rgba(240,131,74,.3);}
+
+  label{
+    display:block; font-size:.72rem; font-weight:600; margin:0 0 8px;
+    color:var(--laranja); text-transform:uppercase; letter-spacing:2px;
+  }
+  select, input{
+    width:100%; padding:13px 14px; border:1px solid var(--cinza-borda);
+    border-radius:10px; font-size:1rem; background:#0F0F12; color:var(--branco);
+    font-family:'Poppins',sans-serif; color-scheme:dark; margin-bottom:16px;
+  }
+  select:focus, input:focus{outline:none; border-color:var(--laranja);}
+  input::placeholder{color:#6A6660;}
+  .dica{font-size:.72rem; color:var(--texto-suave); margin:-10px 0 16px; line-height:1.5;}
+
+  .ver-senha{
+    display:flex; align-items:center; gap:8px; margin:-8px 0 16px;
+    font-size:.75rem; color:var(--texto-suave); cursor:pointer; user-select:none;
+  }
+  .ver-senha input{width:auto; margin:0; accent-color:var(--laranja);}
+
+  button.principal{
+    width:100%; padding:16px;
+    background:linear-gradient(135deg, var(--laranja), var(--laranja-escuro));
+    color:#fff; border:none; border-radius:14px; font-size:.95rem; font-weight:700;
+    cursor:pointer; letter-spacing:1px; font-family:'Poppins',sans-serif;
+    box-shadow:0 6px 24px rgba(240,131,74,.35); transition:.15s;
+  }
+  button.principal:active{transform:scale(.98);}
+  button.principal:disabled{opacity:.5; cursor:wait;}
+
+  .msg{display:none; text-align:center; padding:13px; border-radius:12px; margin-top:14px; font-size:.84rem; font-weight:600; line-height:1.5;}
+  .msg.ok{display:block; background:rgba(61,187,122,.12); border:1px solid rgba(61,187,122,.4); color:var(--verde);}
+  .msg.erro{display:block; background:rgba(224,85,85,.12); border:1px solid rgba(224,85,85,.4); color:var(--vermelho);}
+  .msg.aviso{display:block; background:rgba(240,131,74,.1); border:1px solid rgba(240,131,74,.35); color:var(--laranja-claro);}
+
+  .rodape-caixa{
+    margin-top:18px; text-align:center; font-size:.72rem; color:var(--texto-suave); line-height:1.6;
+  }
+  .rodape-caixa a{color:var(--laranja); cursor:pointer; text-decoration:none;}
+
+  footer{
+    text-align:center; margin-top:30px; color:var(--texto-suave);
+    font-size:.68rem; letter-spacing:2px; text-transform:uppercase; font-weight:300;
+  }
+  footer span{color:var(--laranja);}
+
+  #painel-cadastro{display:none;}
+
+  @media (max-width:520px){
+    body{padding:24px 14px;}
+    .topo img{width:96px; height:96px;}
+    .topo img.recortada{width:106px;}
+    .caixa{padding:20px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topo">
+  <img src="logo1.png" alt="Aliançados" id="logo-img">
+  <h1>ALIANÇADOS<br><span>Lugar de Crescimento</span></h1>
+  <div class="lema">Equipe Efraim — Área dos Obreiros</div>
+</div>
+
+<div class="caixa">
+  <div class="abas">
+    <button id="aba-entrar" class="ativa" onclick="trocarAba('entrar')">ENTRAR</button>
+    <button id="aba-cadastro" onclick="trocarAba('cadastro')">PRIMEIRO ACESSO</button>
+  </div>
+
+  <!-- ================= ENTRAR ================= -->
+  <form id="painel-entrar" onsubmit="entrar(event)">
+    <label for="nome-entrar">Seu nome</label>
+    <select id="nome-entrar" required><option value="">Selecione seu nome...</option></select>
+
+    <label for="senha-entrar">Senha</label>
+    <input type="password" id="senha-entrar" placeholder="Sua senha" autocomplete="current-password" required>
+
+    <label class="ver-senha"><input type="checkbox" onchange="verSenha(this,'senha-entrar')"> Mostrar senha</label>
+
+    <button type="submit" class="principal" id="btn-entrar">ENTRAR</button>
+    <div id="msg-entrar" class="msg"></div>
+
+    <div class="rodape-caixa">
+      Primeira vez aqui? <a onclick="trocarAba('cadastro')">Criar minha senha</a><br>
+      Esqueceu a senha? Fale com a liderança.
+    </div>
+  </form>
+
+  <!-- ================= PRIMEIRO ACESSO ================= -->
+  <form id="painel-cadastro" onsubmit="cadastrar(event)">
+    <label for="nome-cadastro">Seu nome</label>
+    <select id="nome-cadastro" required><option value="">Selecione seu nome...</option></select>
+
+    <label for="codigo">Código de acesso</label>
+    <input type="text" id="codigo" placeholder="Ex.: A7K2QD" autocomplete="off"
+           maxlength="10" style="text-transform:uppercase; letter-spacing:3px;" required>
+    <p class="dica">Código de 6 letras/números que a liderança enviou para você no privado. Ele só funciona uma vez.</p>
+
+    <label for="senha-nova">Crie sua senha</label>
+    <input type="password" id="senha-nova" placeholder="Mínimo de 6 caracteres"
+           minlength="6" autocomplete="new-password" required>
+
+    <label for="senha-conf">Repita a senha</label>
+    <input type="password" id="senha-conf" placeholder="Digite a senha de novo"
+           minlength="6" autocomplete="new-password" required>
+
+    <label class="ver-senha"><input type="checkbox" onchange="verSenha(this,'senha-nova','senha-conf')"> Mostrar senhas</label>
+
+    <button type="submit" class="principal" id="btn-cadastro">CRIAR MINHA SENHA</button>
+    <div id="msg-cadastro" class="msg"></div>
+
+    <div class="rodape-caixa">
+      Já tem senha? <a onclick="trocarAba('entrar')">Entrar</a>
+    </div>
+  </form>
+</div>
+
+<footer>Aliançados · <span>Lugar de Crescimento</span> · 2026</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+/* ---------- Preenche as listas de nomes ---------- */
+["nome-entrar", "nome-cadastro"].forEach(id => {
+  const sel = document.getElementById(id);
+  NOMES.forEach(n => sel.add(new Option(n, n)));
+});
+
+/* Se o site ainda não foi conectado ao Supabase, avisa e desliga os botões */
+if(!CONFIGURADO){
+  mostrar("msg-entrar", "aviso",
+    "Site ainda não conectado ao banco de dados. A liderança precisa concluir a configuração (config.js).");
+  document.getElementById("btn-entrar").disabled = true;
+  document.getElementById("btn-cadastro").disabled = true;
+}
+
+const DESTINO = new URLSearchParams(location.search).get("destino") || "index.html";
+
+/* Já está logado? vai direto para o destino */
+if(CONFIGURADO){
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if(session) location.replace(DESTINO);
+  });
+}
+
+/* ---------- Utilidades de tela ---------- */
+function trocarAba(qual){
+  const entrar = qual === "entrar";
+  document.getElementById("painel-entrar").style.display   = entrar ? "block" : "none";
+  document.getElementById("painel-cadastro").style.display = entrar ? "none"  : "block";
+  document.getElementById("aba-entrar").classList.toggle("ativa", entrar);
+  document.getElementById("aba-cadastro").classList.toggle("ativa", !entrar);
+}
+
+function verSenha(chk, ...ids){
+  ids.forEach(id => document.getElementById(id).type = chk.checked ? "text" : "password");
+}
+
+function mostrar(id, tipo, texto){
+  const el = document.getElementById(id);
+  el.className = "msg " + tipo;
+  el.textContent = texto;
+}
+function limpar(id){ document.getElementById(id).className = "msg"; }
+
+/* ---------- ENTRAR ---------- */
+async function entrar(ev){
+  ev.preventDefault();
+  limpar("msg-entrar");
+  const nome  = document.getElementById("nome-entrar").value;
+  const senha = document.getElementById("senha-entrar").value;
+  const btn   = document.getElementById("btn-entrar");
+
+  btn.disabled = true;
+  const { error } = await sb.auth.signInWithPassword({ email: emailDe(nome), password: senha });
+  btn.disabled = false;
+
+  if(error){
+    mostrar("msg-entrar", "erro",
+      "Nome ou senha incorretos. Se ainda não criou sua senha, use a aba PRIMEIRO ACESSO.");
+    return;
+  }
+  location.replace(DESTINO);
+}
+
+/* ---------- PRIMEIRO ACESSO ---------- */
+async function cadastrar(ev){
+  ev.preventDefault();
+  limpar("msg-cadastro");
+  const nome   = document.getElementById("nome-cadastro").value;
+  const codigo = document.getElementById("codigo").value.trim().toUpperCase();
+  const senha  = document.getElementById("senha-nova").value;
+  const conf   = document.getElementById("senha-conf").value;
+  const btn    = document.getElementById("btn-cadastro");
+
+  if(senha !== conf){ mostrar("msg-cadastro", "erro", "As duas senhas não são iguais."); return; }
+  if(senha.length < 6){ mostrar("msg-cadastro", "erro", "A senha precisa ter pelo menos 6 caracteres."); return; }
+
+  btn.disabled = true;
+  const { error } = await sb.auth.signUp({
+    email: emailDe(nome),
+    password: senha,
+    options: { data: { nome: nome, codigo: codigo } }
+  });
+  btn.disabled = false;
+
+  if(error){
+    const t = (error.message || "").toLowerCase();
+    if(t.includes("already registered") || t.includes("already been registered")){
+      mostrar("msg-cadastro", "erro",
+        "Você já criou sua senha antes. Use a aba ENTRAR. Se esqueceu a senha, fale com a liderança.");
+    }else{
+      // A trigger do banco recusa códigos inválidos/já usados
+      mostrar("msg-cadastro", "erro",
+        "Código inválido, já utilizado, ou não corresponde ao nome escolhido. Confira com a liderança.");
+    }
+    return;
+  }
+
+  mostrar("msg-cadastro", "ok", "Senha criada! Entrando...");
+  const { error: e2 } = await sb.auth.signInWithPassword({ email: emailDe(nome), password: senha });
+  if(e2){
+    mostrar("msg-cadastro", "ok", "Senha criada! Agora use a aba ENTRAR.");
+    setTimeout(() => trocarAba("entrar"), 1500);
+    return;
+  }
+  location.replace(DESTINO);
+}
+
+/* ---------- Logo: remove o fundo cinza (mantém cruz + brilho) ---------- */
+(function(){
+  const img = document.getElementById("logo-img");
+  let feito = false;
+  function processa(){
+    if(feito) return;
+    try{
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      const ctx = c.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      const d = ctx.getImageData(0, 0, c.width, c.height), p = d.data;
+      let minX = c.width, minY = c.height, maxX = 0, maxY = 0;
+      for(let i = 0; i < p.length; i += 4){
+        const mx = Math.max(p[i], p[i+1], p[i+2]), mn = Math.min(p[i], p[i+1], p[i+2]);
+        const a = Math.max(0, Math.min(255, (mx - mn - 6) * 2.2));
+        p[i+3] = a;
+        if(a > 40){
+          const px = (i/4) % c.width, py = Math.floor((i/4) / c.width);
+          if(px < minX) minX = px; if(px > maxX) maxX = px;
+          if(py < minY) minY = py; if(py > maxY) maxY = py;
+        }
+      }
+      if(maxX <= minX || maxY <= minY) return;
+      ctx.putImageData(d, 0, 0);
+      const pad = 40;
+      const sx = Math.max(0, minX - pad), sy = Math.max(0, minY - pad);
+      const sw = Math.min(c.width, maxX + pad) - sx, sh = Math.min(c.height, maxY + pad) - sy;
+      const c2 = document.createElement("canvas");
+      c2.width = sw; c2.height = sh;
+      c2.getContext("2d").drawImage(c, sx, sy, sw, sh, 0, 0, sw, sh);
+      feito = true;
+      img.onload = null;
+      img.src = c2.toDataURL("image/png");
+      img.classList.add("recortada");
+    }catch(e){ /* mantém o medalhão circular */ }
+  }
+  if(img.complete && img.naturalWidth > 0) processa(); else img.onload = processa;
+})();
+</script>
+</body>
+</html>

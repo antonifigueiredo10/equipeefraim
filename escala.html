@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0B0B0D">
+<meta name="robots" content="noindex,nofollow">
 <title>Escala de Domingo — Equipe Efraim | Aliançados</title>
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -160,6 +161,17 @@
 </main>
 
 <footer>Aliançados · <span>Lugar de Crescimento</span> · 2026 · equipeefraim.com.br</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+/* Página restrita: sem sessão válida, vai para o login */
+(async function(){
+  const perfil = await exigirLogin();
+  if(!perfil) return;
+  montarBarraUsuario();
+})();
+</script>
 
 <script>
 /* Logo: remove o fundo cinza (mantém cruz + brilho) */

@@ -7,19 +7,12 @@
    Cole os valores de: Supabase → Project Settings → Data API
    ===================================================================== */
 
-const SUPABASE_URL      = "https://biitbbrbcbhimmitqkcc.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpaXRiYnJiY2JoaW1taXRxa2NjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NzY3NjUsImV4cCI6MjEwMzM1Mjc2NX0.nlytjRC3OSgVaGDvrphub2LAS0X82MWCewMmsbbnzjA";
+const SUPABASE_URL      = "https://clqexwccsfdecsqtggbg.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNscWV4d2Njc2ZkZWNzcXRnZ2JnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3ODA3NTAsImV4cCI6MjEwMzM1Njc1MH0.5TdEH8KBspbPgt-S1K6SwWqdCmmn_lm2UUXb_ma8fEQ";
 
-/* Lista de quem pode ter acesso. Para incluir alguém novo:
-   1) adicione o nome aqui;  2) rode no SQL Editor:
-      insert into convites (nome, codigo) values ('Nome Novo','ABC123'); */
-const NOMES = [
-  "Antonio", "Bruna", "Cristiane", "Denilson", "Dri Gamarra",
-  "Felipe", "Fernanda", "Hamilton", "Igor", "José Eduardo",
-  "Jugleyde Pompeo", "Karina", "Katia", "Laura", "Lígia",
-  "Marco Maia", "Marina", "MissLayne", "Neto", "Pedro",
-  "Raphael", "Rebeca", "Reinaldo", "Taisla", "Wagner", "Zé Luis",
-];
+/* A lista de nomes NÃO fica mais neste arquivo: ela vem do banco.
+   Para incluir ou tirar alguém, use o PAINEL → aba OBREIROS, no site. */
+let NOMES = [];
 
 /* ===================== daqui para baixo, não precisa mexer ===================== */
 
@@ -71,6 +64,37 @@ async function exigirLogin(){
 async function sair(){
   if(sb) await sb.auth.signOut();
   location.replace("login.html");
+}
+
+/* Busca a lista de nomes no banco (view "pessoas" — só o nome, sem código).
+   Funciona antes do login, para montar o menu da tela de entrada. */
+async function carregarNomes(){
+  if(!CONFIGURADO) return [];
+  const { data, error } = await sb.from("pessoas").select("nome");
+  if(error || !data) return [];
+  NOMES = data.map(p => p.nome).sort((a, b) => a.localeCompare(b, "pt-BR"));
+  return NOMES;
+}
+
+/* Ponte para a função de administração, que roda no servidor do Supabase.
+   Só responde a quem tem papel de liderança — a checagem é lá, não aqui. */
+async function chamarAdmin(acao, dados = {}){
+  const { data: { session } } = await sb.auth.getSession();
+  if(!session) throw new Error("SEM_SESSAO");
+
+  const r = await fetch(SUPABASE_URL + "/functions/v1/admin-efraim", {
+    method: "POST",
+    headers: {
+      "Authorization": "Bearer " + session.access_token,
+      "apikey": SUPABASE_ANON_KEY,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ acao, ...dados })
+  });
+
+  const resposta = await r.json().catch(() => ({ erro: "RESPOSTA_INVALIDA" }));
+  if(!r.ok || resposta.erro) throw new Error(resposta.erro || ("HTTP " + r.status));
+  return resposta;
 }
 
 /* Barra fina no topo com o nome de quem está logado e o botão Sair */

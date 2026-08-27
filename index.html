@@ -172,6 +172,55 @@
   }
   .acoes button:hover{background:rgba(240,131,74,.1);}
 
+  /* ========== ABAS DO PAINEL ========== */
+  .abas-painel{display:flex; gap:6px; margin-bottom:18px; background:#0F0F12; padding:5px; border-radius:12px;}
+  .abas-painel button{
+    flex:1; padding:11px 6px; border:none; background:transparent; color:var(--texto-suave);
+    border-radius:9px; font-family:'Poppins',sans-serif; font-size:.75rem; font-weight:600;
+    letter-spacing:1px; cursor:pointer; transition:.15s;
+  }
+  .abas-painel button.ativa{background:var(--laranja); color:#fff; box-shadow:0 4px 14px rgba(240,131,74,.3);}
+  #painel-obreiros{display:none;}
+
+  /* ========== LISTA DE OBREIROS ========== */
+  .obreiro{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    background:var(--preto-card); border:1px solid var(--cinza-borda);
+    border-radius:14px; padding:14px 16px; margin-bottom:10px;
+  }
+  .obreiro .quem{flex:1; min-width:150px;}
+  .obreiro .quem b{font-size:.95rem; font-weight:600;}
+  .obreiro .estado{display:block; font-size:.72rem; margin-top:3px; color:var(--texto-suave);}
+  .obreiro .estado.pendente{color:var(--laranja-claro);}
+  .obreiro .estado.ativo{color:var(--verde);}
+  .selo{
+    font-size:.6rem; text-transform:uppercase; letter-spacing:1.5px; padding:2px 9px;
+    border-radius:999px; border:1px solid var(--laranja); color:var(--laranja); margin-left:7px; white-space:nowrap;
+  }
+  .obreiro .btns{display:flex; gap:6px; flex-wrap:wrap;}
+  .obreiro .btns button{
+    background:transparent; border:1px solid var(--cinza-borda); color:var(--texto-suave);
+    border-radius:999px; padding:7px 14px; font-size:.7rem; cursor:pointer;
+    font-family:'Poppins',sans-serif; white-space:nowrap;
+  }
+  .obreiro .btns button:hover{border-color:var(--laranja); color:var(--laranja);}
+  .obreiro .btns button.perigo:hover{border-color:var(--vermelho); color:var(--vermelho);}
+
+  .codigo-caixa{
+    display:none; background:rgba(61,187,122,.1); border:1px solid rgba(61,187,122,.45);
+    border-radius:14px; padding:18px; margin-bottom:16px; text-align:center;
+  }
+  .codigo-caixa .rotulo{font-size:.72rem; color:var(--texto-suave); text-transform:uppercase; letter-spacing:1.5px;}
+  .codigo-caixa .valor{
+    font-family:ui-monospace,'Courier New',monospace; font-size:1.7rem; font-weight:700;
+    color:var(--verde); letter-spacing:6px; margin:8px 0;
+  }
+  .codigo-caixa .aviso{font-size:.75rem; color:var(--texto-suave); line-height:1.5;}
+  .codigo-caixa button{
+    margin-top:12px; background:transparent; border:1px solid var(--verde); color:var(--verde);
+    border-radius:999px; padding:9px 20px; font-size:.75rem; cursor:pointer; font-family:'Poppins',sans-serif;
+  }
+
   footer{
     text-align:center; padding:30px 20px 40px; color:var(--texto-suave);
     font-size:.72rem; letter-spacing:2px; text-transform:uppercase; font-weight:300;
@@ -242,19 +291,51 @@
   <div id="painel">
     <h2>Painel do Líder</h2>
 
-    <div class="card">
-      <label>📅 Datas da escala (admin)</label>
-      <div id="datas-admin"></div>
-      <button class="enviar" style="margin-top:14px; padding:12px; font-size:.9rem;" onclick="salvarDatas()">SALVAR DATAS</button>
-      <div id="msg-datas" class="msg"></div>
+    <div class="abas-painel">
+      <button id="aba-escala" class="ativa" onclick="trocarAbaPainel('escala')">DISPONIBILIDADE</button>
+      <button id="aba-obreiros" onclick="trocarAbaPainel('obreiros')">OBREIROS</button>
     </div>
 
-    <div class="resumo" id="resumo"></div>
-    <div style="overflow-x:auto;"><table id="tabela"></table></div>
-    <div class="acoes">
-      <button onclick="exportarCSV()">⬇ Baixar CSV</button>
-      <button onclick="render()">🔄 Atualizar</button>
-      <button onclick="voltarForm()">← Voltar</button>
+    <!-- ---- Aba 1: disponibilidade ---- -->
+    <div id="painel-escala">
+      <div class="card">
+        <label>📅 Datas da escala</label>
+        <div id="datas-admin"></div>
+        <button class="enviar" style="margin-top:14px; padding:12px; font-size:.9rem;" onclick="salvarDatas()">SALVAR DATAS</button>
+        <div id="msg-datas" class="msg"></div>
+      </div>
+
+      <div class="resumo" id="resumo"></div>
+      <div style="overflow-x:auto;"><table id="tabela"></table></div>
+      <div class="acoes">
+        <button onclick="exportarCSV()">⬇ Baixar CSV</button>
+        <button onclick="render()">🔄 Atualizar</button>
+        <button onclick="voltarForm()">← Voltar</button>
+      </div>
+    </div>
+
+    <!-- ---- Aba 2: obreiros e acessos ---- -->
+    <div id="painel-obreiros">
+      <div class="card">
+        <label>➕ Incluir obreiro</label>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="novo-nome" placeholder="Nome como aparecerá na lista"
+                 style="flex:1; padding:13px 14px; border:1px solid var(--cinza-borda); border-radius:10px;
+                        background:#0F0F12; color:var(--branco); font-family:'Poppins',sans-serif; font-size:.95rem;">
+          <button class="enviar" style="width:auto; padding:0 22px; margin:0; font-size:.85rem;" onclick="adicionarObreiro()">INCLUIR</button>
+        </div>
+        <div id="msg-obreiros" class="msg"></div>
+      </div>
+
+      <div id="codigo-novo" class="codigo-caixa"></div>
+
+      <div class="resumo" id="resumo-obreiros"></div>
+      <div id="lista-obreiros"></div>
+
+      <div class="acoes">
+        <button onclick="carregarObreiros()">🔄 Atualizar</button>
+        <button onclick="voltarForm()">← Voltar</button>
+      </div>
     </div>
   </div>
 </main>
@@ -494,6 +575,162 @@ async function exportarCSV(){
   a.click();
 }
 
+/* ================================================================
+   ABA OBREIROS — só a liderança chega aqui.
+   Tudo que mexe em conta de gente passa pela função no servidor
+   (admin-efraim); o navegador nunca vê a chave de administrador.
+   ================================================================ */
+let OBREIROS = [];
+
+function trocarAbaPainel(qual){
+  const escala = qual === "escala";
+  document.getElementById("painel-escala").style.display   = escala ? "block" : "none";
+  document.getElementById("painel-obreiros").style.display = escala ? "none"  : "block";
+  document.getElementById("aba-escala").classList.toggle("ativa", escala);
+  document.getElementById("aba-obreiros").classList.toggle("ativa", !escala);
+  if(!escala && OBREIROS.length === 0) carregarObreiros();
+}
+
+function msgObreiros(tipo, texto){
+  const el = document.getElementById("msg-obreiros");
+  el.className = "msg " + tipo;
+  el.textContent = texto;
+}
+function limparMsgObreiros(){ document.getElementById("msg-obreiros").className = "msg"; }
+
+/* Mostra o código gerado, com o recado pronto para o WhatsApp */
+function mostrarCodigo(nome, codigo, titulo){
+  const cx = document.getElementById("codigo-novo");
+  const recado = "Paz, " + nome.split(" ")[0] + "! Entre em https://equipeefraim.com.br , " +
+                 "toque em PRIMEIRO ACESSO, escolha seu nome, digite o código " + codigo +
+                 " e crie sua senha. Esse código é só seu e funciona uma única vez.";
+  cx.innerHTML =
+    '<div class="rotulo">' + titulo + ' — ' + nome + '</div>' +
+    '<div class="valor">' + codigo + '</div>' +
+    '<div class="aviso">Mande <b>no privado</b>, nunca no grupo.<br>' +
+    'Ele funciona uma vez só e substitui qualquer código anterior.</div>' +
+    '<button type="button" id="btn-copiar-codigo">copiar recado do WhatsApp</button>';
+  cx.style.display = "block";
+  document.getElementById("btn-copiar-codigo").onclick = function(){
+    navigator.clipboard.writeText(recado).then(() => {
+      this.textContent = "copiado!";
+      setTimeout(() => this.textContent = "copiar recado do WhatsApp", 1800);
+    });
+  };
+  cx.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+async function carregarObreiros(){
+  const cont = document.getElementById("lista-obreiros");
+  cont.innerHTML = "<p style='color:var(--texto-suave); font-size:.85rem;'>Carregando...</p>";
+  try{
+    const r = await chamarAdmin("listar");
+    OBREIROS = r.lista;
+  }catch(e){
+    cont.innerHTML = "<p style='color:var(--vermelho); font-size:.85rem;'>Não foi possível carregar (" +
+      e.message + "). Se a mensagem falar em função não encontrada, a função admin-efraim ainda não foi instalada no Supabase.</p>";
+    return;
+  }
+
+  const ativos = OBREIROS.filter(o => o.ativou).length;
+  document.getElementById("resumo-obreiros").innerHTML =
+    '<div class="box"><b>' + ativos + '/' + OBREIROS.length + '</b><span>já criaram senha</span></div>' +
+    '<div class="box"><b>' + (OBREIROS.length - ativos) + '</b><span>pendentes</span></div>';
+
+  cont.innerHTML = "";
+  OBREIROS.forEach(o => {
+    const div = document.createElement("div");
+    div.className = "obreiro";
+    const selo = o.papel === "lider" ? '<span class="selo">liderança</span>' : '';
+    const estado = o.ativou
+      ? '<span class="estado ativo">✓ acesso ativo</span>'
+      : '<span class="estado pendente">aguardando primeiro acesso · código ' + (o.codigo || "—") + '</span>';
+
+    div.innerHTML =
+      '<div class="quem"><b>' + o.nome + '</b>' + selo + estado + '</div>' +
+      '<div class="btns">' +
+        '<button data-acao="redefinir">redefinir acesso</button>' +
+        '<button data-acao="papel">' + (o.papel === "lider" ? "tirar liderança" : "tornar líder") + '</button>' +
+        '<button data-acao="remover" class="perigo">remover</button>' +
+      '</div>';
+
+    div.querySelectorAll("button").forEach(b => {
+      b.onclick = () => acaoObreiro(b.dataset.acao, o, b);
+    });
+    cont.appendChild(div);
+  });
+}
+
+async function acaoObreiro(acao, o, botao){
+  limparMsgObreiros();
+
+  const perguntas = {
+    redefinir: "Redefinir o acesso de " + o.nome + "?\n\nA senha atual dele deixa de valer e um código novo será gerado para ele criar outra.",
+    remover:   "Remover " + o.nome + " da equipe?\n\nO acesso e as respostas dele serão apagados. Isso não tem volta.",
+    papel:     o.papel === "lider"
+                 ? "Tirar a liderança de " + o.nome + "?\n\nEle deixa de ver as respostas dos outros e de administrar acessos."
+                 : "Tornar " + o.nome + " líder?\n\nEle passa a ver as respostas de todos e a administrar acessos, como você."
+  };
+  if(!confirm(perguntas[acao])) return;
+
+  const original = botao.textContent;
+  botao.textContent = "...";
+  botao.disabled = true;
+
+  try{
+    if(acao === "redefinir"){
+      const r = await chamarAdmin("redefinir", { nome: o.nome });
+      mostrarCodigo(o.nome, r.codigo, "Novo código de acesso");
+      msgObreiros("ok", "Acesso de " + o.nome + " redefinido.");
+    }
+    if(acao === "remover"){
+      await chamarAdmin("remover", { nome: o.nome });
+      msgObreiros("ok", o.nome + " foi removido da equipe.");
+      document.getElementById("codigo-novo").style.display = "none";
+    }
+    if(acao === "papel"){
+      const novo = o.papel === "lider" ? "obreiro" : "lider";
+      await chamarAdmin("papel", { nome: o.nome, papel: novo });
+      msgObreiros("ok", o.nome + (novo === "lider" ? " agora é da liderança." : " voltou a ser obreiro."));
+    }
+    await carregarObreiros();
+  }catch(e){
+    botao.textContent = original;
+    botao.disabled = false;
+    msgObreiros("erro", explicarErro(e.message));
+  }
+}
+
+async function adicionarObreiro(){
+  limparMsgObreiros();
+  const campo = document.getElementById("novo-nome");
+  const nome = campo.value.trim();
+  if(nome.length < 2){ msgObreiros("erro", "Digite o nome do obreiro."); return; }
+
+  try{
+    const r = await chamarAdmin("adicionar", { nome });
+    campo.value = "";
+    mostrarCodigo(nome, r.codigo, "Código de primeiro acesso");
+    msgObreiros("ok", nome + " foi incluído na lista.");
+    await carregarObreiros();
+  }catch(e){
+    msgObreiros("erro", explicarErro(e.message));
+  }
+}
+
+function explicarErro(codigo){
+  const textos = {
+    NAO_AUTORIZADO: "Só a liderança pode fazer isso.",
+    ULTIMO_LIDER:   "Você é o único líder — promova outra pessoa antes de fazer isso, senão ninguém consegue administrar o site.",
+    NAO_REMOVA_A_SI:"Você não pode remover a si mesmo.",
+    NAO_REBAIXE_A_SI:"Você não pode tirar a própria liderança.",
+    JA_EXISTE:      "Já existe alguém com esse nome na lista.",
+    SEM_SESSAO:     "Sua sessão expirou. Saia e entre de novo.",
+    SESSAO_INVALIDA:"Sua sessão expirou. Saia e entre de novo."
+  };
+  return textos[codigo] || ("Não deu certo (" + codigo + "). Tente de novo.");
+}
+
 /* ---------- Início: exige login antes de mostrar qualquer coisa ---------- */
 (async function(){
   const perfil = await exigirLogin();
@@ -501,6 +738,7 @@ async function exportarCSV(){
   montarBarraUsuario();
   document.getElementById("nome-logado").textContent = perfil.nome;
   if(EH_LIDER()) document.getElementById("link-admin").style.display = "block";
+  await carregarNomes();
   await carregarTudo();
 })();
 

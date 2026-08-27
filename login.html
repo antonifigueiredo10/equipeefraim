@@ -183,11 +183,18 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
 <script>
-/* ---------- Preenche as listas de nomes ---------- */
-["nome-entrar", "nome-cadastro"].forEach(id => {
-  const sel = document.getElementById(id);
-  NOMES.forEach(n => sel.add(new Option(n, n)));
-});
+/* ---------- Preenche as listas de nomes (vêm do banco) ---------- */
+(async function(){
+  if(!CONFIGURADO) return;
+  const nomes = await carregarNomes();
+  ["nome-entrar", "nome-cadastro"].forEach(id => {
+    const sel = document.getElementById(id);
+    nomes.forEach(n => sel.add(new Option(n, n)));
+  });
+  if(nomes.length === 0){
+    mostrar("msg-entrar", "erro", "Não foi possível carregar a lista de nomes. Verifique sua conexão e recarregue a página.");
+  }
+})();
 
 /* Se o site ainda não foi conectado ao Supabase, avisa e desliga os botões */
 if(!CONFIGURADO){

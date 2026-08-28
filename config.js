@@ -67,12 +67,13 @@ async function sair(){
 }
 
 /* Busca a lista de nomes no banco (view "pessoas" — só o nome, sem código).
-   Funciona antes do login, para montar o menu da tela de entrada. */
+   Funciona antes do login, para montar o menu da tela de entrada.
+   A ordem vem do banco: é a sequência do rodízio do plano devocional. */
 async function carregarNomes(){
   if(!CONFIGURADO) return [];
-  const { data, error } = await sb.from("pessoas").select("nome");
+  const { data, error } = await sb.from("pessoas").select("nome,ordem").order("ordem", { nullsFirst: false });
   if(error || !data) return [];
-  NOMES = data.map(p => p.nome).sort((a, b) => a.localeCompare(b, "pt-BR"));
+  NOMES = data.map(p => p.nome);
   return NOMES;
 }
 

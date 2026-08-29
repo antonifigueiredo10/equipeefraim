@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Plano Devocional — PDF | Equipe Efraim</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;800&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --laranja:#F0834A; --laranja-claro:#F9A56E;
+    --preto:#0B0B0D; --card:#151518; --borda:#2A2A2F;
+    --branco:#F7F3EE; --suave:#B8B2AA; --verde:#3DBB7A;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+  body{background:#08080A; font-family:'Poppins',system-ui,sans-serif; color:var(--branco);}
+
+  /* Barra de controle — some na impressão */
+  .controle{
+    position:sticky; top:0; z-index:10; background:#0F0F12; border-bottom:1px solid var(--borda);
+    padding:12px 16px; display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap;
+  }
+  .controle span{font-size:.78rem; color:var(--suave);}
+  .controle button, .controle a{
+    padding:9px 18px; border-radius:999px; border:1px solid var(--laranja);
+    background:transparent; color:var(--laranja); font-size:.75rem; cursor:pointer;
+    font-family:inherit; text-decoration:none;
+  }
+  .controle button.destaque{background:var(--laranja); color:#fff;}
+  .controle button:hover, .controle a:hover{background:rgba(240,131,74,.12);}
+
+  .folha{margin:18px auto; box-shadow:0 8px 40px rgba(0,0,0,.6);}
+
+  /* ============ FORMATO STORY (WhatsApp) ============ */
+  body.story .folha{width:323pt; background:var(--preto);}
+  body.story .pagina{
+    width:323pt; height:699pt; padding:26pt 24pt; background:var(--preto);
+    display:flex; flex-direction:column; overflow:hidden; position:relative;
+  }
+  body.story .pagina + .pagina{margin-top:18px;}
+
+  .capa{background:radial-gradient(ellipse 90% 45% at 50% 0%, rgba(240,131,74,.22), transparent 62%), var(--preto) !important;}
+  .capa .chip{
+    width:96pt; height:96pt; margin:6pt auto 0; border-radius:50%;
+    border:1px solid rgba(240,131,74,.4); box-shadow:0 0 34pt rgba(240,131,74,.3);
+    object-fit:cover; object-position:50% 45%;
+  }
+  .capa .chip.recortada{width:104pt; height:auto; object-fit:contain; border-radius:0; border:none; box-shadow:none;}
+  .capa h1{
+    font-family:'Playfair Display',serif; font-weight:800; font-size:26pt;
+    text-align:center; line-height:1.12; margin-top:14pt; letter-spacing:.5pt;
+  }
+  .capa h1 span{color:var(--laranja);}
+  .capa .equipe{
+    text-align:center; color:var(--suave); font-size:9pt; letter-spacing:2pt;
+    text-transform:uppercase; margin-top:8pt; font-weight:300;
+  }
+  .capa .cobertura{
+    text-align:center; color:var(--suave); font-size:7.5pt; line-height:1.55;
+    margin-top:14pt; padding:0 6pt;
+  }
+  .capa .versiculo{
+    font-family:'Playfair Display',serif; font-style:italic; text-align:center;
+    color:var(--suave); font-size:9.5pt; line-height:1.55; margin-top:16pt; padding:0 4pt;
+  }
+  .capa .versiculo b{
+    display:block; font-style:normal; font-family:'Poppins',sans-serif;
+    color:var(--laranja-claro); font-size:7pt; letter-spacing:2pt;
+    text-transform:uppercase; margin-top:6pt;
+  }
+
+  .stats{display:grid; grid-template-columns:1fr 1fr; gap:7pt; margin-top:18pt;}
+  .stats .b{
+    background:var(--card); border:1px solid var(--borda); border-radius:10pt;
+    padding:10pt 6pt; text-align:center;
+  }
+  .stats .b b{display:block; font-family:'Playfair Display',serif; font-size:16pt; color:var(--laranja); line-height:1.1;}
+  .stats .b span{font-size:6.5pt; color:var(--suave); text-transform:uppercase; letter-spacing:1pt;}
+
+  .faixa-marca{
+    margin-top:auto; background:#000; border:1px solid var(--borda); border-radius:10pt;
+    padding:9pt; text-align:center;
+  }
+  .faixa-marca b{font-family:'Playfair Display',serif; font-size:11pt; color:var(--branco); letter-spacing:1pt;}
+  .faixa-marca span{display:block; font-size:6.5pt; color:var(--laranja); letter-spacing:2pt; margin-top:2pt; text-transform:uppercase;}
+
+  .titulo-pag{
+    font-size:8pt; color:var(--laranja); letter-spacing:2.5pt; text-transform:uppercase;
+    font-weight:600; margin-bottom:9pt; text-align:center;
+  }
+
+  .cartao{
+    background:var(--card); border:1px solid var(--borda); border-radius:9pt;
+    padding:7pt 9pt; margin-bottom:5pt; display:flex; align-items:center; gap:8pt;
+  }
+  .cartao.agora{border-color:rgba(61,187,122,.6); background:linear-gradient(110deg, rgba(61,187,122,.14), var(--card) 55%);}
+  .cartao .data{font-size:11pt; font-weight:700; line-height:1.1; min-width:52pt;}
+  .cartao .nome{flex:1; font-size:8.5pt; font-weight:300; color:var(--suave); min-width:0;}
+  .cartao .pill{
+    background:rgba(240,131,74,.14); border:1px solid rgba(240,131,74,.4); color:var(--laranja-claro);
+    border-radius:999pt; padding:3pt 8pt; font-size:7.5pt; font-weight:600; white-space:nowrap;
+  }
+  .cartao.agora .pill{background:rgba(61,187,122,.16); border-color:rgba(61,187,122,.45); color:var(--verde);}
+
+  .rodape-pag{
+    margin-top:auto; text-align:center; font-size:6.5pt; color:var(--suave);
+    letter-spacing:1.5pt; text-transform:uppercase; padding-top:8pt;
+  }
+
+  /* ============ FORMATO A4 (impressão) ============ */
+  body.a4 .folha{width:210mm; background:#fff; color:#111;}
+  body.a4 .pagina{width:210mm; min-height:297mm; padding:14mm 13mm; background:#fff; color:#111;}
+  body.a4 .cabecalho{border-bottom:2px solid var(--laranja); padding-bottom:7mm; margin-bottom:7mm; display:flex; align-items:center; gap:8mm;}
+  body.a4 .cabecalho img{width:20mm; height:20mm; object-fit:contain;}
+  body.a4 .cabecalho h1{font-family:'Playfair Display',serif; font-size:19pt; color:#111; line-height:1.15;}
+  body.a4 .cabecalho h1 span{color:var(--laranja);}
+  body.a4 .cabecalho p{font-size:8.5pt; color:#555; margin-top:2mm; line-height:1.5;}
+  body.a4 table{width:100%; border-collapse:collapse; font-size:8.5pt;}
+  body.a4 th{
+    background:#111; color:var(--laranja); text-align:left; padding:2.6mm 2.4mm;
+    font-size:7pt; text-transform:uppercase; letter-spacing:1pt;
+  }
+  body.a4 td{padding:2.1mm 2.4mm; border-bottom:.3mm solid #E4E0DA;}
+  body.a4 tr:nth-child(even) td{background:#FAF8F5;}
+  body.a4 .grupo td{background:var(--laranja) !important; color:#fff; font-weight:700; font-size:8pt; letter-spacing:1pt;}
+  body.a4 .d{white-space:nowrap; font-variant-numeric:tabular-nums;}
+  body.a4 .r{font-weight:600;}
+  body.a4 .rodape{margin-top:6mm; border-top:.3mm solid #DDD; padding-top:3mm; font-size:7pt; color:#777; text-align:center; letter-spacing:.5pt;}
+
+  @media print{
+    .controle{display:none !important;}
+    body{background:#fff;}
+    .folha{margin:0; box-shadow:none;}
+    body.story .pagina{page-break-after:always; margin:0 !important;}
+    body.story .pagina:last-child{page-break-after:auto;}
+    body.a4 .pagina{page-break-after:always;}
+    body.a4 .pagina:last-child{page-break-after:auto;}
+    body.a4 thead{display:table-header-group;}
+    body.a4 tr{page-break-inside:avoid;}
+  }
+  @page{margin:0;}
+</style>
+</head>
+<body>
+
+<div class="controle">
+  <span id="status">Carregando o plano...</span>
+  <button class="destaque" onclick="window.print()">Salvar como PDF</button>
+  <a href="devocional-pdf.html?f=story">📱 story</a>
+  <a href="devocional-pdf.html?f=a4">🖨️ A4</a>
+  <a href="devocional.html">← voltar</a>
+</div>
+
+<div class="folha" id="folha"></div>
+
+<img src="logo1.png" id="logo-fonte" style="display:none" alt="">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+/* ================================================================
+   Gera o plano devocional em formato de impressão, a partir do banco.
+   ?f=story  → páginas 323×699pt, para mandar no WhatsApp
+   ?f=a4     → tabela completa em A4, para imprimir
+   O navegador faz o PDF: botão "Salvar como PDF" na impressão.
+   ================================================================ */
+
+const FORMATO = (new URLSearchParams(location.search).get("f") || "story").toLowerCase() === "a4" ? "a4" : "story";
+document.body.className = FORMATO;
+
+const MESES_CURTO = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+const POR_PAGINA = 9;      // cartões por página no formato story
+const QUANTAS_STORY = 27;  // um ciclo completo do rodízio
+
+function hojeISO(){
+  const d = new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function br(iso){ return iso.split("-").reverse().join("/"); }
+function ddmm(iso){ const p = iso.split("-"); return p[2]+"/"+p[1]; }
+function extenso(iso){
+  const p = iso.split("-");
+  return p[2] + " " + MESES_CURTO[parseInt(p[1],10)-1];
+}
+
+/* A logo é embutida como imagem, já recortada, para o PDF sair fiel */
+function logoPronta(){
+  return new Promise(resolve => {
+    const img = document.getElementById("logo-fonte");
+    function processa(){
+      try{
+        const c = document.createElement("canvas");
+        c.width = img.naturalWidth; c.height = img.naturalHeight;
+        const ctx = c.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+        const d = ctx.getImageData(0,0,c.width,c.height), p = d.data;
+        let minX=c.width, minY=c.height, maxX=0, maxY=0;
+        for(let i=0;i<p.length;i+=4){
+          const mx=Math.max(p[i],p[i+1],p[i+2]), mn=Math.min(p[i],p[i+1],p[i+2]);
+          const a=Math.max(0,Math.min(255,(mx-mn-6)*2.2));
+          p[i+3]=a;
+          if(a>40){ const px=(i/4)%c.width, py=Math.floor((i/4)/c.width);
+            if(px<minX)minX=px; if(px>maxX)maxX=px; if(py<minY)minY=py; if(py>maxY)maxY=py; }
+        }
+        if(maxX<=minX||maxY<=minY){ resolve({src: img.src, recortada:false}); return; }
+        ctx.putImageData(d,0,0);
+        const pad=40, sx=Math.max(0,minX-pad), sy=Math.max(0,minY-pad);
+        const sw=Math.min(c.width,maxX+pad)-sx, sh=Math.min(c.height,maxY+pad)-sy;
+        const c2=document.createElement("canvas"); c2.width=sw; c2.height=sh;
+        c2.getContext("2d").drawImage(c,sx,sy,sw,sh,0,0,sw,sh);
+        resolve({ src: c2.toDataURL("image/png"), recortada:true });
+      }catch(e){ resolve({src: img.src, recortada:false}); }
+    }
+    if(img.complete && img.naturalWidth>0) processa(); else img.onload = processa;
+  });
+}
+
+/* ---------------- STORY ---------------- */
+function montarStory(plano, logo){
+  const hoje = hojeISO();
+  const daqui = plano.filter(l => l.data >= hoje);
+  const lista = (daqui.length ? daqui : plano.slice(-QUANTAS_STORY)).slice(0, QUANTAS_STORY);
+
+  const livros = [...new Set(lista.map(l => l.livro))];
+  const pessoas = [...new Set(plano.map(l => l.nome))].length;
+  const periodo = lista.length ? ddmm(lista[0].data) + " a " + ddmm(lista[lista.length-1].data) : "—";
+
+  let html = '';
+
+  // Capa
+  html += '<div class="pagina capa">' +
+    '<img class="chip' + (logo.recortada ? " recortada" : "") + '" src="' + logo.src + '" alt="">' +
+    '<h1>PLANO<br><span>DEVOCIONAL</span></h1>' +
+    '<div class="equipe">Equipe 02 Efraim (frutífera)</div>' +
+    '<div class="cobertura">Cobertura pastoral<br>Pr. Joel &amp; Pra. Vilma<br>Ap. Denilson &amp; Ap. Elisa Fonseca</div>' +
+    '<div class="versiculo">“Eu sou a videira, vós as varas; quem está em mim, e eu nele, esse dá muito fruto.”<b>João 15:5</b></div>' +
+    '<div class="stats">' +
+      '<div class="b"><b>' + pessoas + '</b><span>participantes</span></div>' +
+      '<div class="b"><b>' + periodo + '</b><span>período</span></div>' +
+      '<div class="b"><b>' + lista.length + '</b><span>sequência</span></div>' +
+      '<div class="b"><b>' + livros.length + '</b><span>livros</span></div>' +
+    '</div>' +
+    '<div class="faixa-marca"><b>Aliançados</b><span>@ aliancados_br</span></div>' +
+  '</div>';
+
+  // Páginas de leituras
+  for(let i = 0; i < lista.length; i += POR_PAGINA){
+    const bloco = lista.slice(i, i + POR_PAGINA);
+    html += '<div class="pagina">' +
+      '<div class="titulo-pag">Próximas leituras</div>' +
+      bloco.map((l, j) => {
+        const agora = (i === 0 && j === 0);
+        return '<div class="cartao' + (agora ? " agora" : "") + '">' +
+          '<div class="data">' + extenso(l.data) + '</div>' +
+          '<div class="nome">' + l.nome + '</div>' +
+          '<div class="pill">' + l.referencia + '</div>' +
+        '</div>';
+      }).join("") +
+      '<div class="rodape-pag">Aliançados · Lugar de Crescimento · 2026</div>' +
+    '</div>';
+  }
+  return html;
+}
+
+/* ---------------- A4 ---------------- */
+function montarA4(plano, logo){
+  const hoje = hojeISO();
+  const POR_FOLHA = 42;
+  let html = '';
+
+  for(let i = 0; i < plano.length; i += POR_FOLHA){
+    const bloco = plano.slice(i, i + POR_FOLHA);
+    html += '<div class="pagina">';
+    if(i === 0){
+      html += '<div class="cabecalho">' +
+        '<img src="' + logo.src + '" alt="">' +
+        '<div><h1>PLANO <span>DEVOCIONAL</span></h1>' +
+        '<p>Equipe 02 Efraim (frutífera) · Novo Testamento · ' + plano.length + ' leituras<br>' +
+        'De ' + br(plano[0].data) + ' a ' + br(plano[plano.length-1].data) +
+        ' · Cobertura pastoral Pr. Joel &amp; Pra. Vilma; Ap. Denilson &amp; Ap. Elisa Fonseca</p></div>' +
+      '</div>';
+    }
+    html += '<table><thead><tr>' +
+      '<th style="width:24mm">Data</th><th style="width:20mm">Dia</th>' +
+      '<th style="width:38mm">Leitura</th><th>Obreiro(a)</th>' +
+      '</tr></thead><tbody>';
+    bloco.forEach(l => {
+      const dia = new Date(l.data + "T12:00:00").toLocaleDateString("pt-BR", { weekday:"short" }).replace(".","");
+      const marca = l.data === hoje ? ' style="font-weight:700"' : '';
+      html += '<tr' + marca + '><td class="d">' + br(l.data) + '</td><td>' + dia + '</td>' +
+              '<td class="r">' + l.referencia + '</td><td>' + l.nome + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    html += '<div class="rodape">Aliançados · Lugar de Crescimento · equipeefraim.com.br · página ' +
+            (Math.floor(i/POR_FOLHA)+1) + ' de ' + Math.ceil(plano.length/POR_FOLHA) + '</div>';
+    html += '</div>';
+  }
+  return html;
+}
+
+/* ---------------- Início ---------------- */
+(async function(){
+  const perfil = await exigirLogin();
+  if(!perfil) return;
+
+  const status = document.getElementById("status");
+  try{
+    const { data: plano, error } = await sb.from("devocional")
+      .select("data,livro,capitulo,referencia,nome").order("data");
+    if(error || !plano || !plano.length) throw new Error("O plano ainda não foi carregado no banco.");
+
+    const logo = await logoPronta();
+    document.getElementById("folha").innerHTML =
+      FORMATO === "a4" ? montarA4(plano, logo) : montarStory(plano, logo);
+
+    status.textContent = FORMATO === "a4"
+      ? plano.length + " leituras · A4 para imprimir"
+      : "Próximas " + Math.min(27, plano.length) + " leituras · formato do WhatsApp";
+  }catch(e){
+    status.textContent = e.message;
+  }
+})();
+</script>
+</body>
+</html>

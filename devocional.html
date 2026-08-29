@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0B0B0D">
+<meta name="robots" content="noindex,nofollow">
+<title>Plano Devocional — Equipe Efraim | Aliançados</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-title" content="EQUIPE EFRAIM">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,500&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --laranja:#F0834A; --laranja-claro:#F9A56E; --laranja-escuro:#D96A32;
+    --preto:#0B0B0D; --preto-card:#151518; --cinza-borda:#2A2A2F;
+    --branco:#F7F3EE; --texto-suave:#B8B2AA;
+    --verde:#3DBB7A; --vermelho:#E05555;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--preto); color:var(--branco);
+    font-family:'Poppins',system-ui,sans-serif; min-height:100vh;
+    background-image:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(240,131,74,.18), transparent 60%);
+  }
+
+  .hero{text-align:center; padding:36px 20px 22px;}
+  .hero img{
+    width:110px; height:110px; object-fit:cover; object-position:50% 45%;
+    border-radius:50%; border:1px solid rgba(240,131,74,.4);
+    box-shadow:0 0 44px rgba(240,131,74,.28);
+  }
+  .hero img.recortada{width:120px; height:auto; object-fit:contain; border-radius:0; border:none; box-shadow:none;}
+  .hero h1{
+    font-family:'Playfair Display',serif; font-weight:800;
+    font-size:clamp(1.5rem,5.5vw,2.1rem); letter-spacing:1px; margin-top:12px;
+  }
+  .hero h1 span{color:var(--laranja);}
+  .hero .lema{
+    color:var(--texto-suave); font-size:.75rem; letter-spacing:3px;
+    text-transform:uppercase; margin-top:6px; font-weight:300;
+  }
+  .versiculo{
+    max-width:520px; margin:18px auto 0; padding:0 24px;
+    font-family:'Playfair Display',serif; font-style:italic;
+    color:var(--texto-suave); font-size:.92rem; line-height:1.6;
+  }
+  .versiculo b{color:var(--laranja-claro); font-style:normal; font-size:.7rem; letter-spacing:2px; display:block; margin-top:6px; font-family:'Poppins',sans-serif; text-transform:uppercase;}
+
+  main{max-width:560px; margin:0 auto; padding:8px 18px 60px;}
+
+  h2.secao{
+    font-size:.72rem; font-weight:600; color:var(--laranja);
+    text-transform:uppercase; letter-spacing:2.5px; margin:26px 0 12px;
+  }
+
+  /* ---- Cartão da leitura de hoje ---- */
+  .hoje{
+    background:linear-gradient(160deg, rgba(240,131,74,.14), var(--preto-card) 60%);
+    border:1px solid rgba(240,131,74,.45); border-radius:18px; padding:22px; text-align:center;
+  }
+  .hoje.minha{background:linear-gradient(160deg, rgba(61,187,122,.16), var(--preto-card) 60%); border-color:rgba(61,187,122,.5);}
+  .hoje .quando{font-size:.72rem; color:var(--texto-suave); text-transform:uppercase; letter-spacing:2px;}
+  .hoje .ref{
+    font-family:'Playfair Display',serif; font-size:clamp(1.6rem,7vw,2.2rem);
+    font-weight:800; margin:8px 0 4px; color:var(--branco);
+  }
+  .hoje .quem{font-size:.95rem; color:var(--laranja-claro); font-weight:600;}
+  .hoje.minha .quem{color:var(--verde);}
+  .hoje .aviso{font-size:.8rem; color:var(--texto-suave); margin-top:10px; line-height:1.5;}
+
+  button.marcar{
+    margin-top:16px; width:100%; padding:15px;
+    background:linear-gradient(135deg, var(--verde), #2E9760);
+    color:#fff; border:none; border-radius:14px; font-size:.92rem; font-weight:700;
+    cursor:pointer; letter-spacing:1px; font-family:'Poppins',sans-serif;
+    box-shadow:0 6px 22px rgba(61,187,122,.3);
+  }
+  button.marcar:active{transform:scale(.98);}
+  button.marcar:disabled{opacity:.55; cursor:default;}
+  button.marcar.feita{background:transparent; border:1px solid var(--verde); color:var(--verde); box-shadow:none;}
+
+  /* ---- Cartões pequenos ---- */
+  .cards{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;}
+  .cards .box{
+    flex:1; min-width:110px; background:var(--preto-card); border:1px solid var(--cinza-borda);
+    border-radius:14px; padding:14px 10px; text-align:center;
+  }
+  .cards .box b{display:block; font-size:1.35rem; color:var(--laranja); font-family:'Playfair Display',serif;}
+  .cards .box span{font-size:.66rem; color:var(--texto-suave); text-transform:uppercase; letter-spacing:1px;}
+
+  .barra-progresso{
+    height:7px; background:#0F0F12; border:1px solid var(--cinza-borda);
+    border-radius:999px; overflow:hidden; margin-top:12px;
+  }
+  .barra-progresso i{display:block; height:100%; background:linear-gradient(90deg, var(--laranja), var(--verde)); border-radius:999px;}
+
+  /* ---- Lista de leituras ---- */
+  .leitura{
+    display:flex; align-items:center; gap:12px;
+    background:var(--preto-card); border:1px solid var(--cinza-borda);
+    border-radius:13px; padding:12px 14px; margin-bottom:8px;
+  }
+  .leitura.atual{border-color:rgba(61,187,122,.55); background:linear-gradient(120deg, rgba(61,187,122,.1), var(--preto-card) 55%);}
+  .leitura.sua{border-color:rgba(240,131,74,.5);}
+  .leitura .dia{
+    min-width:52px; text-align:center; font-weight:700; font-size:.95rem; line-height:1.15;
+  }
+  .leitura .dia small{display:block; font-weight:300; font-size:.62rem; color:var(--texto-suave); text-transform:uppercase; letter-spacing:1px;}
+  .leitura .meio{flex:1; min-width:0;}
+  .leitura .meio b{display:block; font-size:.92rem; font-weight:600;}
+  .leitura .meio span{font-size:.75rem; color:var(--texto-suave);}
+  .leitura .ok{color:var(--verde); font-size:1rem;}
+
+  .acoes{display:flex; gap:8px; margin-top:18px; flex-wrap:wrap;}
+  .acoes a, .acoes button{
+    flex:1; min-width:140px; padding:13px; border-radius:12px; border:1px solid var(--laranja);
+    background:transparent; color:var(--laranja); font-weight:600; cursor:pointer;
+    font-size:.78rem; font-family:'Poppins',sans-serif; text-align:center; text-decoration:none;
+  }
+  .acoes a:hover, .acoes button:hover{background:rgba(240,131,74,.1);}
+
+  .busca{
+    width:100%; padding:13px 14px; border:1px solid var(--cinza-borda);
+    border-radius:10px; font-size:.95rem; background:#0F0F12; color:var(--branco);
+    font-family:'Poppins',sans-serif; margin-bottom:12px;
+  }
+  .busca:focus{outline:none; border-color:var(--laranja);}
+
+  #plano-todo{display:none;}
+  .ver-mais{
+    display:block; width:100%; text-align:center; margin-top:10px; padding:12px;
+    background:transparent; border:1px dashed var(--cinza-borda); color:var(--texto-suave);
+    border-radius:12px; font-size:.78rem; cursor:pointer; font-family:'Poppins',sans-serif;
+  }
+  .ver-mais:hover{border-color:var(--laranja); color:var(--laranja);}
+
+  .voltar{
+    display:block; text-align:center; margin-top:26px; color:var(--texto-suave);
+    font-size:.78rem; text-decoration:none; letter-spacing:1px;
+  }
+  .voltar:hover{color:var(--laranja);}
+
+  footer{
+    text-align:center; padding:30px 20px 40px; color:var(--texto-suave);
+    font-size:.7rem; letter-spacing:2px; text-transform:uppercase; font-weight:300;
+  }
+  footer span{color:var(--laranja);}
+
+  @media (max-width:520px){
+    .hero{padding:22px 16px 14px;}
+    .hero img{width:88px; height:88px;}
+    .hero img.recortada{width:98px;}
+    main{padding:6px 14px 50px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <img src="logo1.png" alt="Aliançados" id="logo-img">
+  <h1>PLANO <span>DEVOCIONAL</span></h1>
+  <div class="lema">Equipe 02 Efraim · Novo Testamento</div>
+  <div class="versiculo">
+    “Eu sou a videira, vós as varas; quem está em mim, e eu nele, esse dá muito fruto.”
+    <b>João 15:5</b>
+  </div>
+</div>
+
+<main>
+  <h2 class="secao">📖 Leitura de hoje</h2>
+  <div class="hoje" id="hoje">
+    <div class="quando">carregando...</div>
+  </div>
+
+  <h2 class="secao">📊 Como a equipe está</h2>
+  <div class="cards" id="cards"></div>
+  <div class="barra-progresso"><i id="barra" style="width:0%"></i></div>
+
+  <h2 class="secao">🗓️ Próximas leituras</h2>
+  <div id="proximas"></div>
+
+  <h2 class="secao">📋 Plano completo</h2>
+  <input type="text" class="busca" id="busca" placeholder="Buscar por nome, livro ou capítulo...">
+  <div id="plano-todo"></div>
+  <button class="ver-mais" id="btn-ver-mais" onclick="alternarPlano()">ver o plano completo</button>
+
+  <h2 class="secao">⬇️ Levar para o grupo</h2>
+  <div class="acoes">
+    <a href="devocional-pdf.html?f=story" target="_blank">📱 PDF para o WhatsApp</a>
+    <a href="devocional-pdf.html?f=a4" target="_blank">🖨️ PDF para imprimir</a>
+  </div>
+
+  <a class="voltar" href="index.html">← Voltar para a disponibilidade</a>
+</main>
+
+<footer>Aliançados · <span>Lugar de Crescimento</span> · 2026 · equipeefraim.com.br</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+/* ================================================================
+   Página do plano devocional — exige login.
+   Os dados vêm da tabela "devocional"; as marcações, de "leituras".
+   ================================================================ */
+
+let PLANO = [];      // todas as leituras
+let FEITAS = [];     // marcações de toda a equipe
+let MINHAS = new Set();
+
+const MESES = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+
+function hojeISO(){
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+function dataCurta(iso){
+  const [a,m,d] = iso.split("-");
+  return { dia: d, mes: MESES[parseInt(m,10)-1] };
+}
+function diaDaSemana(iso){
+  const dt = new Date(iso + "T12:00:00");
+  return dt.toLocaleDateString("pt-BR", { weekday:"long" }).split("-")[0];
+}
+
+async function carregarPlano(){
+  const { data: plano, error: e1 } = await sb.from("devocional")
+    .select("data,livro,capitulo,referencia,nome").order("data");
+  if(e1 || !plano) throw new Error("Não foi possível carregar o plano.");
+  PLANO = plano;
+
+  const { data: feitas } = await sb.from("leituras").select("data,nome,user_id");
+  FEITAS = feitas || [];
+  MINHAS = new Set(FEITAS.filter(l => l.user_id === SESSAO.user.id).map(l => l.data));
+}
+
+/* ---------- Leitura de hoje ---------- */
+function montarHoje(){
+  const hoje = hojeISO();
+  const cx = document.getElementById("hoje");
+  const leitura = PLANO.find(l => l.data === hoje);
+
+  if(!leitura){
+    const proxima = PLANO.find(l => l.data > hoje);
+    cx.innerHTML = proxima
+      ? '<div class="quando">O plano começa em</div>' +
+        '<div class="ref">' + proxima.referencia + '</div>' +
+        '<div class="quem">' + proxima.nome + ' · ' + proxima.data.split("-").reverse().join("/") + '</div>'
+      : '<div class="quando">Plano concluído</div><div class="aviso">Todas as leituras já passaram. Glória a Deus! 🙌</div>';
+    return;
+  }
+
+  const minha = leitura.nome === PERFIL.nome;
+  const jaFiz = MINHAS.has(hoje);
+  cx.className = "hoje" + (minha ? " minha" : "");
+  cx.innerHTML =
+    '<div class="quando">' + diaDaSemana(hoje) + ', ' + hoje.split("-").reverse().slice(0,2).join("/") + '</div>' +
+    '<div class="ref">' + leitura.referencia + '</div>' +
+    '<div class="quem">' + (minha ? "É a sua vez, " + PERFIL.nome.split(" ")[0] + " 🙌" : leitura.nome) + '</div>' +
+    (minha
+      ? '<button class="marcar' + (jaFiz ? " feita" : "") + '" id="btn-marcar" onclick="alternarLeitura(\'' + hoje + '\')">' +
+        (jaFiz ? "✓ leitura registrada — desfazer" : "MARCAR COMO LIDA") + '</button>'
+      : '<div class="aviso">Ore por ' + leitura.nome.split(" ")[0] + ' e leia junto. O plano é da equipe inteira. 🙏</div>');
+}
+
+async function alternarLeitura(data){
+  const btn = document.getElementById("btn-marcar");
+  btn.disabled = true;
+  try{
+    if(MINHAS.has(data)){
+      await sb.from("leituras").delete().eq("data", data).eq("user_id", SESSAO.user.id);
+      MINHAS.delete(data);
+    }else{
+      const { error } = await sb.from("leituras").insert({ data, user_id: SESSAO.user.id, nome: PERFIL.nome });
+      if(error) throw error;
+      MINHAS.add(data);
+    }
+    await carregarPlano();
+    montarTudo();
+  }catch(e){
+    btn.disabled = false;
+    btn.textContent = "Não deu certo. Tente de novo.";
+  }
+}
+
+/* ---------- Progresso ---------- */
+function montarCards(){
+  const hoje = hojeISO();
+  const passadas = PLANO.filter(l => l.data <= hoje);
+  const feitas = FEITAS.filter(l => l.data <= hoje).length;
+  const pct = passadas.length ? Math.round(feitas / passadas.length * 100) : 0;
+  const minhasTotal = PLANO.filter(l => l.nome === PERFIL.nome).length;
+  const minhasFeitas = MINHAS.size;
+
+  document.getElementById("cards").innerHTML =
+    '<div class="box"><b>' + feitas + '/' + passadas.length + '</b><span>leituras da equipe</span></div>' +
+    '<div class="box"><b>' + minhasFeitas + '/' + minhasTotal + '</b><span>as suas</span></div>' +
+    '<div class="box"><b>' + PLANO.length + '</b><span>no plano todo</span></div>';
+  document.getElementById("barra").style.width = pct + "%";
+}
+
+/* ---------- Listas ---------- */
+function linhaLeitura(l, hoje){
+  const d = dataCurta(l.data);
+  const feita = FEITAS.some(f => f.data === l.data);
+  const classes = "leitura" + (l.data === hoje ? " atual" : "") + (l.nome === PERFIL.nome ? " sua" : "");
+  return '<div class="' + classes + '">' +
+    '<div class="dia">' + d.dia + '<small>' + d.mes + '</small></div>' +
+    '<div class="meio"><b>' + l.referencia + '</b><span>' + l.nome + '</span></div>' +
+    (feita ? '<div class="ok">✓</div>' : '') +
+    '</div>';
+}
+
+function montarProximas(){
+  const hoje = hojeISO();
+  const lista = PLANO.filter(l => l.data >= hoje).slice(0, 8);
+  document.getElementById("proximas").innerHTML = lista.length
+    ? lista.map(l => linhaLeitura(l, hoje)).join("")
+    : "<p style='color:var(--texto-suave); font-size:.85rem;'>O plano chegou ao fim.</p>";
+}
+
+function montarPlanoTodo(filtro){
+  const hoje = hojeISO();
+  const f = (filtro || "").trim().toLowerCase();
+  const lista = f
+    ? PLANO.filter(l => (l.nome + " " + l.referencia + " " + l.livro).toLowerCase().includes(f))
+    : PLANO;
+  document.getElementById("plano-todo").innerHTML = lista.length
+    ? lista.map(l => linhaLeitura(l, hoje)).join("")
+    : "<p style='color:var(--texto-suave); font-size:.85rem;'>Nada encontrado.</p>";
+}
+
+function alternarPlano(){
+  const el = document.getElementById("plano-todo");
+  const btn = document.getElementById("btn-ver-mais");
+  const abrindo = el.style.display !== "block";
+  el.style.display = abrindo ? "block" : "none";
+  btn.textContent = abrindo ? "esconder o plano completo" : "ver o plano completo";
+}
+
+document.getElementById("busca").addEventListener("input", e => {
+  montarPlanoTodo(e.target.value);
+  if(e.target.value.trim()){
+    document.getElementById("plano-todo").style.display = "block";
+    document.getElementById("btn-ver-mais").textContent = "esconder o plano completo";
+  }
+});
+
+function montarTudo(){
+  montarHoje();
+  montarCards();
+  montarProximas();
+  montarPlanoTodo(document.getElementById("busca").value);
+}
+
+/* ---------- Início ---------- */
+(async function(){
+  const perfil = await exigirLogin();
+  if(!perfil) return;
+  montarBarraUsuario();
+  try{
+    await carregarPlano();
+    montarTudo();
+  }catch(e){
+    document.getElementById("hoje").innerHTML =
+      '<div class="quando">Ops</div><div class="aviso">' + e.message +
+      '<br>Se a mensagem falar em tabela inexistente, o plano ainda não foi carregado no banco.</div>';
+  }
+})();
+
+/* ---------- Logo: remove o fundo cinza (mantém cruz + brilho) ---------- */
+(function(){
+  const img = document.getElementById("logo-img");
+  let feito = false;
+  function processa(){
+    if(feito) return;
+    try{
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      const ctx = c.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      const d = ctx.getImageData(0, 0, c.width, c.height), p = d.data;
+      let minX = c.width, minY = c.height, maxX = 0, maxY = 0;
+      for(let i = 0; i < p.length; i += 4){
+        const mx = Math.max(p[i], p[i+1], p[i+2]), mn = Math.min(p[i], p[i+1], p[i+2]);
+        const a = Math.max(0, Math.min(255, (mx - mn - 6) * 2.2));
+        p[i+3] = a;
+        if(a > 40){
+          const px = (i/4) % c.width, py = Math.floor((i/4) / c.width);
+          if(px < minX) minX = px; if(px > maxX) maxX = px;
+          if(py < minY) minY = py; if(py > maxY) maxY = py;
+        }
+      }
+      if(maxX <= minX || maxY <= minY) return;
+      ctx.putImageData(d, 0, 0);
+      const pad = 40;
+      const sx = Math.max(0, minX - pad), sy = Math.max(0, minY - pad);
+      const sw = Math.min(c.width, maxX + pad) - sx, sh = Math.min(c.height, maxY + pad) - sy;
+      const c2 = document.createElement("canvas");
+      c2.width = sw; c2.height = sh;
+      c2.getContext("2d").drawImage(c, sx, sy, sw, sh, 0, 0, sw, sh);
+      feito = true;
+      img.onload = null;
+      img.src = c2.toDataURL("image/png");
+      img.classList.add("recortada");
+    }catch(e){ /* mantém o medalhão circular */ }
+  }
+  if(img.complete && img.naturalWidth > 0) processa(); else img.onload = processa;
+})();
+</script>
+</body>
+</html>

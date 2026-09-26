@@ -169,6 +169,8 @@
 (async function(){
   const perfil = await exigirLogin();
   if(!perfil) return;
+  /* Escala é só da liderança; obreiro vai para o devocional */
+  if(!EH_LIDER()){ location.replace("devocional.html"); return; }
   montarBarraUsuario();
 })();
 </script>

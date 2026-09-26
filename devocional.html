@@ -362,6 +362,8 @@ function montarTudo(){
 (async function(){
   const perfil = await exigirLogin();
   if(!perfil) return;
+  /* "Voltar" só faz sentido para a liderança (obreiro só tem o devocional) */
+  if(!EH_LIDER()) document.querySelectorAll(".voltar").forEach(a => a.style.display = "none");
   montarBarraUsuario();
   try{
     await carregarPlano();

@@ -396,6 +396,62 @@ async function montarBoxPush(el){
   };
 }
 
+/* ======================= INSTALAR O APP (TELA INICIAL) =======================
+   Ao abrir o site pelo navegador, aparece uma faixa para instalar o app.
+   Android/Chrome: botão INSTALAR abre o pedido do próprio sistema.
+   iPhone: mostra o passo a passo (Compartilhar → Adicionar à Tela de Início). */
+let EVENTO_INSTALAR = null;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); EVENTO_INSTALAR = e; mostrarInstalar(); });
+window.addEventListener("appinstalled", () => { const f = document.getElementById("faixa-instalar"); if(f) f.remove(); });
+
+function instalarAdiado(){
+  try{ const t = +localStorage.getItem("efraim-instalar-adiado"); return t && Date.now() - t < 3 * 864e5; }catch(e){ return false; }
+}
+function mostrarInstalar(){
+  if(ehApp() || instalarAdiado() || document.getElementById("faixa-instalar")) return;
+  if(!EVENTO_INSTALAR && !ehIOS()) return;
+  const f = document.createElement("div");
+  f.id = "faixa-instalar";
+  f.innerHTML =
+    '<img src="/icon-192.png" alt="">' +
+    '<div class="fi-txt"><b>Instale o app EQUIPE EFRAIM</b><span>Acesso rápido pela tela inicial e lembrete do devocional.</span></div>' +
+    '<button type="button" class="fi-btn">' + (EVENTO_INSTALAR ? "INSTALAR" : "COMO INSTALAR") + '</button>' +
+    '<button type="button" class="fi-x" aria-label="Fechar">×</button>';
+  f.querySelector(".fi-x").onclick = () => { try{ localStorage.setItem("efraim-instalar-adiado", String(Date.now())); }catch(e){} f.remove(); };
+  f.querySelector(".fi-btn").onclick = async () => {
+    if(EVENTO_INSTALAR){
+      EVENTO_INSTALAR.prompt();
+      const r = await EVENTO_INSTALAR.userChoice.catch(() => null);
+      EVENTO_INSTALAR = null;
+      if(r && r.outcome === "accepted") f.remove();
+    }else{
+      passoAPassoIOS();
+    }
+  };
+  document.body.appendChild(f);
+}
+function passoAPassoIOS(){
+  const cx = document.createElement("div");
+  cx.id = "ios-instalar";
+  cx.innerHTML =
+    '<div class="ii-caixa">' +
+      '<img src="/icon-192.png" alt="">' +
+      '<h3>Instalar no iPhone</h3>' +
+      '<ol>' +
+        '<li>Abra este site no <b>Safari</b>.</li>' +
+        '<li>Toque em <b>Compartilhar</b> <span class="ii-ic">⬆️</span> (na barra de baixo).</li>' +
+        '<li>Role e toque em <b>Adicionar à Tela de Início</b> <span class="ii-ic">➕</span>.</li>' +
+        '<li>Toque em <b>Adicionar</b>. Pronto: o ícone EQUIPE EFRAIM aparece na tela.</li>' +
+      '</ol>' +
+      '<button type="button">ENTENDI</button>' +
+    '</div>';
+  cx.onclick = e => { if(e.target === cx || e.target.tagName === "BUTTON") cx.remove(); };
+  document.body.appendChild(cx);
+}
+/* Registra o service worker já na abertura (necessário para instalar e para o lembrete) */
+if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
+document.addEventListener("DOMContentLoaded", () => setTimeout(mostrarInstalar, 1200));
+
 /* Estilo da barra + oculta a página até o login ser confirmado
    (evita o "flash" de conteúdo antes do redirecionamento) */
 (function(){
@@ -468,6 +524,35 @@ async function montarBoxPush(el){
     }
     .box-push .bp-linha{display:flex; align-items:center; justify-content:space-between; gap:10px;}
     .box-push .bp-sec{background:none; border:1px solid #2A2A2F; color:#B8B2AA; border-radius:999px; padding:6px 12px; font-size:.7rem; cursor:pointer; white-space:nowrap;}
+    #faixa-instalar{
+      position:fixed; left:12px; right:12px; bottom:calc(12px + env(safe-area-inset-bottom, 0px)); z-index:90;
+      display:flex; align-items:center; gap:12px; padding:12px 12px 12px 14px; border-radius:16px;
+      background:#151518; border:1px solid rgba(240,131,74,.55); box-shadow:0 10px 36px rgba(0,0,0,.6);
+      font-family:'Poppins',system-ui,sans-serif; max-width:520px; margin:0 auto; animation:fi-sobe .35s ease-out;
+    }
+    @keyframes fi-sobe{from{transform:translateY(30px); opacity:0;} to{transform:none; opacity:1;}}
+    #faixa-instalar img{width:44px; height:44px; border-radius:11px; flex:none;}
+    #faixa-instalar .fi-txt{flex:1; min-width:0;}
+    #faixa-instalar .fi-txt b{display:block; color:#F7F3EE; font-size:.84rem;}
+    #faixa-instalar .fi-txt span{display:block; color:#B8B2AA; font-size:.7rem; line-height:1.4;}
+    #faixa-instalar .fi-btn{
+      border:none; border-radius:999px; padding:10px 14px; cursor:pointer; color:#fff; white-space:nowrap;
+      background:linear-gradient(135deg,#F0834A,#D96A32); font:700 .7rem 'Poppins',sans-serif; letter-spacing:.5px;
+    }
+    #faixa-instalar .fi-x{background:none; border:none; color:#B8B2AA; font-size:1.3rem; cursor:pointer; padding:0 2px; line-height:1;}
+    #ios-instalar{position:fixed; inset:0; z-index:110; background:rgba(0,0,0,.75); display:flex; align-items:flex-end; justify-content:center; padding:16px;}
+    #ios-instalar .ii-caixa{
+      width:100%; max-width:420px; background:#151518; border:1px solid #2A2A2F; border-radius:20px; padding:22px;
+      font-family:'Poppins',system-ui,sans-serif; color:#F7F3EE; text-align:center; margin-bottom:env(safe-area-inset-bottom, 0px);
+    }
+    #ios-instalar img{width:64px; height:64px; border-radius:15px;}
+    #ios-instalar h3{font-family:'Playfair Display',serif; font-size:1.25rem; margin:10px 0 12px;}
+    #ios-instalar ol{text-align:left; font-size:.84rem; color:#B8B2AA; line-height:1.6; padding-left:20px; margin-bottom:16px;}
+    #ios-instalar ol b{color:#F7F3EE;}
+    #ios-instalar button{
+      width:100%; padding:13px; border:none; border-radius:12px; cursor:pointer; color:#fff;
+      background:linear-gradient(135deg,#F0834A,#D96A32); font:700 .82rem 'Poppins',sans-serif; letter-spacing:1px;
+    }
     #convite-foto{
       position:fixed; inset:0; z-index:100; background:rgba(0,0,0,.72);
       display:flex; align-items:center; justify-content:center; padding:20px;

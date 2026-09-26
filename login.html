@@ -145,7 +145,7 @@
 
     <div class="rodape-caixa">
       Primeira vez aqui? <a onclick="trocarAba('cadastro')">Criar minha senha</a><br>
-      Esqueceu a senha? Fale com a liderança.
+      Esqueceu a senha? <a onclick="esqueciSenha()">Pedir nova senha</a>
     </div>
   </form>
 
@@ -227,6 +227,23 @@ function mostrar(id, tipo, texto){
   el.textContent = texto;
 }
 function limpar(id){ document.getElementById(id).className = "msg"; }
+
+/* ---------- ESQUECI A SENHA ----------
+   Sem e-mail real, não há link de recuperação. O pedido vai para a liderança,
+   que libera o nome no painel; depois a pessoa cria a senha nova em PRIMEIRO ACESSO. */
+async function esqueciSenha(){
+  limpar("msg-entrar");
+  const nome = document.getElementById("nome-entrar").value;
+  if(!nome){ mostrar("msg-entrar", "erro", "Escolha seu nome na lista acima e toque de novo em Pedir nova senha."); return; }
+  const { data, error } = await sb.rpc("pedir_nova_senha", { p_nome: nome });
+  if(error){ mostrar("msg-entrar", "erro", "Não foi possível enviar o pedido agora. Tente de novo em instantes."); return; }
+  if(data === "SEM_SENHA"){
+    mostrar("msg-entrar", "aviso", "Você ainda não criou senha. Use a aba PRIMEIRO ACESSO.");
+    setTimeout(() => trocarAba("cadastro"), 1800);
+    return;
+  }
+  mostrar("msg-entrar", "ok", "Pedido enviado à liderança. Quando liberarem seu nome, entre em PRIMEIRO ACESSO e crie a senha nova.");
+}
 
 /* ---------- ENTRAR ---------- */
 async function entrar(ev){

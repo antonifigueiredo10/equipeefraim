@@ -790,6 +790,8 @@ function explicarErro(codigo){
 (async function(){
   const perfil = await exigirLogin();
   if(!perfil) return;
+  /* Obreiro usa só o devocional; escala e disponibilidade ficam com a liderança */
+  if(!EH_LIDER()){ location.replace("devocional.html"); return; }
   montarBarraUsuario();
   document.getElementById("nome-logado").textContent = perfil.nome;
   if(EH_LIDER()) document.getElementById("link-admin").style.display = "block";

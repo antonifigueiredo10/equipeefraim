@@ -34,7 +34,7 @@ const sb = CONFIGURADO
   : null;
 
 let SESSAO = null;   // sessão do Supabase Auth
-let PERFIL = null;   // { nome, papel }  papel = 'obreiro' | 'lider'
+let PERFIL = null;   // { nome, papel, status }  papel = 'obreiro' | 'lider' · status = 'pendente' | 'ativo' | 'bloqueado'
 
 const EH_LIDER = () => PERFIL && PERFIL.papel === "lider";
 
@@ -52,9 +52,16 @@ async function exigirLogin(){
   SESSAO = session;
 
   const { data, error } = await sb.from("perfis")
-    .select("nome,papel").eq("id", session.user.id).single();
+    .select("nome,papel,status").eq("id", session.user.id).single();
 
   if(error || !data){ await sb.auth.signOut(); location.replace("login.html"); return null; }
+
+  /* Acesso precisa ser LIBERADO pela liderança (o banco também confere) */
+  if(data.status && data.status !== "ativo"){
+    await sb.auth.signOut();
+    location.replace("login.html?aviso=" + data.status);
+    return null;
+  }
 
   PERFIL = data;
   document.documentElement.classList.add("logado");

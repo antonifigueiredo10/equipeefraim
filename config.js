@@ -121,6 +121,7 @@ function montarBarraUsuario(){
   document.body.insertBefore(barra, document.body.firstChild);
   carregarMinhaFoto();
   montarNavInferior();
+  setTimeout(avisosAutomatico, 900);
 }
 
 /* ======================= ÍCONES COLORIDOS + BARRA INFERIOR =======================
@@ -142,7 +143,7 @@ function montarNavInferior(){
   const pag = location.pathname.split("/").pop() || "index.html";
   const itens = EH_LIDER()
     ? [["inicio","Início","index.html"],["devocional","Devocional","devocional.html"],["celulas","Células","celulas.html"],["escala","Escala","escala.html"],["perfil","Perfil",""]]
-    : [["inicio","Início","devocional.html"],["devocional","Plano","devocional.html#todos"],["celulas","Células","celulas.html"],["lembrete","Lembrete","devocional.html#lembrete"],["perfil","Perfil",""]];
+    : [["inicio","Início","devocional.html"],["devocional","Plano","devocional.html#todos"],["celulas","Células","celulas.html"],["perfil","Perfil",""]];
   const nav = document.createElement("nav");
   nav.id = "nav-inferior";
   nav.innerHTML = itens.map(([ic, rot, href]) => {
@@ -165,7 +166,7 @@ function abrirPerfil(){
       '<h3>' + PERFIL.nome + '</h3>' +
       '<div class="fp-papel">' + (EH_LIDER() ? "Liderança" : "Obreiro(a)") + ' · Equipe Efraim</div>' +
       '<button type="button" class="fp-op" data-a="foto"><span>' + iconeCor("perfil") + '</span>Trocar minha foto</button>' +
-      '<a class="fp-op" href="devocional.html#lembrete"><span>' + iconeCor("lembrete") + '</span>Lembrete do devocional</a>' +
+      '<button type="button" class="fp-op" data-a="avisos"><span>' + iconeCor("lembrete") + '</span><i class="fp-av">Avisos do devocional</i></button>' +
       '<a class="fp-op" href="celulas.html"><span>' + iconeCor("celulas") + '</span>Mapa de células</a>' +
       '<button type="button" class="fp-sair" data-a="sair">Sair do app</button>' +
     '</div>';
@@ -174,8 +175,10 @@ function abrirPerfil(){
     if(e.target === cx){ cx.remove(); return; }
     if(a && a.dataset.a === "foto"){ cx.remove(); escolherFoto(); }
     if(a && a.dataset.a === "sair"){ sair(); }
+    if(a && a.dataset.a === "avisos"){ alternarAvisos(a); }
   };
   document.body.appendChild(cx);
+  rotuloAvisos(cx.querySelector('[data-a="avisos"]'));
 }
 
 /* Página inicial: liderança = painel (index); obreiro = devocional */
@@ -422,33 +425,74 @@ async function desativarPush(){
   }
 }
 
-/* Caixa "Lembrete do devocional" */
-async function montarBoxPush(el){
+/* ======================= AVISOS DO DEVOCIONAL (pedidos sozinhos) =======================
+   Não existe mais a caixa "Lembrete" na tela. Ao abrir o app instalado (ou o site no
+   Android), o próprio app pede a permissão de aviso. No iPhone o pedido só pode sair de
+   um toque, então aparece uma tela com um botão só. Ligar/desligar fica em Perfil. */
+function avisosAdiado(){
+  try{ const t = +localStorage.getItem("efraim-avisos-adiado"); return t && Date.now() - t < 864e5; }catch(e){ return false; }
+}
+async function avisosAutomatico(){
+  try{
+    const estado = await estadoPush();
+    if(estado === "ativo"){   /* aparelho já inscrito: renova a inscrição no banco sem perguntar nada */
+      const reg = await registrarSW(); const sub = reg && await reg.pushManager.getSubscription();
+      if(sub) salvarInscricao(sub).catch(() => {});
+      return;
+    }
+    if(estado !== "inativo") return;                          /* bloqueado, sem suporte ou iPhone sem instalar */
+    if(Notification.permission === "granted"){ await ativarPush(); return; }   /* já permitido: só refaz a inscrição */
+    if(avisosAdiado()) return;
+    if(!ehIOS()){                                             /* Android: pede direto, sem toque */
+      try{ await ativarPush(); return; }
+      catch(e){ if(Notification.permission === "denied") return; }
+    }
+    mostrarPedidoAvisos();                                    /* iPhone instalado (ou pedido que não abriu): tela com um botão */
+  }catch(e){}
+}
+function mostrarPedidoAvisos(){
+  if(document.getElementById("pedido-avisos")) return;
+  const cx = document.createElement("div");
+  cx.id = "pedido-avisos";
+  cx.innerHTML =
+    '<div class="pa-caixa"><img src="/icon-192.png" alt="">' +
+      '<h3>Avisos do devocional</h3>' +
+      '<p>No dia da sua leitura o app te avisa às 7h e, se ainda não tiver marcado como lida, às 20h.<br>Toque abaixo e depois em <b>Permitir</b> na pergunta do celular.</p>' +
+      '<button type="button" class="pa-sim">🔔 PERMITIR AVISOS</button>' +
+      '<button type="button" class="pa-depois">agora não</button>' +
+    '</div>';
+  cx.querySelector(".pa-depois").onclick = () => { try{ localStorage.setItem("efraim-avisos-adiado", String(Date.now())); }catch(e){} cx.remove(); };
+  cx.querySelector(".pa-sim").onclick = async function(){
+    this.disabled = true; this.textContent = "ativando...";
+    try{ await ativarPush(); cx.remove(); }
+    catch(e){
+      this.disabled = false; this.textContent = "🔔 PERMITIR AVISOS";
+      cx.querySelector("p").innerHTML = e.message === "NEGADO"
+        ? "Você não permitiu. Para ligar depois: <b>Perfil</b> → Avisos do devocional."
+        : "Não deu certo agora. Tente de novo.";
+    }
+  };
+  document.body.appendChild(cx);
+}
+/* Perfil: liga/desliga os avisos deste aparelho */
+async function rotuloAvisos(el){
   if(!el) return;
-  el.className = "box-push";
+  const i = el.querySelector(".fp-av");
   const estado = await estadoPush();
-  /* aparelho já inscrito: renova a inscrição no banco sem perguntar nada */
-  if(estado === "ativo"){
-    try{ const reg = await registrarSW(); const sub = await reg.pushManager.getSubscription(); if(sub) salvarInscricao(sub); }catch(e){}
-    el.innerHTML = '<div class="bp-linha"><span>🔔 <b>Lembrete ligado</b> — você será avisado no dia da sua leitura.</span>' +
-                   '<button type="button" class="bp-sec">desligar</button></div>';
-    el.querySelector(".bp-sec").onclick = async () => { await desativarPush(); montarBoxPush(el); };
-    return;
-  }
-  const textos = {
-    "inativo":     '<p>Receba um aviso no celular no dia da sua leitura do devocional.</p><button type="button" class="bp-btn">🔔 ATIVAR LEMBRETE</button>',
-    "negado":      '<p>As notificações estão bloqueadas para este site. Libere nas configurações do navegador (cadeado ao lado do endereço) e recarregue a página.</p>',
-    "ios-instalar":'<p>No iPhone, o lembrete funciona com o app instalado: toque em <b>Compartilhar</b> ⬆️ e depois em <b>Adicionar à Tela de Início</b>. Abra pelo ícone EQUIPE EFRAIM e ative aqui.</p>',
-    "sem-suporte": '<p>Este navegador não recebe notificações. No Android use o Chrome; no iPhone, instale o app na Tela de Início.</p>'
-  };
-  el.innerHTML = '<div class="bp-tit">🔔 Lembrete do devocional</div>' + textos[estado];
-  const b = el.querySelector(".bp-btn");
-  if(b) b.onclick = async () => {
-    b.disabled = true; b.textContent = "ativando...";
-    try{ await ativarPush(); montarBoxPush(el); }
-    catch(e){ b.disabled = false; b.textContent = "🔔 ATIVAR LEMBRETE";
-      el.insertAdjacentHTML("beforeend", '<small>' + (e.message === "NEGADO" ? "Você não permitiu as notificações." : "Não deu certo agora. Tente de novo.") + '</small>'); }
-  };
+  const txt = { "ativo":"Avisos do devocional · ligados", "inativo":"Avisos do devocional · desligados",
+                "negado":"Avisos bloqueados no celular", "ios-instalar":"Avisos: instale o app na Tela de Início",
+                "sem-suporte":"Avisos: navegador sem suporte" };
+  i.textContent = txt[estado] || "Avisos do devocional";
+  el.dataset.estado = estado;
+}
+async function alternarAvisos(el){
+  const i = el.querySelector(".fp-av");
+  try{
+    if(el.dataset.estado === "ativo"){ i.textContent = "desligando..."; await desativarPush(); }
+    else if(el.dataset.estado === "inativo"){ i.textContent = "ativando..."; await ativarPush(); }
+    else return;
+  }catch(e){ i.textContent = e.message === "NEGADO" ? "Você não permitiu os avisos" : "Não deu certo agora"; return; }
+  rotuloAvisos(el);
 }
 
 /* ======================= INSTALAR O APP (TELA INICIAL) =======================
@@ -457,7 +501,7 @@ async function montarBoxPush(el){
    iPhone: mostra o passo a passo (Compartilhar → Adicionar à Tela de Início). */
 let EVENTO_INSTALAR = null;
 window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); EVENTO_INSTALAR = e; mostrarInstalar(); });
-window.addEventListener("appinstalled", () => { const f = document.getElementById("faixa-instalar"); if(f) f.remove(); });
+window.addEventListener("appinstalled", () => { const f = document.getElementById("faixa-instalar"); if(f) f.remove(); avisosAutomatico(); });
 
 function instalarAdiado(){
   try{ const t = +localStorage.getItem("efraim-instalar-adiado"); return t && Date.now() - t < 3 * 864e5; }catch(e){ return false; }
@@ -565,20 +609,22 @@ document.addEventListener("DOMContentLoaded", () => setTimeout(mostrarInstalar, 
       display:block; text-align:center; margin-top:12px; padding:12px; border-radius:12px; text-decoration:none;
       background:linear-gradient(135deg,#F0834A,#D96A32); color:#fff; font:700 .78rem 'Poppins',sans-serif; letter-spacing:1px;
     }
-    .box-push{
-      background:#151518; border:1px solid #2A2A2F; border-radius:16px; padding:14px 16px; margin:0 0 22px;
-      font-family:'Poppins',system-ui,sans-serif; color:#B8B2AA; font-size:.8rem; line-height:1.5;
+    #pedido-avisos{position:fixed; inset:0; z-index:112; background:rgba(0,0,0,.75); display:flex; align-items:center; justify-content:center; padding:20px;}
+    #pedido-avisos .pa-caixa{
+      width:100%; max-width:340px; background:#151518; border:1px solid rgba(240,131,74,.5); border-radius:20px;
+      padding:26px 22px; text-align:center; font-family:'Poppins',system-ui,sans-serif; color:#F7F3EE; box-shadow:0 20px 60px rgba(0,0,0,.6);
     }
-    .box-push .bp-tit{font-size:.72rem; font-weight:700; color:#F0834A; letter-spacing:2px; text-transform:uppercase; margin-bottom:8px;}
-    .box-push p{margin-bottom:10px;}
-    .box-push b{color:#F7F3EE;}
-    .box-push small{display:block; margin-top:8px; color:#E05555;}
-    .box-push .bp-btn{
-      width:100%; padding:13px; border:none; border-radius:12px; cursor:pointer; color:#fff;
-      background:linear-gradient(135deg,#F0834A,#D96A32); font:700 .8rem 'Poppins',sans-serif; letter-spacing:1px;
+    #pedido-avisos img{width:64px; height:64px; border-radius:15px;}
+    #pedido-avisos h3{font-family:'Playfair Display',serif; font-size:1.25rem; margin:10px 0 8px;}
+    #pedido-avisos p{font-size:.82rem; color:#B8B2AA; margin-bottom:18px; line-height:1.55;}
+    #pedido-avisos p b{color:#F7F3EE;}
+    #pedido-avisos .pa-sim{
+      width:100%; padding:14px; border:none; border-radius:12px; cursor:pointer; color:#fff;
+      background:linear-gradient(135deg,#F0834A,#D96A32); font:700 .85rem 'Poppins',sans-serif; letter-spacing:1px;
     }
-    .box-push .bp-linha{display:flex; align-items:center; justify-content:space-between; gap:10px;}
-    .box-push .bp-sec{background:none; border:1px solid #2A2A2F; color:#B8B2AA; border-radius:999px; padding:6px 12px; font-size:.7rem; cursor:pointer; white-space:nowrap;}
+    #pedido-avisos .pa-sim:disabled{opacity:.6;}
+    #pedido-avisos .pa-depois{margin-top:10px; background:none; border:none; color:#B8B2AA; font:400 .78rem 'Poppins',sans-serif; cursor:pointer; text-decoration:underline;}
+    #folha-perfil .fp-op i{font-style:normal;}
     /* ---- Barra inferior (estilo app) ---- */
     body.com-nav{padding-bottom:calc(78px + env(safe-area-inset-bottom, 0px));}
     #nav-inferior{

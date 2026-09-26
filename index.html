@@ -267,7 +267,6 @@
 
 <main>
   <div id="box-celulas"></div>
-  <div id="box-push"></div>
 
   <!-- ============ FORMULÁRIO ============ -->
   <div id="formulario">
@@ -812,7 +811,6 @@ function explicarErro(codigo){
   if(!EH_LIDER()){ location.replace("devocional.html"); return; }
   montarBarraUsuario();
   montarBoxCelulas(document.getElementById("box-celulas"));
-  montarBoxPush(document.getElementById("box-push"));
   document.getElementById("nome-logado").textContent = perfil.nome;
   if(EH_LIDER()) document.getElementById("link-admin").style.display = "block";
   await carregarNomes();

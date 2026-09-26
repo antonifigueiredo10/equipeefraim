@@ -159,7 +159,7 @@
   .proxima .px-prog i{display:block; height:100%; background:linear-gradient(90deg,var(--laranja),var(--verde));}
   .proxima .px-sub{font-size:.7rem; color:var(--texto-suave); margin-top:5px;}
   #meus-dias-sec h2.secao{margin-top:10px;}
-  .box-push .bp-tit, .box-celulas .bc-tit{display:none;}
+  .box-celulas .bc-tit{display:none;}
   .cobertura{
     background:linear-gradient(160deg,#1C1C21,var(--preto-card)); border:1px solid var(--cinza-borda);
     border-radius:16px; padding:6px 18px 16px;
@@ -269,10 +269,7 @@
   </div>
   </div><!-- /resto -->
 
-  <!-- Depois do devocional: lembrete, células perto e a cobertura pastoral -->
-  <h2 class="secao"><span class="ic" data-ic="bell"></span>Lembrete</h2>
-  <div id="box-push"></div>
-
+  <!-- Depois do devocional: células perto e a cobertura pastoral -->
   <h2 class="secao"><span class="ic" data-ic="pin"></span>Células perto de você</h2>
   <div id="box-celulas"></div>
 
@@ -460,15 +457,12 @@ function pintarIcones(raiz){
   (raiz || document).querySelectorAll(".ic[data-ic]").forEach(el => { if(!el.firstChild) el.innerHTML = icone(el.dataset.ic); });
 }
 
-/* Links da barra inferior: #todos abre a lista completa; #lembrete vai ao lembrete */
+/* Links da barra inferior: #todos abre a lista completa */
 function irParaAncora(){
   const h = location.hash;
   if(h === "#todos"){
     if(document.getElementById("resto").style.display === "none") alternarTodos();
     else document.getElementById("resto").scrollIntoView({ behavior: "smooth" });
-  }else if(h === "#lembrete"){
-    const alvo = document.getElementById("box-push");
-    if(alvo) window.scrollTo({ top: alvo.getBoundingClientRect().top + scrollY - 120, behavior: "smooth" });
   }
   document.querySelectorAll("#nav-inferior .ni").forEach(a => {
     const href = a.getAttribute("href");
@@ -574,7 +568,6 @@ function montarTudo(){
   pintarIcones();
   montarBarraUsuario();
   montarBoxCelulas(document.getElementById("box-celulas"));
-  montarBoxPush(document.getElementById("box-push"));
   try{
     await carregarPlano();
     montarTudo();

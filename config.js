@@ -115,9 +115,19 @@ function montarBarraUsuario(){
       '<b>' + PERFIL.nome + '</b>' +
       (EH_LIDER() ? ' <i>· liderança</i>' : '') +
     '</span>' +
-    '<button type="button" onclick="sair()">Sair</button>';
+    '<span class="acoes-barra">' +
+      (estouNaHome() ? '' : '<a href="' + paginaHome() + '" class="btn-home">🏠 Início</a>') +
+      '<button type="button" onclick="sair()">Sair</button>' +
+    '</span>';
   document.body.insertBefore(barra, document.body.firstChild);
   carregarMinhaFoto();
+}
+
+/* Página inicial: liderança = painel (index); obreiro = devocional */
+function paginaHome(){ return EH_LIDER() ? "index.html" : "devocional.html"; }
+function estouNaHome(){
+  const atual = location.pathname.split("/").pop() || "index.html";
+  return atual === paginaHome();
 }
 
 /* ======================= FOTO DE PERFIL =======================
@@ -315,7 +325,13 @@ async function montarBoxCelulas(el, quantas = 3){
       font-family:inherit; letter-spacing:1px;
     }
     #barra-usuario button:hover{border-color:#F0834A; color:#F0834A;}
-    #barra-usuario .quem-sou{display:flex; align-items:center; gap:9px;}
+    #barra-usuario .quem-sou{display:flex; align-items:center; gap:9px; min-width:0;}
+    #barra-usuario .acoes-barra{display:flex; align-items:center; gap:8px; flex:none;}
+    #barra-usuario .btn-home{
+      border:1px solid #F0834A; color:#F0834A; border-radius:999px; padding:6px 14px;
+      font-size:.72rem; text-decoration:none; letter-spacing:1px; font-weight:600; white-space:nowrap;
+    }
+    #barra-usuario .btn-home:hover{background:rgba(240,131,74,.12);}
     .avatar{
       width:34px; height:34px; border-radius:50%; flex:none; overflow:hidden; padding:0 !important;
       display:inline-flex; align-items:center; justify-content:center;

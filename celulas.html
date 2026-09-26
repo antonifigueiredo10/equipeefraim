@@ -60,7 +60,10 @@
   .cel .info span{display:block; font-size:.74rem; color:var(--texto-suave); line-height:1.5;}
   .cel .links{display:flex; flex-direction:column; gap:6px;}
   .cel .links a{border:1px solid var(--laranja); color:var(--laranja); border-radius:999px; padding:6px 12px; font-size:.7rem; text-decoration:none; font-weight:600; text-align:center; white-space:nowrap;}
-  .voltar{display:block; text-align:center; margin-top:26px; color:var(--texto-suave); font-size:.78rem; text-decoration:none; letter-spacing:1px;}
+  .voltar{
+    display:block; text-align:center; margin-top:22px; padding:14px; border-radius:14px; text-decoration:none;
+    border:1px solid var(--laranja); color:var(--laranja); font-weight:700; font-size:.8rem; letter-spacing:1px;
+  }
   footer{text-align:center; padding:24px 20px 40px; color:var(--texto-suave); font-size:.7rem; letter-spacing:2px; text-transform:uppercase; font-weight:300;}
   footer span{color:var(--laranja);}
 </style>
@@ -88,7 +91,7 @@
   <h2 id="tit-lista">Células</h2>
   <div id="lista"></div>
 
-  <a class="voltar" href="devocional.html">← Voltar</a>
+  <a class="voltar" href="devocional.html">🏠 VOLTAR PARA O INÍCIO</a>
 </main>
 
 <footer>Aliançados · <span>Lugar de Crescimento</span> · 2026</footer>
@@ -162,7 +165,7 @@ async function usarLocal(forcar){
   const perfil = await exigirLogin();
   if(!perfil) return;
   montarBarraUsuario();
-  if(EH_LIDER()) document.querySelector(".voltar").href = "index.html";
+  document.querySelector(".voltar").href = paginaHome();
 
   MAPA = L.map("mapa").setView([-20.4697, -54.6201], 12);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {

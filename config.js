@@ -116,11 +116,66 @@ function montarBarraUsuario(){
       (EH_LIDER() ? ' <i>· liderança</i>' : '') +
     '</span>' +
     '<span class="acoes-barra">' +
-      (estouNaHome() ? '' : '<a href="' + paginaHome() + '" class="btn-home">🏠 Início</a>') +
       '<button type="button" onclick="sair()">Sair</button>' +
     '</span>';
   document.body.insertBefore(barra, document.body.firstChild);
   carregarMinhaFoto();
+  montarNavInferior();
+}
+
+/* ======================= ÍCONES COLORIDOS + BARRA INFERIOR =======================
+   Ícones desenhados em SVG (coloridos, iguais em qualquer celular). */
+const ICONES_COR = {
+  inicio:'<path d="M8 22 24 8l16 14v18a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2z" fill="#FBD5B0"/><path d="M4 23 24 6l20 17-3 3L24 11 7 26z" fill="#E8553B"/><rect x="20" y="28" width="8" height="14" rx="1" fill="#8B5A3C"/><rect x="11" y="26" width="6" height="6" rx="1" fill="#4FA3E8"/><rect x="31" y="26" width="6" height="6" rx="1" fill="#4FA3E8"/>',
+  devocional:'<path d="M6 10c6-2 12-1 18 3v27c-6-4-12-5-18-3z" fill="#8E6CFF"/><path d="M42 10c-6-2-12-1-18 3v27c6-4 12-5 18-3z" fill="#6A4BE0"/><path d="M9 13c5-1 10 0 14 3v21c-4-3-9-4-14-3z" fill="#fff"/><path d="M39 13c-5-1-10 0-14 3v21c4-3 9-4 14-3z" fill="#EDE8FF"/><path d="M30 12v12l3-2 3 2V11z" fill="#F0834A"/>',
+  celulas:'<path d="M4 14l12-5 16 5 12-5v26l-12 5-16-5-12 5z" fill="#BFE8CF"/><path d="M16 9v26l16 5V14z" fill="#8FD3A8"/><path d="M24 4a9 9 0 0 0-9 9c0 7 9 16 9 16s9-9 9-16a9 9 0 0 0-9-9z" fill="#E8453B"/><circle cx="24" cy="13" r="3.5" fill="#fff"/>',
+  lembrete:'<path d="M24 6a12 12 0 0 0-12 12v8l-4 6h32l-4-6v-8A12 12 0 0 0 24 6z" fill="#F7C23C"/><path d="M8 32h32v3H8z" fill="#E0A31F"/><circle cx="24" cy="39" r="4" fill="#E0A31F"/><path d="M17 16a8 8 0 0 1 5-6" stroke="#FFE59A" stroke-width="3" stroke-linecap="round" fill="none"/>',
+  perfil:'<circle cx="24" cy="24" r="20" fill="#4FA3E8"/><circle cx="24" cy="19" r="7" fill="#FBD5B0"/><path d="M11 37c3-6 8-9 13-9s10 3 13 9a20 20 0 0 1-26 0z" fill="#2D6FB8"/>',
+  escala:'<rect x="10" y="8" width="28" height="36" rx="3" fill="#C98B5A"/><rect x="13" y="12" width="22" height="29" rx="2" fill="#fff"/><rect x="18" y="5" width="12" height="7" rx="2" fill="#7A7A85"/><path d="M17 20h14M17 26h14M17 32h9" stroke="#9AA0A8" stroke-width="2.5" stroke-linecap="round"/><path d="m29 32 2 2 4-4" stroke="#3DBB7A" stroke-width="2.5" fill="none" stroke-linecap="round"/>',
+  todos:'<circle cx="17" cy="17" r="6" fill="#FBD5B0"/><path d="M5 38c1-7 6-11 12-11s11 4 12 11z" fill="#8E6CFF"/><circle cx="32" cy="17" r="6" fill="#F2C49B"/><path d="M22 38c1-7 5-11 10-11s10 4 11 11z" fill="#F0834A"/>',
+  calendario:'<rect x="6" y="9" width="36" height="33" rx="4" fill="#fff"/><path d="M6 13a4 4 0 0 1 4-4h28a4 4 0 0 1 4 4v7H6z" fill="#E8553B"/><rect x="14" y="5" width="4" height="9" rx="2" fill="#7A7A85"/><rect x="30" y="5" width="4" height="9" rx="2" fill="#7A7A85"/><rect x="12" y="25" width="6" height="5" rx="1" fill="#F0834A"/><rect x="21" y="25" width="6" height="5" rx="1" fill="#D5D8DE"/><rect x="30" y="25" width="6" height="5" rx="1" fill="#D5D8DE"/><rect x="12" y="33" width="6" height="5" rx="1" fill="#D5D8DE"/><rect x="21" y="33" width="6" height="5" rx="1" fill="#D5D8DE"/>'
+};
+function iconeCor(n){ return '<svg viewBox="0 0 48 48" aria-hidden="true">' + (ICONES_COR[n] || "") + '</svg>'; }
+
+function montarNavInferior(){
+  if(document.getElementById("nav-inferior")) return;
+  const pag = location.pathname.split("/").pop() || "index.html";
+  const itens = EH_LIDER()
+    ? [["inicio","Início","index.html"],["devocional","Devocional","devocional.html"],["celulas","Células","celulas.html"],["escala","Escala","escala.html"],["perfil","Perfil",""]]
+    : [["inicio","Início","devocional.html"],["devocional","Plano","devocional.html#todos"],["celulas","Células","celulas.html"],["lembrete","Lembrete","devocional.html#lembrete"],["perfil","Perfil",""]];
+  const nav = document.createElement("nav");
+  nav.id = "nav-inferior";
+  nav.innerHTML = itens.map(([ic, rot, href]) => {
+    const alvo = href.split("#")[0];
+    const ativo = (!href.includes("#") && alvo === pag && ic !== "perfil");
+    return '<a class="ni' + (ativo ? " ativo" : "") + '" data-ic="' + ic + '" href="' + (href || "#perfil") + '">' +
+           '<span class="ni-ic">' + iconeCor(ic) + '</span><span class="ni-rot">' + rot + '</span></a>';
+  }).join("");
+  nav.querySelector('[data-ic="perfil"]').onclick = e => { e.preventDefault(); abrirPerfil(); };
+  document.body.appendChild(nav);
+  document.body.classList.add("com-nav");
+}
+
+function abrirPerfil(){
+  const cx = document.createElement("div");
+  cx.id = "folha-perfil";
+  cx.innerHTML =
+    '<div class="fp-caixa">' +
+      '<div class="avatar grande" id="fp-foto">' + (document.querySelector("#minha-foto img") ? document.getElementById("minha-foto").innerHTML : iniciais(PERFIL.nome)) + '</div>' +
+      '<h3>' + PERFIL.nome + '</h3>' +
+      '<div class="fp-papel">' + (EH_LIDER() ? "Liderança" : "Obreiro(a)") + ' · Equipe Efraim</div>' +
+      '<button type="button" class="fp-op" data-a="foto"><span>' + iconeCor("perfil") + '</span>Trocar minha foto</button>' +
+      '<a class="fp-op" href="devocional.html#lembrete"><span>' + iconeCor("lembrete") + '</span>Lembrete do devocional</a>' +
+      '<a class="fp-op" href="celulas.html"><span>' + iconeCor("celulas") + '</span>Mapa de células</a>' +
+      '<button type="button" class="fp-sair" data-a="sair">Sair do app</button>' +
+    '</div>';
+  cx.onclick = e => {
+    const a = e.target.closest("[data-a]");
+    if(e.target === cx){ cx.remove(); return; }
+    if(a && a.dataset.a === "foto"){ cx.remove(); escolherFoto(); }
+    if(a && a.dataset.a === "sair"){ sair(); }
+  };
+  document.body.appendChild(cx);
 }
 
 /* Página inicial: liderança = painel (index); obreiro = devocional */
@@ -524,12 +579,45 @@ document.addEventListener("DOMContentLoaded", () => setTimeout(mostrarInstalar, 
     }
     .box-push .bp-linha{display:flex; align-items:center; justify-content:space-between; gap:10px;}
     .box-push .bp-sec{background:none; border:1px solid #2A2A2F; color:#B8B2AA; border-radius:999px; padding:6px 12px; font-size:.7rem; cursor:pointer; white-space:nowrap;}
+    /* ---- Barra inferior (estilo app) ---- */
+    body.com-nav{padding-bottom:calc(78px + env(safe-area-inset-bottom, 0px));}
+    #nav-inferior{
+      position:fixed; left:0; right:0; bottom:0; z-index:80; display:flex; justify-content:space-around;
+      padding:7px 6px calc(7px + env(safe-area-inset-bottom, 0px)); background:rgba(15,15,18,.97);
+      border-top:1px solid #2A2A2F; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+      font-family:'Poppins',system-ui,sans-serif;
+    }
+    #nav-inferior .ni{flex:1; max-width:110px; display:flex; flex-direction:column; align-items:center; gap:3px; text-decoration:none; color:#8E8A84; padding:4px 0; border-radius:12px;}
+    #nav-inferior .ni-ic{width:30px; height:30px; transition:transform .15s;}
+    #nav-inferior .ni-ic svg{width:100%; height:100%; display:block;}
+    #nav-inferior .ni-rot{font-size:.66rem; font-weight:600; letter-spacing:.2px;}
+    #nav-inferior .ni.ativo{color:#F0834A;}
+    #nav-inferior .ni.ativo .ni-ic{transform:scale(1.1);}
+    #nav-inferior .ni:active .ni-ic{transform:scale(.9);}
+    #folha-perfil{position:fixed; inset:0; z-index:105; background:rgba(0,0,0,.65); display:flex; align-items:flex-end; justify-content:center;}
+    #folha-perfil .fp-caixa{
+      width:100%; max-width:480px; background:#151518; border:1px solid #2A2A2F; border-bottom:none;
+      border-radius:22px 22px 0 0; padding:22px 20px calc(22px + env(safe-area-inset-bottom, 0px));
+      font-family:'Poppins',system-ui,sans-serif; color:#F7F3EE; text-align:center; animation:fi-sobe .25s ease-out;
+    }
+    #folha-perfil h3{font-family:'Playfair Display',serif; font-size:1.3rem;}
+    #folha-perfil .fp-papel{font-size:.74rem; color:#B8B2AA; margin:2px 0 16px; letter-spacing:1px; text-transform:uppercase;}
+    #folha-perfil .fp-op{
+      display:flex; align-items:center; gap:12px; width:100%; padding:12px 14px; margin-bottom:8px; border-radius:14px;
+      background:#1D1D22; border:1px solid #2A2A2F; color:#F7F3EE; text-decoration:none; font:600 .86rem 'Poppins',sans-serif; cursor:pointer; text-align:left;
+    }
+    #folha-perfil .fp-op span{width:28px; height:28px; flex:none;}
+    #folha-perfil .fp-op svg{width:100%; height:100%; display:block;}
+    #folha-perfil .fp-sair{width:100%; margin-top:6px; padding:13px; border-radius:14px; border:1px solid #E05555; background:transparent; color:#E05555; font:700 .82rem 'Poppins',sans-serif; cursor:pointer;}
+    .icc{display:inline-flex; flex:none;}
+    .icc svg{width:100%; height:100%; display:block;}
     #faixa-instalar{
       position:fixed; left:12px; right:12px; bottom:calc(12px + env(safe-area-inset-bottom, 0px)); z-index:90;
       display:flex; align-items:center; gap:12px; padding:12px 12px 12px 14px; border-radius:16px;
       background:#151518; border:1px solid rgba(240,131,74,.55); box-shadow:0 10px 36px rgba(0,0,0,.6);
       font-family:'Poppins',system-ui,sans-serif; max-width:520px; margin:0 auto; animation:fi-sobe .35s ease-out;
     }
+    body.com-nav #faixa-instalar{bottom:calc(86px + env(safe-area-inset-bottom, 0px));}
     @keyframes fi-sobe{from{transform:translateY(30px); opacity:0;} to{transform:none; opacity:1;}}
     #faixa-instalar img{width:44px; height:44px; border-radius:11px; flex:none;}
     #faixa-instalar .fi-txt{flex:1; min-width:0;}

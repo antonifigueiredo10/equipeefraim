@@ -160,7 +160,7 @@
     background:var(--preto-card); border:1px solid var(--cinza-borda); border-radius:14px; color:var(--branco);
     font:600 .68rem 'Poppins',sans-serif; letter-spacing:.3px;
   }
-  .atalhos button .ic{width:22px; height:22px; color:var(--laranja);}
+  .atalhos button .icc{width:32px; height:32px;}
   .atalhos button:active{transform:scale(.97);}
   .atalhos button:hover{border-color:rgba(240,131,74,.5);}
   #meus-dias-sec h2.secao:first-child{margin-top:8px;}
@@ -242,10 +242,10 @@
   <section id="meus-dias-sec">
     <div id="proxima" class="proxima"></div>
     <div class="atalhos">
-      <button type="button" data-ir="meus-dias"><span class="ic" data-ic="calendar"></span>Meus dias</button>
-      <button type="button" data-ir="box-push"><span class="ic" data-ic="bell"></span>Lembrete</button>
-      <button type="button" data-ir="box-celulas"><span class="ic" data-ic="pin"></span>Células</button>
-      <button type="button" data-ir="todos"><span class="ic" data-ic="users"></span>Todos</button>
+      <button type="button" data-ir="meus-dias"><span class="icc" data-icc="calendario"></span>Meus dias</button>
+      <button type="button" data-ir="box-push"><span class="icc" data-icc="lembrete"></span>Lembrete</button>
+      <button type="button" data-ir="box-celulas"><span class="icc" data-icc="celulas"></span>Células</button>
+      <button type="button" data-ir="todos"><span class="icc" data-icc="todos"></span>Todos</button>
     </div>
     <h2 class="secao"><span class="ic" data-ic="calendar"></span>Seus dias de devocional</h2>
     <div id="meus-dias"></div>
@@ -463,7 +463,27 @@ const ICONES = {
   check:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>'
 };
 function icone(nome){ return '<svg viewBox="0 0 24 24" aria-hidden="true">' + (ICONES[nome] || "") + '</svg>'; }
-function pintarIcones(raiz){ (raiz || document).querySelectorAll(".ic[data-ic]").forEach(el => { if(!el.firstChild) el.innerHTML = icone(el.dataset.ic); }); }
+function pintarIcones(raiz){
+  (raiz || document).querySelectorAll(".ic[data-ic]").forEach(el => { if(!el.firstChild) el.innerHTML = icone(el.dataset.ic); });
+  (raiz || document).querySelectorAll(".icc[data-icc]").forEach(el => { if(!el.firstChild) el.innerHTML = iconeCor(el.dataset.icc); });
+}
+
+/* Links da barra inferior: #todos abre a lista completa; #lembrete vai ao lembrete */
+function irParaAncora(){
+  const h = location.hash;
+  if(h === "#todos"){
+    if(document.getElementById("resto").style.display === "none") alternarTodos();
+    else document.getElementById("resto").scrollIntoView({ behavior: "smooth" });
+  }else if(h === "#lembrete"){
+    const alvo = document.getElementById("box-push");
+    if(alvo) window.scrollTo({ top: alvo.getBoundingClientRect().top + scrollY - 120, behavior: "smooth" });
+  }
+  document.querySelectorAll("#nav-inferior .ni").forEach(a => {
+    const href = a.getAttribute("href");
+    a.classList.toggle("ativo", h ? href === "devocional.html" + h : href === "devocional.html");
+  });
+}
+window.addEventListener("hashchange", irParaAncora);
 
 /* Cartão de destaque: a próxima leitura do obreiro */
 function montarProxima(){
@@ -577,6 +597,7 @@ function montarTudo(){
   try{
     await carregarPlano();
     montarTudo();
+    if(location.hash) setTimeout(irParaAncora, 300);
   }catch(e){
     document.getElementById("hoje").innerHTML =
       '<div class="quando">Ops</div><div class="aviso">' + e.message +

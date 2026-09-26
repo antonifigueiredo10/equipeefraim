@@ -52,7 +52,7 @@ async function exigirLogin(){
   SESSAO = session;
 
   const { data, error } = await sb.from("perfis")
-    .select("nome,papel,status").eq("id", session.user.id).single();
+    .select("nome,papel,status,foto_em").eq("id", session.user.id).single();
 
   if(error || !data){ await sb.auth.signOut(); location.replace("login.html"); return null; }
 
@@ -105,15 +105,114 @@ async function chamarAdmin(acao, dados = {}){
   return resposta;
 }
 
-/* Barra fina no topo com o nome de quem está logado e o botão Sair */
+/* Barra fina no topo: foto, nome de quem está logado e o botão Sair */
 function montarBarraUsuario(){
   const barra = document.createElement("div");
   barra.id = "barra-usuario";
   barra.innerHTML =
-    '<span><b>' + PERFIL.nome + '</b>' +
-    (EH_LIDER() ? ' <i>· liderança</i>' : '') + '</span>' +
+    '<span class="quem-sou">' +
+      '<button type="button" id="minha-foto" class="avatar" title="Trocar minha foto" onclick="escolherFoto()">' + iniciais(PERFIL.nome) + '</button>' +
+      '<b>' + PERFIL.nome + '</b>' +
+      (EH_LIDER() ? ' <i>· liderança</i>' : '') +
+    '</span>' +
     '<button type="button" onclick="sair()">Sair</button>';
   document.body.insertBefore(barra, document.body.firstChild);
+  carregarMinhaFoto();
+}
+
+/* ======================= FOTO DE PERFIL =======================
+   Bucket privado "fotos" no Supabase, arquivo <id do usuário>.jpg.
+   A foto é reduzida no próprio celular (400x400, JPEG) antes de enviar. */
+function iniciais(nome){
+  return (nome || "?").split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0]).join("").toUpperCase();
+}
+
+/* Links temporários (1 h) para várias fotos de uma vez: { userId: url } */
+async function urlsDeFotos(ids){
+  const lista = (ids || []).filter(Boolean);
+  if(!lista.length) return {};
+  const { data } = await sb.storage.from("fotos").createSignedUrls(lista.map(id => id + ".jpg"), 3600);
+  const mapa = {};
+  (data || []).forEach(d => { if(d.signedUrl) mapa[d.path.replace(/\.jpg$/, "")] = d.signedUrl; });
+  return mapa;
+}
+
+function pintarAvatar(el, url, nome){
+  if(!el) return;
+  el.innerHTML = url ? '<img alt="" src="' + url + '">' : iniciais(nome);
+}
+
+async function carregarMinhaFoto(){
+  const el = document.getElementById("minha-foto");
+  if(PERFIL.foto_em){
+    const m = await urlsDeFotos([SESSAO.user.id]);
+    pintarAvatar(el, m[SESSAO.user.id], PERFIL.nome);
+  }else{
+    convidarFoto();
+  }
+}
+
+/* Na entrada, quem ainda não tem foto recebe o convite (uma vez por dia no máximo) */
+function convidarFoto(){
+  const chave = "efraim-foto-adiada-" + SESSAO.user.id;
+  try{ const t = +localStorage.getItem(chave); if(t && Date.now() - t < 864e5) return; }catch(e){}
+  const cx = document.createElement("div");
+  cx.id = "convite-foto";
+  cx.innerHTML =
+    '<div class="caixa-foto">' +
+      '<div class="avatar grande">' + iniciais(PERFIL.nome) + '</div>' +
+      '<h3>Coloque sua foto, ' + PERFIL.nome.split(" ")[0] + '!</h3>' +
+      '<p>Assim a liderança e a equipe reconhecem você.</p>' +
+      '<button type="button" class="sim" onclick="escolherFoto()">📷 ESCOLHER FOTO</button>' +
+      '<button type="button" class="depois">agora não</button>' +
+    '</div>';
+  cx.querySelector(".depois").onclick = () => {
+    try{ localStorage.setItem(chave, String(Date.now())); }catch(e){}
+    cx.remove();
+  };
+  document.body.appendChild(cx);
+}
+
+function escolherFoto(){
+  const inp = document.createElement("input");
+  inp.type = "file";
+  inp.accept = "image/*";
+  inp.onchange = () => { if(inp.files[0]) enviarFoto(inp.files[0]); };
+  inp.click();
+}
+
+/* Recorta no centro, reduz para 400x400 e envia */
+async function enviarFoto(arquivo){
+  const el = document.getElementById("minha-foto");
+  const convite = document.getElementById("convite-foto");
+  if(convite) convite.querySelector("h3").textContent = "Enviando sua foto...";
+  try{
+    const img = await new Promise((ok, erro) => {
+      const i = new Image();
+      i.onload = () => ok(i);
+      i.onerror = () => erro(new Error("IMAGEM_INVALIDA"));
+      i.src = URL.createObjectURL(arquivo);
+    });
+    const lado = Math.min(img.naturalWidth, img.naturalHeight);
+    const cv = document.createElement("canvas");
+    cv.width = cv.height = 400;
+    cv.getContext("2d").drawImage(img, (img.naturalWidth - lado) / 2, (img.naturalHeight - lado) / 2, lado, lado, 0, 0, 400, 400);
+    const blob = await new Promise(ok => cv.toBlob(ok, "image/jpeg", 0.85));
+
+    const { error } = await sb.storage.from("fotos")
+      .upload(SESSAO.user.id + ".jpg", blob, { upsert: true, contentType: "image/jpeg", cacheControl: "60" });
+    if(error) throw error;
+    await sb.rpc("marcar_foto", { p_tem: true });
+    PERFIL.foto_em = new Date().toISOString();
+
+    const m = await urlsDeFotos([SESSAO.user.id]);
+    pintarAvatar(el, m[SESSAO.user.id], PERFIL.nome);
+    if(convite) convite.remove();
+    if(typeof aoTrocarFoto === "function") aoTrocarFoto();
+  }catch(e){
+    if(convite) convite.querySelector("h3").textContent = "Não deu certo. Tente outra foto.";
+    else alert("Não foi possível enviar a foto. Tente outra imagem.");
+  }
 }
 
 /* Estilo da barra + oculta a página até o login ser confirmado
@@ -136,6 +235,33 @@ function montarBarraUsuario(){
       font-family:inherit; letter-spacing:1px;
     }
     #barra-usuario button:hover{border-color:#F0834A; color:#F0834A;}
+    #barra-usuario .quem-sou{display:flex; align-items:center; gap:9px;}
+    .avatar{
+      width:34px; height:34px; border-radius:50%; flex:none; overflow:hidden; padding:0 !important;
+      display:inline-flex; align-items:center; justify-content:center;
+      background:#1D1D22; border:1px solid #F0834A !important; color:#F0834A !important;
+      font:600 .72rem 'Poppins',system-ui,sans-serif; letter-spacing:0 !important; cursor:pointer;
+    }
+    .avatar img{width:100%; height:100%; object-fit:cover; display:block;}
+    .avatar.grande{width:96px; height:96px; font-size:1.8rem; margin:0 auto 14px; cursor:default;}
+    #convite-foto{
+      position:fixed; inset:0; z-index:100; background:rgba(0,0,0,.72);
+      display:flex; align-items:center; justify-content:center; padding:20px;
+    }
+    #convite-foto .caixa-foto{
+      width:100%; max-width:340px; background:#151518; border:1px solid #2A2A2F; border-radius:18px;
+      padding:26px 22px; text-align:center; font-family:'Poppins',system-ui,sans-serif; color:#F7F3EE;
+    }
+    #convite-foto h3{font-family:'Playfair Display',serif; font-size:1.25rem; margin-bottom:8px;}
+    #convite-foto p{font-size:.82rem; color:#B8B2AA; margin-bottom:18px; line-height:1.5;}
+    #convite-foto .sim{
+      width:100%; padding:14px; border:none; border-radius:12px; cursor:pointer; color:#fff;
+      background:linear-gradient(135deg,#F0834A,#D96A32); font:700 .85rem 'Poppins',sans-serif; letter-spacing:1px;
+    }
+    #convite-foto .depois{
+      margin-top:10px; background:none; border:none; color:#B8B2AA; font:400 .78rem 'Poppins',sans-serif;
+      cursor:pointer; text-decoration:underline;
+    }
   `;
   document.head.appendChild(st);
 })();

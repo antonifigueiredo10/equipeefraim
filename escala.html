@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#0B0B0D">
 <meta name="robots" content="noindex,nofollow">
-<title>Escala de Domingo — Equipe Efraim | Aliançados</title>
+<title>Escala da Semana — Equipe Efraim | Aliançados</title>
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
@@ -28,62 +28,82 @@
     font-family:'Poppins',system-ui,sans-serif; min-height:100vh;
     background-image:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(240,131,74,.18), transparent 60%);
   }
-  .hero{text-align:center; padding:36px 20px 10px;}
+
+  /* Cabeçalho compacto: logo e título lado a lado */
+  .hero{display:flex; align-items:center; gap:14px; max-width:600px; margin:0 auto; padding:16px 18px 0;}
   .hero .logo{
-    width:120px; height:120px; object-fit:cover; object-position:50% 45%;
-    border-radius:50%; border:1px solid rgba(240,131,74,.4);
-    box-shadow:0 0 36px rgba(240,131,74,.28);
+    width:64px; height:64px; flex:none; object-fit:cover; object-position:50% 45%;
+    border-radius:50%; border:1px solid rgba(240,131,74,.4); box-shadow:0 0 28px rgba(240,131,74,.28);
   }
-  .hero .logo.recortada{width:130px; height:auto; object-fit:contain; border-radius:0; border:none; box-shadow:none;}
-  .hero h1{font-family:'Playfair Display',serif; font-weight:800; font-size:clamp(1.4rem,5vw,2rem); margin-top:10px;}
+  .hero .logo.recortada{width:auto; height:64px; max-width:84px; object-fit:contain; border-radius:0; border:none; box-shadow:none;}
+  .hero h1{font-family:'Playfair Display',serif; font-weight:800; font-size:clamp(1.25rem,5vw,1.7rem); letter-spacing:1px; line-height:1.15;}
   .hero h1 span{color:var(--laranja);}
-  .hero .lema{color:var(--texto-suave); font-size:.8rem; letter-spacing:3px; text-transform:uppercase; margin-top:4px; font-weight:300;}
-  .data-badge{
-    display:inline-block; margin-top:14px; padding:8px 22px;
-    border:1px solid var(--laranja); border-radius:999px;
-    color:var(--laranja); font-weight:600; font-size:.85rem; letter-spacing:2px; text-transform:uppercase;
+  .hero .lema{color:var(--texto-suave); font-size:.66rem; letter-spacing:2.5px; text-transform:uppercase; margin-top:4px; font-weight:300;}
+
+  main{max-width:600px; margin:0 auto; padding:14px 18px 50px;}
+
+  /* Seletor dos cultos da semana */
+  .cultos{display:grid; grid-template-columns:repeat(3,1fr); gap:8px;}
+  .cultos button{
+    background:var(--preto-card); border:1px solid var(--cinza-borda); border-radius:14px; padding:10px 6px 9px;
+    color:var(--texto-suave); font-family:'Poppins',sans-serif; cursor:pointer; text-align:center; line-height:1.2;
   }
-  .infos{
-    display:flex; gap:10px; flex-wrap:wrap; justify-content:center;
-    max-width:640px; margin:18px auto 0; padding:0 16px;
-  }
+  .cultos button small{display:block; font-size:.62rem; letter-spacing:1.5px; text-transform:uppercase;}
+  .cultos button b{display:block; font-size:1.05rem; color:var(--branco); margin:2px 0 1px;}
+  .cultos button i{display:block; font-style:normal; font-size:.7rem;}
+  .cultos button.ativo{border-color:var(--laranja); background:linear-gradient(160deg, rgba(240,131,74,.22), var(--preto-card) 65%); color:var(--laranja);}
+  .cultos button.ativo b{color:var(--laranja-claro);}
+  .cultos button.passou{opacity:.55;}
+
+  .titulo-culto{text-align:center; margin:16px 0 10px;}
+  .titulo-culto b{display:block; font-family:'Playfair Display',serif; font-size:1.25rem;}
+  .titulo-culto span{font-size:.72rem; color:var(--texto-suave); letter-spacing:2px; text-transform:uppercase;}
+
+  .infos{display:flex; gap:6px; flex-wrap:wrap;}
   .infos .chip{
-    background:var(--preto-card); border:1px solid var(--cinza-borda); border-radius:12px;
-    padding:10px 16px; font-size:.78rem; color:var(--texto-suave);
+    flex:1 1 100%; background:var(--preto-card); border:1px solid var(--cinza-borda); border-radius:12px;
+    padding:8px 12px; font-size:.72rem; color:var(--texto-suave); text-align:center; line-height:1.45;
   }
-  .infos .chip b{color:var(--branco); display:block; font-size:.82rem;}
-  main{max-width:640px; margin:0 auto; padding:26px 18px 50px;}
+  .infos .chip b{color:var(--branco); display:inline; margin-right:5px; font-size:.72rem;}
+
+  .minha{
+    margin-top:10px; background:linear-gradient(135deg, rgba(61,187,122,.2), var(--preto-card) 60%);
+    border:1px solid rgba(61,187,122,.6); border-radius:14px; padding:12px 16px; font-size:.82rem; line-height:1.5;
+  }
+  .minha b{color:var(--verde); display:block; font-size:.66rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:3px;}
+  .minha span{color:var(--branco); font-weight:600;}
 
   .secao{
-    font-family:'Playfair Display',serif; color:var(--laranja); font-size:1.05rem;
-    margin:26px 4px 12px; text-align:center; letter-spacing:.5px;
+    font-family:'Playfair Display',serif; color:var(--laranja); font-size:1rem;
+    margin:22px 4px 10px; text-align:center; letter-spacing:.5px;
   }
   .faixa{background:linear-gradient(90deg,transparent,var(--laranja),transparent); height:1px; max-width:300px; margin:6px auto 0; opacity:.5;}
 
   .card{
     background:var(--preto-card); border:1px solid var(--cinza-borda);
-    border-radius:14px; padding:14px 18px; margin-bottom:10px;
+    border-radius:14px; padding:11px 14px; margin-bottom:8px;
     display:flex; justify-content:space-between; align-items:center; gap:14px;
   }
-  .card .funcao{
-    font-size:.72rem; font-weight:600; color:var(--laranja);
-    text-transform:uppercase; letter-spacing:1.5px; flex:1;
-  }
-  .card .nomes{flex:1.4; text-align:right; font-size:.9rem; font-weight:600; line-height:1.5;}
+  .card.sua{border-color:rgba(61,187,122,.6); background:linear-gradient(120deg, rgba(61,187,122,.12), var(--preto-card) 55%);}
+  .card .funcao{font-size:.7rem; font-weight:600; color:var(--laranja); text-transform:uppercase; letter-spacing:1.3px; flex:1; line-height:1.35;}
+  .card .funcao small{display:block; text-transform:none; letter-spacing:0; font-weight:300; color:var(--texto-suave); font-size:.68rem; margin-top:2px;}
+  .card .nomes{flex:1.3; text-align:right; font-size:.88rem; font-weight:600; line-height:1.45;}
   .card .nomes small{display:block; font-weight:300; color:var(--texto-suave); font-size:.72rem;}
   .casal{
     display:inline-block; background:rgba(240,131,74,.12); border:1px solid rgba(240,131,74,.35);
     color:var(--laranja-claro); border-radius:999px; padding:1px 9px;
-    font-size:.66rem; font-weight:600; margin-left:5px; vertical-align:middle;
+    font-size:.64rem; font-weight:600; margin-left:5px; vertical-align:middle;
   }
   .todos{color:var(--laranja); letter-spacing:2px;}
   .aviso{
     background:rgba(224,85,85,.08); border:1px solid rgba(224,85,85,.3);
-    color:#EFA0A0; border-radius:12px; padding:12px 16px; font-size:.78rem;
-    text-align:center; margin-top:8px; line-height:1.6;
+    color:#EFA0A0; border-radius:12px; padding:12px 16px; font-size:.76rem;
+    text-align:center; margin-top:14px; line-height:1.6;
   }
+  .lideranca{text-align:center; margin-top:14px; font-size:.74rem; color:var(--texto-suave); line-height:1.6;}
+  .lideranca b{color:var(--branco);}
   .voltar{
-    display:block; text-align:center; margin:30px auto 0; max-width:280px;
+    display:block; text-align:center; margin:26px auto 0; max-width:280px;
     padding:13px; border:1px solid var(--laranja); border-radius:999px;
     color:var(--laranja); text-decoration:none; font-weight:600; font-size:.85rem; letter-spacing:1px;
   }
@@ -91,23 +111,13 @@
   footer{text-align:center; padding:26px 20px 36px; color:var(--texto-suave); font-size:.7rem; letter-spacing:2px; text-transform:uppercase; font-weight:300;}
   footer span{color:var(--laranja);}
 
-  /* ===== Celular: tudo mais compacto ===== */
   @media (max-width:520px){
-    .hero{padding:20px 14px 4px;}
-    .hero .logo{width:82px; height:82px;}
-    .hero .logo.recortada{width:90px;}
-    .hero h1{font-size:1.35rem; margin-top:8px;}
-    .hero .lema{font-size:.66rem; letter-spacing:2px;}
-    .data-badge{margin-top:10px; padding:6px 16px; font-size:.74rem; letter-spacing:1px;}
-    .infos{gap:6px; margin-top:12px;}
-    .infos .chip{flex:1 1 100%; padding:7px 12px; font-size:.7rem; text-align:center;}
-    .infos .chip b{display:inline; margin-right:5px; font-size:.72rem;}
+    .hero{padding:14px 14px 0; gap:12px;}
+    .hero .logo{width:56px; height:56px;}
+    .hero .logo.recortada{width:auto; height:56px; max-width:74px;}
     main{padding:12px 12px 40px;}
-    .secao{margin:18px 4px 10px; font-size:.95rem;}
-    .card{flex-direction:column; align-items:flex-start; gap:5px; padding:11px 14px;}
+    .card{flex-direction:column; align-items:flex-start; gap:4px;}
     .card .nomes{text-align:left; font-size:.85rem;}
-    .aviso{font-size:.72rem; padding:10px 12px;}
-    .voltar{margin-top:22px; padding:11px; font-size:.8rem;}
   }
 </style>
 </head>
@@ -115,49 +125,16 @@
 
 <div class="hero">
   <img src="logo1.png" alt="Aliançados" class="logo" id="logo-img">
-  <h1>ESCALA DE <span>DOMINGO</span></h1>
-  <div class="lema">Equipe Efraim — Obreiros</div>
-  <div class="data-badge">📅 26/07/2026 · Culto 18h00</div>
-  <div class="infos">
-    <div class="chip"><b>⏰ Chegada</b>17h00</div>
-    <div class="chip"><b>👕 Uniforme</b>Camiseta de servo + colete + calça jeans/preta + tênis ou sapato fechado baixo</div>
-    <div class="chip"><b>🙏 Liderança</b>Clebson e Letícia · Colíderes: Antônio e Laura</div>
+  <div>
+    <h1>ESCALA DA <span>SEMANA</span></h1>
+    <div class="lema">Equipe 02 Efraim · Obreiros</div>
   </div>
 </div>
 
 <main>
-  <div class="secao">Funções<div class="faixa"></div></div>
-
-  <div class="card"><div class="funcao">Backstage</div><div class="nomes">Martina Mendes</div></div>
-  <div class="card"><div class="funcao">Mesa de Apoio / Máquinas e Envelopes</div><div class="nomes">Hamilton e Miss Layne<span class="casal">casal</span></div></div>
-  <div class="card"><div class="funcao">Reservados</div><div class="nomes">Letícia e Laura</div></div>
-  <div class="card"><div class="funcao">Bebedouros</div><div class="nomes">Jaqueline e Marco Maia</div></div>
-  <div class="card"><div class="funcao">Caixa da Primícia</div><div class="nomes">Lígia</div></div>
-  <div class="card"><div class="funcao">Ofertório</div><div class="nomes todos">TODOS</div></div>
-  <div class="card"><div class="funcao">Gazofilácio — Frente ao Altar</div><div class="nomes">Lado D: Felipe Bianchezzi<small>Lado E: Denilson</small></div></div>
-  <div class="card"><div class="funcao">Gazofilácio — Meio da Igreja (Pilar)</div><div class="nomes">Lado D: Igor<small>Lado E: José Eduardo</small></div></div>
-  <div class="card"><div class="funcao">Banheiro Feminino</div><div class="nomes">Dri Gamarra e Simone</div></div>
-  <div class="card"><div class="funcao">Banheiro Masculino</div><div class="nomes">Marco Maia e Felipe Bianchezzi</div></div>
-  <div class="card"><div class="funcao">Organização do Templo</div><div class="nomes todos">TODOS</div></div>
-  <div class="card"><div class="funcao">Oração Final</div><div class="nomes todos">TODOS</div></div>
-
-  <div class="secao">Lateral Esquerda — Portas de Entrada<div class="faixa"></div></div>
-  <div class="card"><div class="funcao">Porta da Frente / Meio</div><div class="nomes">Antônio e Laura<span class="casal">casal</span></div></div>
-  <div class="card"><div class="funcao">Porta do Fundo</div><div class="nomes">Alessandra, Janice Aguilhera e Daiane Colman</div></div>
-  <div class="card"><div class="funcao">Porta da Frente / Primeira</div><div class="nomes">Rebeca e Martina Mendes</div></div>
-  <div class="card"><div class="funcao">Fundos</div><div class="nomes">Jugleyde Pompeo e Kátia</div></div>
-
-  <div class="secao">Lado Direito — Banheiros e Mesa de Apoio<div class="faixa"></div></div>
-  <div class="card"><div class="funcao">Mesa de Apoio</div><div class="nomes">José Luis e Marina Corrêa<span class="casal">casal</span><small>Jaqueline e Marco Maia</small></div></div>
-  <div class="card"><div class="funcao">Em Frente ao Altar</div><div class="nomes">Raphael Nunes e Lígia<span class="casal">casal</span></div></div>
-  <div class="card"><div class="funcao">Meio para o Fundo</div><div class="nomes">Wagner e Fernanda<span class="casal">casal</span><small>Reinaldo e Cristiane <span class="casal">casal</span> · Jackson e Thays <span class="casal">casal</span></small></div></div>
-
-  <div class="aviso">
-    ⚠️ Não se aglomerar perto da mesa de apoio — é corredor de acesso aos banheiros e gabinete.<br>
-    Distribuam-se por toda a lateral e fundo da igreja · Evitar conversas paralelas.
-  </div>
-
-  <a class="voltar" href="index.html">← Confirmar disponibilidade</a>
+  <div class="cultos" id="cultos"></div>
+  <div id="conteudo"></div>
+  <a class="voltar" href="index.html" id="voltar" style="display:none">← Painel da liderança</a>
 </main>
 
 <footer>Aliançados · <span>Lugar de Crescimento</span> · 2026 · equipeefraim.com.br</footer>
@@ -165,13 +142,188 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
 <script>
-/* Página restrita: sem sessão válida, vai para o login */
+/* ================================================================
+   Escala da semana da Equipe 02 (dom 18h → qua 19h30 → dom 9h).
+   Para publicar a próxima escala, basta trocar os dados de ESCALAS
+   abaixo (a mesma lista do Excel/PDF gerados na pasta ALIANÇADOS).
+   ================================================================ */
+const LIDERANCA = "Líderes: Clebson e Letícia · Colíderes: Antônio e Laura";
+const AVISOS = [
+  "Não se aglomerar perto da mesa de apoio: é corredor de acesso aos banheiros e ao gabinete.",
+  "Distribuam-se por toda a lateral e fundo da igreja. Evitar conversas paralelas.",
+  "Não permitir que crianças fiquem correndo, orientando sempre os pais quando ocorrer.",
+  "Horário de chegada: 1 hora antes do culto."
+];
+const UNI_NOITE = "Camiseta de servo + colete + calça jeans ou preta + tênis/sapato fechado baixo";
+const UNI_MANHA = "Camiseta de servo + calça jeans ou preta + tênis/sapato fechado baixo";
+const G_ESQ = "Lateral esquerda · portas de entrada";
+const G_DIR = "Lateral direita · banheiro e mesa de apoio";
+
+const ESCALAS = [
+  { data:"2026-10-04", hora:"18h00", inicio:18, dia:"Domingo", curto:"DOM", culto:"Culto da Família", chegada:"17h00", uniforme:UNI_NOITE,
+    grupos:[
+      ["Funções", [
+        ["Backstage", "Martina Mendes", "Suporte ao altar, microfone e mesa de apoio do pregador."],
+        ["Mesa de apoio / Máquinas e envelopes", "Hamilton e Miss Layne (casal)", "Conferir e carregar as máquinas, bobinas e envelopes. Recolher após o culto."],
+        ["Reservados", "Letícia e Laura", "Cadeiras da frente e dos levitas. Recolher após o culto."],
+        ["Bebedouros e corredor", "Jaqueline e Marco Maia", "Copos, secar a água, circulação para as salas restritas."],
+        ["Caixa da primícia", "Valéria", "Após o ofertório, entregar à liderança."],
+        ["Máquinas da primícia", "Hamilton"],
+        ["Máquina de ofertório para os pastores no altar", "Kátia"],
+        ["Ofertório", "TODOS", "Cada um atende o lado em que está. Ao terminar, ajuda o outro lado."],
+        ["Gazofilácio em frente ao altar", "Lado D: Felipe Bianchezzi · Lado E: Denilson", "Quem está no gazofilácio não passa máquina nem envelope."],
+        ["Gazofilácio no meio da igreja (pilar)", "Lado D: Igor · Lado E: José Eduardo"],
+        ["Banheiro feminino", "Dri Gamarra e Simone", "Orientar crianças e visitantes, repor insumos, recolher os lixos."],
+        ["Banheiro masculino", "Marco Maia e Jesus"],
+        ["Organização do templo", "TODOS", "Alinhar cadeiras, recolher lixos e envelopes, cortinas, ar, portas e luzes."],
+        ["Organização da sala dos obreiros", "Liderança"],
+        ["Oração final", "TODOS"]
+      ]],
+      [G_ESQ, [
+        ["Porta da frente / meio", "Antônio e Laura (casal)"],
+        ["Porta da frente / primeira", "Jugleyde Pompeo e Milene"],
+        ["Porta do fundo", "Alessandra, Daiane Colman e Renata"],
+        ["Fundos", "Kátia e Jhuli"]
+      ]],
+      [G_DIR, [
+        ["Mesa de apoio / banheiro", "Clebson, José Luis e Marina Corrêa (casal), Jaqueline e Marco Maia"],
+        ["Em frente ao altar", "Jackson e Thays (casal)"],
+        ["Meio para o fundo", "Reinaldo e Cristiane (casal), Valéria"]
+      ]]
+    ]},
+  { data:"2026-10-07", hora:"19h30", inicio:19.5, dia:"Quarta-feira", curto:"QUA", culto:"Quarta Profética", chegada:"18h30", uniforme:UNI_NOITE,
+    grupos:[
+      ["Funções", [
+        ["Acompanhar o pregador da noite", "Reinaldo e Cristiane (casal)", "Do gabinete ao altar no início e do altar à saída no final."],
+        ["Backstage", "Alessandra", "Suporte ao altar, microfone e mesa de apoio do pregador."],
+        ["Púlpito", "Igor e Jesus", "Colocar e retirar ao sinal do backstage."],
+        ["Mesa de apoio / Máquinas e envelopes", "José Luis e Marina Corrêa (casal)", "Conferir e carregar as máquinas, bobinas e envelopes. Recolher após o culto."],
+        ["Reservados", "Letícia e Laura", "Cadeiras da frente e dos levitas. Recolher após o culto."],
+        ["Bebedouros e corredor", "José Eduardo e Simone", "Copos, secar a água, circulação para as salas restritas."],
+        ["Nave da igreja: microfone e mão no coração", "Hamilton e Miss Layne (casal), Jackson e Thays (casal)", "Obreiras com as mulheres, obreiros com os homens."],
+        ["Organizar as pessoas embaixo do altar em fileiras e baldes", "TODOS"],
+        ["Ofertório", "TODOS", "Cada um atende o lado em que está. Ao terminar, ajuda o outro lado."],
+        ["Máquina de ofertório para os pastores no altar", "Kátia"],
+        ["Caixa da primícia", "Jugleyde Pompeo", "Após o ofertório, entregar à liderança."],
+        ["Gazofilácio em frente ao altar", "Lado D: Denilson · Lado E: Felipe Bianchezzi", "Quem está no gazofilácio não passa máquina nem envelope."],
+        ["Gazofilácio no meio da igreja (pilar)", "Lado D: Marco Maia · Lado E: Igor"],
+        ["Banheiro feminino", "Daiane Colman e Renata", "Orientar crianças e visitantes, repor insumos, recolher os lixos."],
+        ["Banheiro masculino", "Jesus e Felipe Bianchezzi"],
+        ["Apelo", "TODOS", "Acompanhar e, se preciso, anotar nomes. Homem acompanha homem, mulher acompanha mulher."],
+        ["Organização do templo", "TODOS", "Alinhar cadeiras, recolher lixos e envelopes, cortinas, ar, portas e luzes."],
+        ["Oração final", "TODOS"]
+      ]],
+      [G_ESQ, [
+        ["Porta da frente / meio", "Antônio e Laura (casal)"],
+        ["Porta do fundo", "Martina Mendes e Milene"],
+        ["Meio para o fundo", "Dri Gamarra e Jhuli"]
+      ]],
+      [G_DIR, [
+        ["Mesa de apoio / banheiro", "Clebson e Letícia (casal)"],
+        ["Em frente ao altar", "Valéria e Jaqueline"],
+        ["Meio para o fundo", "Reinaldo e Cristiane (casal)"]
+      ]]
+    ]},
+  { data:"2026-10-11", hora:"9h00", inicio:9, dia:"Domingo", curto:"DOM", culto:"Culto da Família (manhã)", chegada:"8h00", uniforme:UNI_MANHA,
+    grupos:[
+      ["Funções", [
+        ["Backstage", "Jaqueline", "Suporte ao altar, microfone e mesa de apoio do pregador."],
+        ["Mesa de apoio / Máquinas e envelopes", "Clebson e Letícia (casal)", "Conferir e carregar as máquinas, bobinas e envelopes. Recolher após o culto."],
+        ["Reservados", "Laura", "Cadeiras da frente e dos levitas. Recolher após o culto."],
+        ["Bebedouros e corredor", "Jackson e Thays (casal)", "Copos, secar a água, circulação para as salas restritas."],
+        ["Caixa da primícia", "Miss Layne", "Após o ofertório, entregar à liderança."],
+        ["Máquinas da primícia", "Hamilton"],
+        ["Máquina de ofertório para os pastores no altar", "Kátia"],
+        ["Ofertório", "TODOS", "No culto de Santa Ceia há oferta missionária no final."],
+        ["Gazofilácio em frente ao altar", "Lado D: Jesus · Lado E: José Eduardo", "Quem está no gazofilácio não passa máquina nem envelope."],
+        ["Gazofilácio no meio da igreja (pilar)", "Lado D: Igor · Lado E: Denilson"],
+        ["Banheiro feminino", "Dri Gamarra e Jhuli", "Orientar crianças e visitantes, repor insumos, recolher os lixos."],
+        ["Banheiro masculino", "Felipe Bianchezzi e Marco Maia"],
+        ["Organização do templo", "TODOS", "Alinhar cadeiras, recolher lixos e envelopes, cortinas, ar, portas e luzes."],
+        ["Organização da sala dos obreiros", "Liderança"],
+        ["Oração final", "TODOS"]
+      ]],
+      [G_ESQ, [
+        ["Frente", "Antônio e Laura (casal), Martina Mendes"],
+        ["Meio para o fundo", "Alessandra, Simone e Milene"]
+      ]],
+      [G_DIR, [
+        ["Frente", "José Luis e Marina Corrêa (casal), Jugleyde Pompeo"],
+        ["Meio para o fundo", "Reinaldo e Cristiane (casal), Daiane Colman, Valéria e Renata"],
+        ["Cortinas", "Liderança", "Abrir as cortinas conforme a demanda."]
+      ]]
+    ]}
+];
+
+/* ---------- utilidades ---------- */
+const MESES = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function normal(s){ return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace("jakcson", "jackson").trim(); }
+function dataLonga(iso){ const p = iso.split("-"); return p[2] + "/" + p[1] + "/" + p[0]; }
+function fimDoCulto(c){ const d = new Date(c.data + "T00:00:00"); d.setHours(0, Math.round((c.inicio + 3) * 60)); return d; }
+
+/* nomes: "(casal)" vira etiqueta; "Lado D · Lado E" quebra em duas linhas; TODOS em destaque */
+function nomesHTML(n){
+  if(n === "TODOS" || n === "Liderança") return '<span class="todos">' + n.toUpperCase() + '</span>';
+  let h = esc(n).replace(/ \(casal\)/g, '<span class="casal">casal</span>');
+  if(h.includes(" · Lado E:")){ const [a, b] = h.split(" · "); h = a + "<small>" + b + "</small>"; }
+  return h;
+}
+function ehMinha(n){
+  if(!PERFIL || !PERFIL.nome) return false;
+  const eu = normal(PERFIL.nome);
+  return eu.length > 2 && normal(n).includes(eu);
+}
+
+function montar(i){
+  const c = ESCALAS[i];
+  document.querySelectorAll("#cultos button").forEach((b, j) => b.classList.toggle("ativo", j === i));
+  const minhas = [];
+  let html = '<div class="titulo-culto"><b>' + c.dia + ', ' + dataLonga(c.data).slice(0, 5) + ' · ' + c.hora + '</b><span>' + esc(c.culto) + '</span></div>' +
+    '<div class="infos">' +
+      '<div class="chip"><b>⏰ Chegada</b>' + c.chegada + ' (1 hora antes)</div>' +
+      '<div class="chip"><b>👕 Uniforme</b>' + esc(c.uniforme) + '</div>' +
+    '</div>';
+  let cartoes = "";
+  c.grupos.forEach(([titulo, itens]) => {
+    cartoes += '<div class="secao">' + esc(titulo) + '<div class="faixa"></div></div>';
+    itens.forEach(([funcao, nomes, dica]) => {
+      const minha = ehMinha(nomes);
+      if(minha) minhas.push(funcao);
+      cartoes += '<div class="card' + (minha ? " sua" : "") + '"><div class="funcao">' + esc(funcao) + (dica ? '<small>' + esc(dica) + '</small>' : '') + '</div>' +
+                 '<div class="nomes">' + nomesHTML(nomes) + '</div></div>';
+    });
+  });
+  if(minhas.length){
+    html += '<div class="minha"><b>Sua função neste culto</b><span>' + minhas.map(esc).join(" · ") + '</span>' +
+            '<br>Chegue às ' + c.chegada + '. Os cartões em verde são os seus.</div>';
+  }
+  html += cartoes +
+    '<div class="aviso">' + AVISOS.map(esc).join("<br>") + '</div>' +
+    '<div class="lideranca"><b>' + esc(LIDERANCA) + '</b></div>';
+  document.getElementById("conteudo").innerHTML = html;
+}
+
+function montarSeletor(){
+  const agora = new Date();
+  const cx = document.getElementById("cultos");
+  cx.innerHTML = ESCALAS.map((c, i) => {
+    const p = c.data.split("-");
+    return '<button type="button"' + (fimDoCulto(c) < agora ? ' class="passou"' : '') + ' onclick="montar(' + i + ')">' +
+           '<small>' + c.curto + '</small><b>' + p[2] + '/' + p[1] + '</b><i>' + c.hora + '</i></button>';
+  }).join("");
+  /* abre no próximo culto que ainda não aconteceu */
+  let i = ESCALAS.findIndex(c => fimDoCulto(c) >= agora);
+  montar(i < 0 ? ESCALAS.length - 1 : i);
+}
+
+/* ---------- Início: exige login (obreiro e liderança veem a escala) ---------- */
 (async function(){
   const perfil = await exigirLogin();
   if(!perfil) return;
-  /* Escala é só da liderança; obreiro vai para o devocional */
-  if(!EH_LIDER()){ location.replace("devocional.html"); return; }
   montarBarraUsuario();
+  if(EH_LIDER()) document.getElementById("voltar").style.display = "block";
+  montarSeletor();
 })();
 </script>
 

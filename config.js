@@ -143,7 +143,7 @@ function montarNavInferior(){
   const pag = location.pathname.split("/").pop() || "index.html";
   const itens = EH_LIDER()
     ? [["inicio","Início","index.html"],["devocional","Devocional","devocional.html"],["celulas","Células","celulas.html"],["escala","Escala","escala.html"],["perfil","Perfil",""]]
-    : [["inicio","Início","devocional.html"],["devocional","Plano","devocional.html#todos"],["celulas","Células","celulas.html"],["perfil","Perfil",""]];
+    : [["inicio","Início","devocional.html"],["devocional","Plano","devocional.html#todos"],["celulas","Células","celulas.html"],["escala","Escala","escala.html"],["perfil","Perfil",""]];
   const nav = document.createElement("nav");
   nav.id = "nav-inferior";
   nav.innerHTML = itens.map(([ic, rot, href]) => {

@@ -454,7 +454,9 @@ async function carregarTudo(){
     /* datas definidas no painel + datas da escala publicada (config.js), sem repetir */
     let datas = await buscarDatas();
     if(typeof datasDaEscala === "function") datas = datas.concat(datasDaEscala());
-    datas = [...new Set(datas)].sort();
+    /* só de hoje em diante: escala que já passou não aparece mais */
+    const hj = new Date(), hojeISO = hj.getFullYear() + "-" + String(hj.getMonth()+1).padStart(2,"0") + "-" + String(hj.getDate()).padStart(2,"0");
+    datas = [...new Set(datas)].filter(d => d >= hojeISO).sort();
     DATAS = datas.map(d => ({ data: d, rotulo: rotuloData(d) }));
   }catch(e){
     DATAS = [];

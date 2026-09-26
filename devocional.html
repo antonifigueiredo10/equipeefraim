@@ -90,21 +90,6 @@
   button.marcar:disabled{opacity:.55; cursor:default;}
   button.marcar.feita{background:transparent; border:1px solid var(--verde); color:var(--verde); box-shadow:none;}
 
-  /* ---- Cartões pequenos ---- */
-  .cards{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;}
-  .cards .box{
-    flex:1; min-width:110px; background:var(--preto-card); border:1px solid var(--cinza-borda);
-    border-radius:14px; padding:14px 10px; text-align:center;
-  }
-  .cards .box b{display:block; font-size:1.35rem; color:var(--laranja); font-family:'Playfair Display',serif;}
-  .cards .box span{font-size:.66rem; color:var(--texto-suave); text-transform:uppercase; letter-spacing:1px;}
-
-  .barra-progresso{
-    height:7px; background:#0F0F12; border:1px solid var(--cinza-borda);
-    border-radius:999px; overflow:hidden; margin-top:12px;
-  }
-  .barra-progresso i{display:block; height:100%; background:linear-gradient(90deg, var(--laranja), var(--verde)); border-radius:999px;}
-
   /* ---- Lista de leituras ---- */
   .leitura{
     display:flex; align-items:center; gap:12px;
@@ -159,7 +144,6 @@
   .proxima .px-prog i{display:block; height:100%; background:linear-gradient(90deg,var(--laranja),var(--verde));}
   .proxima .px-sub{font-size:.7rem; color:var(--texto-suave); margin-top:5px;}
   #meus-dias-sec h2.secao{margin-top:10px;}
-  .box-celulas .bc-tit{display:none;}
   .cobertura{
     background:linear-gradient(160deg,#1C1C21,var(--preto-card)); border:1px solid var(--cinza-borda);
     border-radius:16px; padding:6px 18px 16px;
@@ -171,11 +155,6 @@
   .cobertura .cb-item b{display:block; font-size:.95rem; font-weight:600; margin-top:3px;}
   .cobertura .cb-vers{margin-top:12px; font-family:'Playfair Display',serif; font-style:italic; font-size:.82rem; color:var(--texto-suave); line-height:1.6;}
   .cobertura .cb-vers span{font-family:'Poppins',sans-serif; font-style:normal; font-weight:700; color:var(--laranja); font-size:.72rem; margin-left:4px;}
-  .btn-todos{
-    display:block; width:100%; margin:18px 0 6px; padding:15px; border-radius:14px; cursor:pointer;
-    background:linear-gradient(135deg, var(--laranja), var(--laranja-escuro)); border:none; color:#fff;
-    font:700 .82rem 'Poppins',sans-serif; letter-spacing:1px; box-shadow:0 6px 24px rgba(240,131,74,.3);
-  }
 
   .acoes{display:flex; gap:8px; margin-top:18px; flex-wrap:wrap;}
   .acoes a, .acoes button{
@@ -236,12 +215,13 @@
 </div>
 
 <main>
-  <!-- Obreiro: primeiro só os dias dele; a lista de todos fica logo abaixo -->
+  <!-- Início do obreiro: a próxima leitura e os 3 próximos dias. O Plano (menu de baixo) mostra o resto -->
   <section id="meus-dias-sec">
     <div id="proxima" class="proxima"></div>
-    <h2 class="secao"><span class="ic" data-ic="calendar"></span>Seus dias de devocional</h2>
-    <div id="meus-dias"></div>
-    <button type="button" class="btn-todos" id="btn-todos" onclick="alternarTodos()">VER A LISTA COMPLETA DE TODOS</button>
+    <div id="seus-dias-bloco">
+      <h2 class="secao"><span class="ic" data-ic="calendar"></span>Seus próximos dias de devocional</h2>
+      <div id="meus-dias"></div>
+    </div>
   </section>
 
   <div id="resto">
@@ -249,10 +229,6 @@
   <div class="hoje" id="hoje">
     <div class="quando">carregando...</div>
   </div>
-
-  <h2 class="secao"><span class="ic" data-ic="chart"></span>Como a equipe está</h2>
-  <div class="cards" id="cards"></div>
-  <div class="barra-progresso"><i id="barra" style="width:0%"></i></div>
 
   <h2 class="secao"><span class="ic" data-ic="clock"></span>Próximas leituras</h2>
   <div id="proximas"></div>
@@ -269,10 +245,7 @@
   </div>
   </div><!-- /resto -->
 
-  <!-- Depois do devocional: células perto e a cobertura pastoral -->
-  <h2 class="secao"><span class="ic" data-ic="pin"></span>Células perto de você</h2>
-  <div id="box-celulas"></div>
-
+  <!-- Depois do devocional: a cobertura pastoral -->
   <h2 class="secao"><span class="ic" data-ic="church"></span>Cobertura pastoral</h2>
   <div class="cobertura">
     <div class="cb-item"><span class="ic" data-ic="crown"></span><div><small>Apóstolos</small><b>Ap. Denilson Fonseca &amp; Apª. Elisa Fonseca</b></div></div>
@@ -373,22 +346,6 @@ async function alternarLeitura(data, botao){
   }
 }
 
-/* ---------- Progresso ---------- */
-function montarCards(){
-  const hoje = hojeISO();
-  const passadas = PLANO.filter(l => l.data <= hoje);
-  const feitas = FEITAS.filter(l => l.data <= hoje).length;
-  const pct = passadas.length ? Math.round(feitas / passadas.length * 100) : 0;
-  const minhasTotal = PLANO.filter(l => l.nome === PERFIL.nome).length;
-  const minhasFeitas = MINHAS.size;
-
-  document.getElementById("cards").innerHTML =
-    '<div class="box"><b>' + feitas + '/' + passadas.length + '</b><span>leituras da equipe</span></div>' +
-    '<div class="box"><b>' + minhasFeitas + '/' + minhasTotal + '</b><span>as suas</span></div>' +
-    '<div class="box"><b>' + PLANO.length + '</b><span>no plano todo</span></div>';
-  document.getElementById("barra").style.width = pct + "%";
-}
-
 /* ---------- Listas ---------- */
 function linhaLeitura(l, hoje){
   const d = dataCurta(l.data);
@@ -457,19 +414,22 @@ function pintarIcones(raiz){
   (raiz || document).querySelectorAll(".ic[data-ic]").forEach(el => { if(!el.firstChild) el.innerHTML = icone(el.dataset.ic); });
 }
 
-/* Links da barra inferior: #todos abre a lista completa */
-function irParaAncora(){
-  const h = location.hash;
-  if(h === "#todos"){
-    if(document.getElementById("resto").style.display === "none") alternarTodos();
-    else document.getElementById("resto").scrollIntoView({ behavior: "smooth" });
+/* Duas vistas na mesma página, pela barra de baixo:
+   Início (sem #)  = próxima leitura + seus 3 próximos dias
+   Plano  (#todos) = leitura de hoje, próximas leituras, plano completo e PDFs */
+function mostrarVista(){
+  const plano = location.hash === "#todos";
+  if(!EH_LIDER()){
+    document.getElementById("seus-dias-bloco").style.display = plano ? "none" : "block";
+    document.getElementById("resto").style.display = plano ? "block" : "none";
   }
   document.querySelectorAll("#nav-inferior .ni").forEach(a => {
     const href = a.getAttribute("href");
-    a.classList.toggle("ativo", h ? href === "devocional.html" + h : href === "devocional.html");
+    a.classList.toggle("ativo", plano ? href === "devocional.html#todos" : href === "devocional.html");
   });
+  if(plano) window.scrollTo({ top: 0 });
 }
-window.addEventListener("hashchange", irParaAncora);
+window.addEventListener("hashchange", mostrarVista);
 
 /* Cartão de destaque: a próxima leitura do obreiro */
 function montarProxima(){
@@ -530,26 +490,16 @@ function montarMeusDias(){
   }
   const vindo   = meus.filter(l => l.data >= hoje);
   const pendent = meus.filter(l => l.data < hoje && !MINHAS.has(l.data));
-  const feitas  = meus.filter(l => l.data < hoje && MINHAS.has(l.data));
-  let html = vindo.length ? vindo.map(l => linhaMinha(l, hoje)).join("")
+  /* sempre os 3 próximos dias; o que ficou para trás sem marcar aparece logo abaixo */
+  let html = vindo.length ? vindo.slice(0, 3).map(l => linhaMinha(l, hoje)).join("")
                           : "<p style='color:var(--texto-suave); font-size:.85rem;'>Você não tem mais leituras até o fim do plano. 🙌</p>";
   if(pendent.length) html += '<div class="sub-secao">Ficaram para trás</div>' + pendent.map(l => linhaMinha(l, hoje)).join("");
-  if(feitas.length)  html += '<div class="sub-secao">Já lidas</div>' + feitas.map(l => linhaMinha(l, hoje)).join("");
   cx.innerHTML = html;
-}
-
-function alternarTodos(){
-  const resto = document.getElementById("resto");
-  const abrindo = resto.style.display === "none";
-  resto.style.display = abrindo ? "block" : "none";
-  document.getElementById("btn-todos").textContent = abrindo ? "▲ ESCONDER A LISTA DE TODOS" : "VER A LISTA COMPLETA DE TODOS";
-  if(abrindo) resto.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function montarTudo(){
   if(!EH_LIDER()){ montarProxima(); montarMeusDias(); }
   montarHoje();
-  montarCards();
   montarProximas();
   montarPlanoTodo(document.getElementById("busca").value);
 }
@@ -561,18 +511,18 @@ function montarTudo(){
   /* "Voltar" só faz sentido para a liderança (obreiro só tem o devocional) */
   if(!EH_LIDER()){
     document.querySelectorAll(".voltar").forEach(a => a.style.display = "none");
-    /* Obreiro vê primeiro os próprios dias; a lista de todos abre pelo botão */
+    /* Obreiro: o Início mostra os próprios dias; o Plano (menu de baixo) mostra o resto */
     document.getElementById("meus-dias-sec").style.display = "block";
     document.getElementById("resto").style.display = "none";
   }
   pintarIcones();
   montarBarraUsuario();
-  montarBoxCelulas(document.getElementById("box-celulas"));
+  mostrarVista();
   try{
     await carregarPlano();
     montarTudo();
-    if(location.hash) setTimeout(irParaAncora, 300);
   }catch(e){
+    document.getElementById("resto").style.display = "block";
     document.getElementById("hoje").innerHTML =
       '<div class="quando">Ops</div><div class="aviso">' + e.message +
       '<br>Se a mensagem falar em tabela inexistente, o plano ainda não foi carregado no banco.</div>';

@@ -154,11 +154,6 @@
     <label for="nome-cadastro">Seu nome</label>
     <select id="nome-cadastro" required><option value="">Selecione seu nome...</option></select>
 
-    <label for="codigo">Código de acesso</label>
-    <input type="text" id="codigo" placeholder="Ex.: A7K2QD" autocomplete="off"
-           maxlength="10" style="text-transform:uppercase; letter-spacing:3px;" required>
-    <p class="dica">Código de 6 letras/números que a liderança enviou para você no privado. Ele só funciona uma vez.</p>
-
     <label for="senha-nova">Crie sua senha</label>
     <input type="password" id="senha-nova" placeholder="Mínimo de 6 caracteres"
            minlength="6" autocomplete="new-password" required>
@@ -258,7 +253,6 @@ async function cadastrar(ev){
   ev.preventDefault();
   limpar("msg-cadastro");
   const nome   = document.getElementById("nome-cadastro").value;
-  const codigo = document.getElementById("codigo").value.trim().toUpperCase();
   const senha  = document.getElementById("senha-nova").value;
   const conf   = document.getElementById("senha-conf").value;
   const btn    = document.getElementById("btn-cadastro");
@@ -270,7 +264,7 @@ async function cadastrar(ev){
   const { error } = await sb.auth.signUp({
     email: emailDe(nome),
     password: senha,
-    options: { data: { nome: nome, codigo: codigo } }
+    options: { data: { nome: nome } }
   });
   btn.disabled = false;
 
@@ -280,9 +274,9 @@ async function cadastrar(ev){
       mostrar("msg-cadastro", "erro",
         "Você já criou sua senha antes. Use a aba ENTRAR. Se esqueceu a senha, fale com a liderança.");
     }else{
-      // A trigger do banco recusa códigos inválidos/já usados
+      // A trigger do banco recusa nome fora da lista ou que já criou senha
       mostrar("msg-cadastro", "erro",
-        "Código inválido, já utilizado, ou não corresponde ao nome escolhido. Confira com a liderança.");
+        "Não foi possível criar a senha para este nome. Se você já criou antes, use a aba ENTRAR; senão, fale com a liderança.");
     }
     return;
   }

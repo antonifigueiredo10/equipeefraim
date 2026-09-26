@@ -330,6 +330,8 @@
         <div id="msg-obreiros" class="msg"></div>
       </div>
 
+      <div id="pedidos-senha"></div>
+
       <div id="codigo-novo" class="codigo-caixa"></div>
 
       <div class="resumo" id="resumo-obreiros"></div>
@@ -604,14 +606,13 @@ function limparMsgObreiros(){ document.getElementById("msg-obreiros").className 
 /* Mostra o código gerado, com o recado pronto para o WhatsApp */
 function mostrarCodigo(nome, codigo, titulo){
   const cx = document.getElementById("codigo-novo");
-  const recado = "Paz, " + nome.split(" ")[0] + "! Entre em https://equipeefraim.com.br , " +
-                 "toque em PRIMEIRO ACESSO, escolha seu nome, digite o código " + codigo +
-                 " e crie sua senha. Esse código é só seu e funciona uma única vez.";
+  const recado = "Paz, " + nome.split(" ")[0] + "! Seu acesso ao site foi liberado. Entre em https://equipeefraim.com.br , " +
+                 "toque em PRIMEIRO ACESSO, escolha seu nome e crie sua senha nova.";
   cx.innerHTML =
-    '<div class="rotulo">' + titulo + ' — ' + nome + '</div>' +
-    '<div class="valor">' + codigo + '</div>' +
-    '<div class="aviso">Mande <b>no privado</b>, nunca no grupo.<br>' +
-    'Ele funciona uma vez só e substitui qualquer código anterior.</div>' +
+    '<div class="rotulo">' + titulo + '</div>' +
+    '<div class="valor" style="font-size:1.4rem;letter-spacing:1px;">' + nome + '</div>' +
+    '<div class="aviso">Avise a pessoa <b>agora</b>: enquanto ela não criar a senha,<br>' +
+    'o nome fica livre em PRIMEIRO ACESSO.</div>' +
     '<button type="button" id="btn-copiar-codigo">copiar recado do WhatsApp</button>';
   cx.style.display = "block";
   document.getElementById("btn-copiar-codigo").onclick = function(){
@@ -623,7 +624,31 @@ function mostrarCodigo(nome, codigo, titulo){
   cx.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
+/* Pedidos de nova senha feitos na tela de login */
+async function carregarPedidos(){
+  const cx = document.getElementById("pedidos-senha");
+  const { data, error } = await sb.from("pedidos_senha").select("nome,em").order("em");
+  if(error || !data || data.length === 0){ cx.innerHTML = ""; return []; }
+  cx.innerHTML = '<div class="card"><label>🔑 Pedidos de nova senha</label></div>';
+  const card = cx.firstChild;
+  data.forEach(p => {
+    const quando = new Date(p.em).toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
+    const div = document.createElement("div");
+    div.className = "obreiro";
+    div.innerHTML = '<div class="quem"><b>' + p.nome + '</b><span class="estado pendente">pediu em ' + quando + '</span></div>' +
+      '<div class="btns"><button data-a="liberar">liberar senha nova</button><button data-a="ignorar">ignorar</button></div>';
+    div.querySelector('[data-a=liberar]').onclick = e => acaoObreiro("redefinir", { nome: p.nome }, e.target);
+    div.querySelector('[data-a=ignorar]').onclick = async () => {
+      await sb.from("pedidos_senha").delete().eq("nome", p.nome);
+      carregarPedidos();
+    };
+    card.appendChild(div);
+  });
+  return data.map(p => p.nome);
+}
+
 async function carregarObreiros(){
+  carregarPedidos();
   const cont = document.getElementById("lista-obreiros");
   cont.innerHTML = "<p style='color:var(--texto-suave); font-size:.85rem;'>Carregando...</p>";
   try{
@@ -647,7 +672,7 @@ async function carregarObreiros(){
     const selo = o.papel === "lider" ? '<span class="selo">liderança</span>' : '';
     const estado = o.ativou
       ? '<span class="estado ativo">✓ acesso ativo</span>'
-      : '<span class="estado pendente">aguardando primeiro acesso · código ' + (o.codigo || "—") + '</span>';
+      : '<span class="estado pendente">aguardando primeiro acesso</span>';
 
     div.innerHTML =
       '<div class="quem"><b>' + o.nome + '</b>' + selo + estado + '</div>' +
@@ -668,7 +693,7 @@ async function acaoObreiro(acao, o, botao){
   limparMsgObreiros();
 
   const perguntas = {
-    redefinir: "Redefinir o acesso de " + o.nome + "?\n\nA senha atual dele deixa de valer e um código novo será gerado para ele criar outra.",
+    redefinir: "Liberar o nome de " + o.nome + " para criar senha nova?\n\nA senha atual deixa de valer. As leituras e respostas dele são guardadas e voltam quando ele criar a senha nova.",
     remover:   "Remover " + o.nome + " da equipe?\n\nO acesso e as respostas dele serão apagados. Isso não tem volta.",
     papel:     o.papel === "lider"
                  ? "Tirar a liderança de " + o.nome + "?\n\nEle deixa de ver as respostas dos outros e de administrar acessos."
@@ -683,8 +708,8 @@ async function acaoObreiro(acao, o, botao){
   try{
     if(acao === "redefinir"){
       const r = await chamarAdmin("redefinir", { nome: o.nome });
-      mostrarCodigo(o.nome, r.codigo, "Novo código de acesso");
-      msgObreiros("ok", "Acesso de " + o.nome + " redefinido.");
+      mostrarCodigo(o.nome, r.codigo, "Nome liberado para senha nova");
+      msgObreiros("ok", "Acesso de " + o.nome + " liberado. Ele cria a senha nova em PRIMEIRO ACESSO.");
     }
     if(acao === "remover"){
       await chamarAdmin("remover", { nome: o.nome });
@@ -713,7 +738,7 @@ async function adicionarObreiro(){
   try{
     const r = await chamarAdmin("adicionar", { nome });
     campo.value = "";
-    mostrarCodigo(nome, r.codigo, "Código de primeiro acesso");
+    mostrarCodigo(nome, r.codigo, "Incluído — já pode criar a senha");
     msgObreiros("ok", nome + " foi incluído na lista.");
     await carregarObreiros();
   }catch(e){

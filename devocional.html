@@ -114,6 +114,18 @@
   }
   .leitura .marcar-mini.feita{border-color:var(--verde); color:var(--verde);}
   .sub-secao{font-size:.7rem; color:var(--texto-suave); letter-spacing:2px; text-transform:uppercase; margin:16px 0 8px 2px;}
+  /* ---- Disponibilidade para a escala ---- */
+  .leitura.disp .opcoes{display:flex; gap:6px; flex:none;}
+  .leitura.disp .opcoes button{
+    padding:8px 13px; border-radius:999px; border:1px solid var(--cinza-borda); background:transparent;
+    color:var(--texto-suave); font:700 .68rem 'Poppins',sans-serif; letter-spacing:.5px; cursor:pointer;
+  }
+  .leitura.disp .opcoes button:disabled{opacity:.5;}
+  .leitura.disp .opcoes .op-sim.ativo{background:var(--verde); border-color:var(--verde); color:#fff;}
+  .leitura.disp .opcoes .op-nao.ativo{background:var(--vermelho); border-color:var(--vermelho); color:#fff;}
+  .leitura.disp.sim{border-color:rgba(61,187,122,.55);}
+  .leitura.disp.nao{border-color:rgba(224,85,85,.5);}
+  .disp-nota, .disp-vazio{font-size:.72rem; color:var(--texto-suave); margin:4px 2px 0; line-height:1.5;}
   #meus-dias-sec{display:none;}
   /* ---- Ícones (traço fino, laranja) ---- */
   .ic{display:inline-flex; align-items:center; justify-content:center; flex:none;}
@@ -221,6 +233,8 @@
     <div id="seus-dias-bloco">
       <h2 class="secao"><span class="ic" data-ic="calendar"></span>Seus próximos dias de devocional</h2>
       <div id="meus-dias"></div>
+      <h2 class="secao"><span class="ic" data-ic="check"></span>Você vai servir na escala?</h2>
+      <div id="disp-lista"></div>
     </div>
   </section>
 
@@ -497,6 +511,53 @@ function montarMeusDias(){
   cx.innerHTML = html;
 }
 
+/* ---------- Disponibilidade para a escala (vai direto para o quadro da liderança) ---------- */
+let DISP = {};   /* data -> "SIM" | "NÃO" */
+async function montarDisponibilidade(){
+  const cx = document.getElementById("disp-lista");
+  if(!cx) return;
+  let datas = [];
+  try{ const { data } = await sb.from("datas").select("data"); datas = (data || []).map(l => l.data); }catch(e){}
+  if(typeof datasDaEscala === "function") datas = datas.concat(datasDaEscala());
+  const hoje = hojeISO();
+  datas = [...new Set(datas)].filter(x => x >= hoje).sort();
+  if(!datas.length){ cx.innerHTML = "<p class='disp-vazio'>A liderança ainda não abriu as datas da próxima escala.</p>"; return; }
+  try{
+    const { data } = await sb.from("respostas").select("data,resposta").eq("user_id", SESSAO.user.id);
+    DISP = {}; (data || []).forEach(l => DISP[l.data] = l.resposta);
+  }catch(e){}
+  cx.innerHTML = datas.map(x => {
+    const c = (typeof cultoDaData === "function") ? cultoDaData(x) : null;
+    const dc = dataCurta(x);
+    const rot = c ? c.dia + " · " + c.hora : diaDaSemana(x);
+    const sub = c ? c.culto + " · chegada " + c.chegada : "";
+    const r = DISP[x] || "";
+    return '<div class="leitura disp' + (r === "SIM" ? " sim" : r === "NÃO" ? " nao" : "") + '" data-data="' + x + '">' +
+      '<div class="dia">' + dc.dia + '<small>' + dc.mes + '</small></div>' +
+      '<div class="meio"><b>' + rot + '</b><span>' + sub + '</span></div>' +
+      '<div class="opcoes">' +
+        '<button type="button" class="op-sim' + (r === "SIM" ? " ativo" : "") + '" onclick="responderDisp(\'' + x + '\',\'SIM\',this)">SIM</button>' +
+        '<button type="button" class="op-nao' + (r === "NÃO" ? " ativo" : "") + '" onclick="responderDisp(\'' + x + '\',\'NÃO\',this)">NÃO</button>' +
+      '</div></div>';
+  }).join("") + '<p class="disp-nota">Sua resposta vai direto para a liderança. Pode mudar quando precisar.</p>';
+}
+async function responderDisp(data, valor, btn){
+  const card = btn.closest(".disp");
+  card.querySelectorAll("button").forEach(b => b.disabled = true);
+  try{
+    const { error } = await sb.from("respostas").upsert(
+      { user_id: SESSAO.user.id, nome: PERFIL.nome, data, resposta: valor, em: new Date().toISOString() },
+      { onConflict: "user_id,data" });
+    if(error) throw error;
+    DISP[data] = valor;
+    card.classList.toggle("sim", valor === "SIM"); card.classList.toggle("nao", valor === "NÃO");
+    card.querySelectorAll("button").forEach(b => b.classList.toggle("ativo", b.textContent === valor));
+  }catch(e){
+    card.querySelector(".meio span").textContent = "Não deu certo agora. Tente de novo.";
+  }
+  card.querySelectorAll("button").forEach(b => b.disabled = false);
+}
+
 function montarTudo(){
   if(!EH_LIDER()){ montarProxima(); montarMeusDias(); }
   montarHoje();
@@ -518,6 +579,7 @@ function montarTudo(){
   pintarIcones();
   montarBarraUsuario();
   mostrarVista();
+  if(!EH_LIDER()) montarDisponibilidade();
   try{
     await carregarPlano();
     montarTudo();

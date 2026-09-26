@@ -363,6 +363,114 @@ async function montarBoxCelulas(el, quantas = 3){
   }
 }
 
+/* ======================= ESCALA DA SEMANA (dados) =======================
+   Usada por escala.html (a escala em si), devocional.html (o obreiro diz se vai
+   servir) e index.html (quadro de respostas da liderança). Para publicar a
+   próxima escala, troque a lista abaixo: é a mesma do Excel/PDF gerados na
+   pasta ALIANÇADOS. */
+const UNI_NOITE = "Camiseta de servo + colete + calça jeans ou preta + tênis/sapato fechado baixo";
+const UNI_MANHA = "Camiseta de servo + calça jeans ou preta + tênis/sapato fechado baixo";
+const G_ESQ = "Lateral esquerda · portas de entrada";
+const G_DIR = "Lateral direita · banheiro e mesa de apoio";
+
+const ESCALAS = [
+  { data:"2026-10-04", hora:"18h00", inicio:18, dia:"Domingo", curto:"DOM", culto:"Culto da Família", chegada:"17h00", uniforme:UNI_NOITE,
+    grupos:[
+      ["Funções", [
+        ["Mesa de apoio / Máquinas e envelopes", "Hamilton e Miss Layne (casal)", "Conferir e carregar as máquinas, bobinas e envelopes. Recolher após o culto."],
+        ["Reservados", "Letícia e Laura", "Cadeiras da frente e dos levitas. Recolher após o culto."],
+        ["Bebedouros e corredor", "Jaqueline e Marco Maia", "Copos, secar a água, circulação para as salas restritas."],
+        ["Caixa da primícia", "Valéria", "Após o ofertório, entregar à liderança."],
+        ["Máquinas da primícia", "Hamilton"],
+        ["Máquina de ofertório para os pastores no altar", "Kátia"],
+        ["Ofertório", "TODOS", "Cada um atende o lado em que está. Ao terminar, ajuda o outro lado."],
+        ["Gazofilácio em frente ao altar", "Lado D: Felipe Bianchezzi · Lado E: Denilson", "Quem está no gazofilácio não passa máquina nem envelope."],
+        ["Gazofilácio no meio da igreja (pilar)", "Lado D: Igor · Lado E: José Eduardo"],
+        ["Banheiro feminino", "Dri Gamarra e Simone", "Orientar crianças e visitantes, repor insumos, recolher os lixos."],
+        ["Banheiro masculino", "Marco Maia e Jesus"],
+        ["Organização do templo", "TODOS", "Alinhar cadeiras, recolher lixos e envelopes, cortinas, ar, portas e luzes."],
+        ["Organização da sala dos obreiros", "Liderança"],
+        ["Oração final", "TODOS"]
+      ]],
+      [G_ESQ, [
+        ["Porta da frente / meio", "Antônio e Laura (casal)"],
+        ["Porta da frente / primeira", "Jugleyde Pompeo, Martina Mendes e Milene"],
+        ["Porta do fundo", "Alessandra, Daiane Colman e Renata"],
+        ["Fundos", "Kátia e Jhuli"]
+      ]],
+      [G_DIR, [
+        ["Mesa de apoio / banheiro", "Clebson, José Luis e Marina Corrêa (casal), Jaqueline e Marco Maia"],
+        ["Em frente ao altar", "Jackson e Thays (casal)"],
+        ["Meio para o fundo", "Reinaldo e Cristiane (casal), Valéria"]
+      ]]
+    ]},
+  { data:"2026-10-07", hora:"19h30", inicio:19.5, dia:"Quarta-feira", curto:"QUA", culto:"Quarta Profética", chegada:"18h30", uniforme:UNI_NOITE,
+    grupos:[
+      ["Funções", [
+        ["Acompanhar o pregador da noite", "Reinaldo e Cristiane (casal)", "Do gabinete ao altar no início e do altar à saída no final."],
+        ["Púlpito", "Igor e Jesus", "Colocar e retirar ao sinal do backstage."],
+        ["Mesa de apoio / Máquinas e envelopes", "José Luis e Marina Corrêa (casal)", "Conferir e carregar as máquinas, bobinas e envelopes. Recolher após o culto."],
+        ["Reservados", "Letícia e Laura", "Cadeiras da frente e dos levitas. Recolher após o culto."],
+        ["Bebedouros e corredor", "José Eduardo e Simone", "Copos, secar a água, circulação para as salas restritas."],
+        ["Nave da igreja: microfone e mão no coração", "Hamilton e Miss Layne (casal), Jackson e Thays (casal)", "Obreiras com as mulheres, obreiros com os homens."],
+        ["Organizar as pessoas embaixo do altar em fileiras e baldes", "TODOS"],
+        ["Ofertório", "TODOS", "Cada um atende o lado em que está. Ao terminar, ajuda o outro lado."],
+        ["Máquina de ofertório para os pastores no altar", "Kátia"],
+        ["Caixa da primícia", "Jugleyde Pompeo", "Após o ofertório, entregar à liderança."],
+        ["Gazofilácio em frente ao altar", "Lado D: Denilson · Lado E: Felipe Bianchezzi", "Quem está no gazofilácio não passa máquina nem envelope."],
+        ["Gazofilácio no meio da igreja (pilar)", "Lado D: Marco Maia · Lado E: Igor"],
+        ["Banheiro feminino", "Daiane Colman e Renata", "Orientar crianças e visitantes, repor insumos, recolher os lixos."],
+        ["Banheiro masculino", "Jesus e Felipe Bianchezzi"],
+        ["Apelo", "TODOS", "Acompanhar e, se preciso, anotar nomes. Homem acompanha homem, mulher acompanha mulher."],
+        ["Organização do templo", "TODOS", "Alinhar cadeiras, recolher lixos e envelopes, cortinas, ar, portas e luzes."],
+        ["Oração final", "TODOS"]
+      ]],
+      [G_ESQ, [
+        ["Porta da frente / meio", "Antônio e Laura (casal)"],
+        ["Porta do fundo", "Alessandra, Martina Mendes e Milene"],
+        ["Meio para o fundo", "Dri Gamarra e Jhuli"]
+      ]],
+      [G_DIR, [
+        ["Mesa de apoio / banheiro", "Clebson e Letícia (casal)"],
+        ["Em frente ao altar", "Valéria e Jaqueline"],
+        ["Meio para o fundo", "Reinaldo e Cristiane (casal)"]
+      ]]
+    ]},
+  { data:"2026-10-11", hora:"9h00", inicio:9, dia:"Domingo", curto:"DOM", culto:"Culto da Família (manhã)", chegada:"8h00", uniforme:UNI_MANHA,
+    grupos:[
+      ["Funções", [
+        ["Mesa de apoio / Máquinas e envelopes", "Clebson e Letícia (casal)", "Conferir e carregar as máquinas, bobinas e envelopes. Recolher após o culto."],
+        ["Reservados", "Laura", "Cadeiras da frente e dos levitas. Recolher após o culto."],
+        ["Bebedouros e corredor", "Jackson e Thays (casal)", "Copos, secar a água, circulação para as salas restritas."],
+        ["Caixa da primícia", "Miss Layne", "Após o ofertório, entregar à liderança."],
+        ["Máquinas da primícia", "Hamilton"],
+        ["Máquina de ofertório para os pastores no altar", "Kátia"],
+        ["Ofertório", "TODOS", "No culto de Santa Ceia há oferta missionária no final."],
+        ["Gazofilácio em frente ao altar", "Lado D: Jesus · Lado E: José Eduardo", "Quem está no gazofilácio não passa máquina nem envelope."],
+        ["Gazofilácio no meio da igreja (pilar)", "Lado D: Igor · Lado E: Denilson"],
+        ["Banheiro feminino", "Dri Gamarra e Jhuli", "Orientar crianças e visitantes, repor insumos, recolher os lixos."],
+        ["Banheiro masculino", "Felipe Bianchezzi e Marco Maia"],
+        ["Organização do templo", "TODOS", "Alinhar cadeiras, recolher lixos e envelopes, cortinas, ar, portas e luzes."],
+        ["Organização da sala dos obreiros", "Liderança"],
+        ["Oração final", "TODOS"]
+      ]],
+      [G_ESQ, [
+        ["Frente", "Antônio e Laura (casal), Martina Mendes"],
+        ["Meio para o fundo", "Alessandra, Simone e Milene"]
+      ]],
+      [G_DIR, [
+        ["Frente", "José Luis e Marina Corrêa (casal), Jugleyde Pompeo e Jaqueline"],
+        ["Meio para o fundo", "Reinaldo e Cristiane (casal), Daiane Colman, Valéria e Renata"],
+        ["Cortinas", "Liderança", "Abrir as cortinas conforme a demanda."]
+      ]]
+    ]}
+];
+
+
+/* Datas em que a equipe serve, para a disponibilidade */
+function datasDaEscala(){ return ESCALAS.map(c => c.data); }
+function cultoDaData(iso){ return ESCALAS.find(c => c.data === iso) || null; }
+
 /* ======================= LEMBRETE (PUSH) DO DEVOCIONAL =======================
    No dia da leitura, o obreiro recebe uma notificação às 07:00 e, se ainda não
    marcou como lida, outra às 20:00. Quem envia é a Edge Function push-devocional. */

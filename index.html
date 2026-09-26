@@ -451,7 +451,10 @@ async function preencherMinhas(){
 async function carregarTudo(){
   respostasSel = {};
   try{
-    const datas = await buscarDatas();
+    /* datas definidas no painel + datas da escala publicada (config.js), sem repetir */
+    let datas = await buscarDatas();
+    if(typeof datasDaEscala === "function") datas = datas.concat(datasDaEscala());
+    datas = [...new Set(datas)].sort();
     DATAS = datas.map(d => ({ data: d, rotulo: rotuloData(d) }));
   }catch(e){
     DATAS = [];

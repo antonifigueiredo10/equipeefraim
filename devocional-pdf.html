@@ -21,7 +21,8 @@
     padding:10px 14px 12px;
   }
   .controle .ct{max-width:520px; margin:0 auto; display:flex; flex-direction:column; gap:9px;}
-  .controle .ct-status{font-size:.74rem; color:#B9BDC4; text-align:center;}
+  .controle .ct-status{font-size:.74rem; color:#B9BDC4; text-align:center; min-height:1em;}
+  .controle .ct-status.erro{color:#FF8A8A;}
   .controle .ct-acoes{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
   .controle .ct-acoes button{
     display:flex; align-items:center; justify-content:center; gap:7px; padding:12px 8px;
@@ -131,7 +132,7 @@
 <div class="controle"><div class="ct">
   <div class="ct-status" id="status">Carregando o plano...</div>
   <div class="ct-acoes">
-    <button type="button" class="pdf" onclick="window.print()">
+    <button type="button" class="pdf" id="btn-pdf" onclick="salvarPDF()">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm7 1.5V9h5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 11.5v6.5m-3-3 3 3 3-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       Salvar como PDF
     </button>
@@ -153,14 +154,15 @@
 <img src="logo1.png" id="logo-fonte" style="display:none" alt="">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <script src="config.js"></script>
 <script>
 /* ================================================================
-   Gera o plano devocional para impressão, a partir do banco.
-   ?f=story  → páginas 323×699pt, para mandar no WhatsApp
-   ?f=a4     → tabela completa em A4, para imprimir
-   O navegador faz o PDF: "Salvar como PDF" no diálogo de impressão.
-   "Enviar no WhatsApp" abre o WhatsApp com as leituras da semana em texto.
+   Gera o plano devocional completo, a partir do banco.
+   ?f=story  → páginas 323×699pt (formato do WhatsApp). O PDF é montado
+               aqui mesmo, no aparelho: "Salvar como PDF" baixa o arquivo e
+               "Enviar no WhatsApp" abre o compartilhamento já com o PDF anexado.
+   ?f=a4     → tabela completa em A4, para imprimir (Salvar como PDF = imprimir).
    Segue o modelo do devocional impresso da equipe (fundo claro).
    ================================================================ */
 
@@ -168,6 +170,7 @@ const FORMATO = (new URLSearchParams(location.search).get("f") || "story").toLow
 document.body.className = FORMATO;
 
 let PLANO = [];
+let PDF_DOC = null, PDF_FILE = null, PDF_NOME = "Plano_Devocional_Efraim.pdf";
 
 const ABREV = {"Mateus":"Mt","Marcos":"Mc","Lucas":"Lc","João":"Jo","Atos":"At","Romanos":"Rm",
   "1 Coríntios":"1Co","2 Coríntios":"2Co","Gálatas":"Gl","Efésios":"Ef","Filipenses":"Fp",
@@ -185,6 +188,13 @@ function diaSemana(iso){
   return new Date(iso+"T12:00:00").toLocaleDateString("pt-BR",{weekday:"short"}).replace(".","");
 }
 function ref(l){ return l.referencia.replace("-", " "); }
+function resumo(plano){
+  return {
+    pessoas: new Set(plano.map(l => l.nome)).size,
+    periodo: dm(plano[0].data) + " -> " + dm(plano[plano.length-1].data),
+    abrev: [...new Set(plano.map(l => l.livro))].map(l => ABREV[l] || l).join(" • ")
+  };
+}
 
 /* A logo entra recortada, para o PDF sair fiel ao modelo */
 function logoPronta(){
@@ -217,9 +227,14 @@ function logoPronta(){
     if(img.complete && img.naturalWidth>0) processa(); else img.onload = processa;
   });
 }
-/* Garante que a logo recortada já esteja decodificada antes de medir as páginas */
+/* Garante que a logo recortada já esteja decodificada e devolve o tamanho dela */
 function imagemPronta(src){
-  return new Promise(resolve => { const im = new Image(); im.onload = im.onerror = () => resolve(); im.src = src; });
+  return new Promise(resolve => {
+    const im = new Image();
+    im.onload = () => resolve({ w: im.naturalWidth || 1, h: im.naturalHeight || 1 });
+    im.onerror = () => resolve({ w: 1, h: 1 });
+    im.src = src;
+  });
 }
 
 function cartao(l, hoje){
@@ -229,13 +244,9 @@ function cartao(l, hoje){
     '<div class="r">' + ref(l) + '</div></div>';
 }
 
-/* ---------------- STORY ---------------- */
+/* ---------------- STORY (tela) ---------------- */
 function capaStory(plano, logo){
-  const livros = [...new Set(plano.map(l => l.livro))];
-  const pessoas = new Set(plano.map(l => l.nome)).size;
-  const periodo = dm(plano[0].data) + " -> " + dm(plano[plano.length-1].data);
-  const abrev = livros.map(l => ABREV[l] || l).join(" • ");
-
+  const r = resumo(plano);
   return '<div class="cab"><img src="' + logo + '">' +
       '<div><div class="et">PLANO DEVOCIONAL</div>' +
       '<h1>Equipe 02 Efraim<br><span class="o">(frutífera)</span></h1></div></div>' +
@@ -244,11 +255,11 @@ function capaStory(plano, logo){
       '<div class="vs">“Eu sou a videira, vós as varas; quem está em mim, e eu nele, esse dá muito fruto.” <b>João 15:5</b></div></div>' +
     '<div class="st">' +
       '<div class="lin">' +
-        '<div class="b"><div class="et">PARTICIPANTES</div><div class="v">' + pessoas + '</div></div>' +
-        '<div class="b"><div class="et">PERÍODO</div><div class="v pq">' + periodo + '</div></div>' +
+        '<div class="b"><div class="et">PARTICIPANTES</div><div class="v">' + r.pessoas + '</div></div>' +
+        '<div class="b"><div class="et">PERÍODO</div><div class="v pq">' + r.periodo + '</div></div>' +
       '</div><div class="lin">' +
         '<div class="b"><div class="et">SEQUÊNCIA</div><div class="v pq">' + plano.length + ' leituras</div></div>' +
-        '<div class="b"><div class="et">LIVROS</div><div class="v pq">' + abrev + '</div></div>' +
+        '<div class="b"><div class="et">LIVROS</div><div class="v pq">' + r.abrev + '</div></div>' +
       '</div></div>' +
     '<div class="marca"><img src="' + logo + '">' +
       '<div><div><b>Aliançados</b><span class="ar">@ aliancados_br</span></div>' +
@@ -283,9 +294,129 @@ function montarStory(plano, logo){
   document.body.classList.remove("medindo");
 }
 
+/* ---------------- STORY (o PDF de verdade, desenhado com jsPDF) ----------------
+   Mesmo desenho da tela: 323×699pt, capa + todas as leituras de todo mundo. */
+const COR = {
+  escuro:[23,24,29], escuro2:[35,36,42], fundo:[242,245,249], card:[255,255,255],
+  laranja:[255,129,38], pillBg:[253,231,212], pillTx:[201,104,28],
+  cinza:[138,144,153], cinza2:[154,160,168], branco:[255,255,255],
+  claro:[185,189,196], claro2:[142,147,155], claro3:[157,162,170], texto:[23,24,29]
+};
+function gerarPDF(plano, logo, dim){
+  const { jsPDF } = window.jspdf;
+  const W = 323, H = 699, M = 14, X = M, LARG = W - 2*M;
+  const doc = new jsPDF({ unit:"pt", format:[W, H], compress:true });
+  doc.setProperties({ title:"Plano Devocional · Equipe 02 Efraim", author:"Equipe Efraim · Aliançados" });
+  const hoje = hojeISO();
+  const logoAlt = w => w * dim.h / dim.w;
+
+  function fonte(o){ doc.setFont("helvetica", o.bold ? "bold" : (o.italic ? "italic" : "normal")); doc.setFontSize(o.size); }
+  function largura(s, o){ fonte(o); return doc.getTextWidth(s) + (o.esp || 0) * Math.max(0, s.length - 1); }
+  function txt(s, x, y, o){
+    fonte(o); doc.setTextColor(...o.cor);
+    if(o.align === "center") x -= largura(s, o) / 2;
+    doc.text(s, x, y, { baseline: o.baseline || "top", charSpace: o.esp || 0 });
+  }
+  function bloco(x, y, w, h, r, cor){ doc.setFillColor(...cor); doc.roundedRect(x, y, w, h, r, r, "F"); }
+  function fundo(){ doc.setFillColor(...COR.fundo); doc.rect(0, 0, W, H, "F"); }
+
+  /* ---- capa ---- */
+  fundo();
+  let y = M;
+
+  // cabeçalho
+  const hCab = 72, lw = 30, lh = logoAlt(lw);
+  bloco(X, y, LARG, hCab, 14, COR.escuro);
+  doc.addImage(logo, "PNG", X + 14, y + (hCab - lh) / 2, lw, lh);
+  const tx = X + 14 + lw + 11;
+  txt("PLANO DEVOCIONAL", tx, y + 13, { size:6, cor:COR.claro, esp:2.2 });
+  txt("Equipe 02 Efraim", tx, y + 23.2, { size:15, bold:true, cor:COR.branco });
+  txt("(frutífera)", tx, y + 41.2, { size:15, bold:true, cor:COR.laranja });
+  y += hCab + 9;
+
+  // cobertura pastoral
+  const verso = "“Eu sou a videira, vós as varas; quem está em mim, e eu nele, esse dá muito fruto.”";
+  fonte({ size:6.4, italic:true });
+  const linhasV = doc.splitTextToSize(verso, LARG - 28);
+  const refW = largura("João 15:5", { size:6.4, bold:true });
+  const ultW = largura(linhasV[linhasV.length - 1], { size:6.4, italic:true });
+  const refNaLinha = ultW + 3 + refW <= LARG - 28;
+  const nLin = linhasV.length + (refNaLinha ? 0 : 1);
+  const hCob = 12 + 6.7 + 4 + 13.2 + 8 + nLin * 10.56 + 12;
+  bloco(X, y, LARG, hCob, 14, COR.escuro2);
+  txt("COBERTURA PASTORAL", X + 14, y + 12, { size:5.6, cor:COR.claro2, esp:2.2 });
+  txt("Pr. Joel & Pra. Vilma", X + 14, y + 22.7, { size:11, bold:true, cor:COR.branco });
+  const vy = y + 43.9;
+  linhasV.forEach((l, i) => txt(l, X + 14, vy + i * 10.56, { size:6.4, italic:true, cor:COR.claro3 }));
+  if(refNaLinha) txt("João 15:5", X + 14 + ultW + 3, vy + (linhasV.length - 1) * 10.56, { size:6.4, bold:true, cor:COR.laranja });
+  else txt("João 15:5", X + 14, vy + linhasV.length * 10.56, { size:6.4, bold:true, cor:COR.laranja });
+  y += hCob + 9;
+
+  // quatro caixas
+  const r = resumo(plano), bw = (LARG - 8) / 2;
+  function caixa(x, et, v, pq){
+    const o = { size: pq ? 8.5 : 13, bold:true, cor:COR.texto };
+    fonte(o);
+    const ls = doc.splitTextToSize(v, bw - 22), lhh = pq ? 8.5 * 1.3 : 13 * 1.2;
+    return { h: 9 + 6.5 + 3 + ls.length * lhh + 9,
+      draw(yy, hh){ bloco(x, yy, bw, hh, 12, COR.card); txt(et, x + 11, yy + 9, { size:5.4, cor:COR.cinza2, esp:1.8 });
+                    ls.forEach((l, i) => txt(l, x + 11, yy + 18.5 + i * lhh, o)); } };
+  }
+  [[caixa(X, "PARTICIPANTES", String(r.pessoas), false), caixa(X + bw + 8, "PERÍODO", r.periodo, true)],
+   [caixa(X, "SEQUÊNCIA", plano.length + " leituras", true), caixa(X + bw + 8, "LIVROS", r.abrev, true)]
+  ].forEach(([a, b]) => { const hr = Math.max(a.h, b.h); a.draw(y, hr); b.draw(y, hr); y += hr + 8; });
+
+  // marca Aliançados
+  const lw2 = 24, lh2 = logoAlt(lw2), hM = Math.max(45, 22 + lh2);
+  bloco(X, y, LARG, hM, 14, COR.escuro);
+  doc.addImage(logo, "PNG", X + 14, y + (hM - lh2) / 2, lw2, lh2);
+  const mx = X + 14 + lw2 + 10, my = y + (hM - 22.9) / 2;
+  txt("Aliançados", mx, my, { size:11, bold:true, cor:COR.branco });
+  txt("@ aliancados_br", mx + largura("Aliançados", { size:11, bold:true }) + 6, my + 10.5, { size:6.6, cor:COR.laranja, baseline:"alphabetic" });
+  txt("Ap.denilsonfonseca     Ap.elisafonseca", mx, my + 16.2, { size:5.6, cor:COR.claro2 });
+  y += hM + 9;
+
+  txt("PRÓXIMAS LEITURAS", X + 4, y, { size:7, bold:true, cor:COR.laranja, esp:2.4 });
+  y += 8.4 + 6;
+
+  /* ---- cartões ---- */
+  const CH = 33, CG = 4;
+  function card(l, yy){
+    const ehHoje = l.data === hoje;
+    doc.setFillColor(...COR.card);
+    if(ehHoje){ doc.setDrawColor(...COR.laranja); doc.setLineWidth(1.2); doc.roundedRect(X, yy, LARG, CH, 10, 10, "FD"); }
+    else doc.roundedRect(X, yy, LARG, CH, 10, 10, "F");
+    const dx = X + 10 + 18;
+    txt(dm(l.data), dx, yy + 6.5, { size:10, bold:true, cor:COR.texto, align:"center" });
+    txt(diaSemana(l.data).toUpperCase(), dx, yy + 19, { size:6, bold:true, cor:COR.cinza, esp:1, align:"center" });
+    const rf = ref(l), pw = largura(rf, { size:7.6, bold:true }) + 16, ph = 15;
+    const px = X + LARG - 10 - pw, py = yy + (CH - ph) / 2;
+    bloco(px, py, pw, ph, 7.5, ehHoje ? COR.laranja : COR.pillBg);
+    txt(rf, px + 8, yy + CH / 2, { size:7.6, bold:true, cor: ehHoje ? COR.branco : COR.pillTx, baseline:"middle" });
+    const nx = X + 10 + 36 + 9, maxW = px - 9 - nx, on = { size:11.5, bold:true, cor:COR.texto, baseline:"middle" };
+    let nome = l.nome;
+    while(largura(nome, on) > maxW && nome.length > 2) nome = nome.slice(0, -2).replace(/\s+$/, "") + "…";
+    txt(nome, nx, yy + CH / 2, on);
+  }
+  let i = 0;
+  function preencher(y0){
+    let yy = y0;
+    while(i < plano.length && yy + CH <= H - M + 0.01){ card(plano[i], yy); yy += CH + CG; i++; }
+  }
+  preencher(y);
+  while(i < plano.length){ doc.addPage([W, H]); fundo(); preencher(M); }
+  return doc;
+}
+
+function prepararPDF(plano, logo, dim){
+  PDF_DOC = gerarPDF(plano, logo, dim);
+  PDF_NOME = "Plano_Devocional_Efraim_" + dm(plano[0].data).replace("/", "-") + "_a_" + dm(plano[plano.length-1].data).replace("/", "-") + ".pdf";
+  try{ PDF_FILE = new File([PDF_DOC.output("blob")], PDF_NOME, { type:"application/pdf" }); }
+  catch(e){ PDF_FILE = null; }
+}
+
 /* ---------------- A4 ---------------- */
 function montarA4(plano, logo){
-  const hoje = hojeISO();
   const linhas = plano.map(l =>
     '<tr><td class="d">' + br(l.data) + '</td><td class="w">' + diaSemana(l.data) + '</td>' +
     '<td><span class="pill">' + ref(l) + '</span></td>' +
@@ -304,22 +435,30 @@ function montarA4(plano, logo){
   '</div>';
 }
 
-/* ---------------- WhatsApp: as leituras da semana, em texto ---------------- */
+/* ---------------- Botões ---------------- */
+function avisar(msg, erro){
+  const s = document.getElementById("status");
+  s.textContent = msg; s.classList.toggle("erro", !!erro);
+}
+function salvarPDF(){
+  if(FORMATO === "a4" || !PDF_DOC){ window.print(); return; }
+  PDF_DOC.save(PDF_NOME);
+}
+/* Abre o compartilhamento do aparelho já com o PDF completo anexado (o WhatsApp
+   aparece na lista). Onde não existe compartilhamento de arquivo (computador),
+   baixa o PDF e abre o WhatsApp para anexar. */
 function enviarWhats(){
-  if(!PLANO.length) return;
-  const hoje = hojeISO();
-  let i = PLANO.findIndex(l => l.data >= hoje);
-  if(i < 0) i = Math.max(0, PLANO.length - 7);
-  const semana = PLANO.slice(i, i + 7);
-  const linhas = semana.map(l => "• *" + diaSemana(l.data) + " " + dm(l.data) + "* · " + l.nome + " · " + ref(l));
-  const msg =
-    "📖 *PLANO DEVOCIONAL · Equipe 02 Efraim*\n" +
-    "_Leituras da semana_\n\n" +
-    linhas.join("\n") + "\n\n" +
-    "🙏 Ore pelo obreiro do dia e leia junto.\n" +
-    "Plano completo, lembrete e marcação de leitura:\n" +
-    "https://equipeefraim.com.br/devocional.html";
-  window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank", "noopener");
+  if(!PDF_FILE && PDF_DOC){ try{ PDF_FILE = new File([PDF_DOC.output("blob")], PDF_NOME, { type:"application/pdf" }); }catch(e){} }
+  if(!PDF_DOC){ avisar("O PDF ainda está sendo montado. Tente de novo em instantes."); return; }
+  const dados = { files:[PDF_FILE], title:"Plano Devocional · Equipe 02 Efraim", text:"📖 Plano Devocional completo · Equipe 02 Efraim" };
+  if(PDF_FILE && navigator.canShare && navigator.canShare({ files:[PDF_FILE] }) && navigator.share){
+    navigator.share(dados).catch(e => { if(e && e.name !== "AbortError") baixarEAbrir(); });
+  }else baixarEAbrir();
+}
+function baixarEAbrir(){
+  PDF_DOC.save(PDF_NOME);
+  avisar("PDF baixado. Anexe o arquivo " + PDF_NOME + " na conversa do WhatsApp.");
+  window.open("https://wa.me/?text=" + encodeURIComponent("📖 Plano Devocional completo · Equipe 02 Efraim (PDF em anexo)"), "_blank", "noopener");
 }
 
 /* ---------------- Início ---------------- */
@@ -328,7 +467,6 @@ function enviarWhats(){
   if(!perfil) return;
 
   document.querySelectorAll("#formato a").forEach(a => a.classList.toggle("ativo", a.dataset.f === FORMATO));
-  const status = document.getElementById("status");
   try{
     const { data: plano, error } = await sb.from("devocional")
       .select("data,livro,capitulo,referencia,nome").order("data");
@@ -336,14 +474,22 @@ function enviarWhats(){
     PLANO = plano;
 
     const logo = await logoPronta();
-    await imagemPronta(logo);
+    const dim = await imagemPronta(logo);
     if(FORMATO === "a4") document.getElementById("folha").innerHTML = montarA4(plano, logo);
     else montarStory(plano, logo);
 
-    status.textContent = plano.length + " leituras · " + br(plano[0].data) + " a " + br(plano[plano.length-1].data);
-    document.getElementById("btn-zap").disabled = false;
+    const periodo = plano.length + " leituras · " + br(plano[0].data) + " a " + br(plano[plano.length-1].data);
+    avisar("Montando o PDF... · " + periodo);
+    await new Promise(r => setTimeout(r, 30));   /* deixa a tela aparecer antes de desenhar o PDF */
+    if(window.jspdf){
+      prepararPDF(plano, logo, dim);
+      avisar("PDF pronto · " + periodo + " · " + PDF_DOC.getNumberOfPages() + " páginas");
+      document.getElementById("btn-zap").disabled = false;
+    }else{
+      avisar("Sem internet para montar o PDF. Use Salvar como PDF pela impressão.", true);
+    }
   }catch(e){
-    status.textContent = e.message;
+    avisar(e.message, true);
   }
 })();
 </script>

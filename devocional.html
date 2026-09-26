@@ -29,28 +29,33 @@
     background-image:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(240,131,74,.18), transparent 60%);
   }
 
-  .hero{text-align:center; padding:36px 20px 22px;}
-  .hero img{
-    width:110px; height:110px; object-fit:cover; object-position:50% 45%;
-    border-radius:50%; border:1px solid rgba(240,131,74,.4);
-    box-shadow:0 0 44px rgba(240,131,74,.28);
+  /* Cabeçalho compacto: logo e título lado a lado, versículo em uma linha logo abaixo */
+  .hero{
+    display:flex; align-items:center; gap:14px; text-align:left;
+    max-width:560px; margin:0 auto; padding:16px 18px 0;
   }
-  .hero img.recortada{width:120px; height:auto; object-fit:contain; border-radius:0; border:none; box-shadow:none;}
+  .hero img{
+    width:64px; height:64px; flex:none; object-fit:cover; object-position:50% 45%;
+    border-radius:50%; border:1px solid rgba(240,131,74,.4);
+    box-shadow:0 0 28px rgba(240,131,74,.28);
+  }
+  .hero img.recortada{width:auto; height:64px; max-width:84px; object-fit:contain; border-radius:0; border:none; box-shadow:none;}
+  .hero .titulo{min-width:0;}
   .hero h1{
     font-family:'Playfair Display',serif; font-weight:800;
-    font-size:clamp(1.5rem,5.5vw,2.1rem); letter-spacing:1px; margin-top:12px;
+    font-size:clamp(1.25rem,5vw,1.7rem); letter-spacing:1px; line-height:1.15;
   }
   .hero h1 span{color:var(--laranja);}
   .hero .lema{
-    color:var(--texto-suave); font-size:.75rem; letter-spacing:3px;
-    text-transform:uppercase; margin-top:6px; font-weight:300;
+    color:var(--texto-suave); font-size:.66rem; letter-spacing:2.5px;
+    text-transform:uppercase; margin-top:4px; font-weight:300;
   }
   .versiculo{
-    max-width:520px; margin:18px auto 0; padding:0 24px;
+    max-width:560px; margin:10px auto 0; padding:0 18px;
     font-family:'Playfair Display',serif; font-style:italic;
-    color:var(--texto-suave); font-size:.92rem; line-height:1.6;
+    color:var(--texto-suave); font-size:.82rem; line-height:1.5;
   }
-  .versiculo b{color:var(--laranja-claro); font-style:normal; font-size:.7rem; letter-spacing:2px; display:block; margin-top:6px; font-family:'Poppins',sans-serif; text-transform:uppercase;}
+  .versiculo b{color:var(--laranja-claro); font-style:normal; font-size:.64rem; letter-spacing:2px; margin-left:6px; white-space:nowrap; font-family:'Poppins',sans-serif; text-transform:uppercase;}
 
   main{max-width:560px; margin:0 auto; padding:8px 18px 60px;}
 
@@ -135,35 +140,25 @@
   }
   /* ---- Próxima leitura (destaque) ---- */
   .proxima{
-    position:relative; overflow:hidden; border-radius:20px; padding:20px 20px 18px; margin:6px 0 14px;
+    position:relative; overflow:hidden; border-radius:20px; padding:16px 18px 14px; margin:6px 0 12px;
     background:linear-gradient(135deg, rgba(240,131,74,.22), rgba(240,131,74,.04) 55%), var(--preto-card);
     border:1px solid rgba(240,131,74,.5); box-shadow:0 10px 34px rgba(240,131,74,.12);
   }
   .proxima.hoje-e-dia{border-color:rgba(61,187,122,.7); background:linear-gradient(135deg, rgba(61,187,122,.22), rgba(61,187,122,.04) 55%), var(--preto-card);}
-  .proxima .px-ic{position:absolute; right:-10px; top:-8px; width:120px; height:120px; color:rgba(240,131,74,.13);}
+  .proxima .px-ic{position:absolute; right:-10px; top:-8px; width:104px; height:104px; color:rgba(240,131,74,.13);}
   .proxima.hoje-e-dia .px-ic{color:rgba(61,187,122,.15);}
-  .proxima .px-ola{font-size:.8rem; color:var(--texto-suave);}
-  .proxima .px-rot{font-size:.62rem; letter-spacing:2.5px; text-transform:uppercase; color:var(--laranja); font-weight:700; margin-top:12px;}
+  .proxima .px-ola{font-size:.78rem; color:var(--texto-suave);}
+  .proxima .px-rot{font-size:.62rem; letter-spacing:2.5px; text-transform:uppercase; color:var(--laranja); font-weight:700; margin-top:8px;}
   .proxima.hoje-e-dia .px-rot{color:var(--verde);}
-  .proxima .px-ref{font-family:'Playfair Display',serif; font-weight:800; font-size:2rem; line-height:1.1; margin-top:4px;}
-  .proxima .px-quando{display:flex; align-items:center; gap:8px; margin-top:8px; font-size:.8rem; color:var(--texto-suave);}
+  .proxima .px-ref{font-family:'Playfair Display',serif; font-weight:800; font-size:1.8rem; line-height:1.1; margin-top:2px;}
+  .proxima .px-quando{display:flex; align-items:center; gap:8px; margin-top:6px; font-size:.8rem; color:var(--texto-suave);}
   .proxima .px-quando .ic{width:16px; height:16px; color:var(--laranja);}
   .proxima .px-pill{display:inline-block; margin-left:auto; padding:4px 12px; border-radius:999px; font-size:.68rem; font-weight:700; background:var(--laranja); color:#fff;}
   .proxima.hoje-e-dia .px-pill{background:var(--verde);}
-  .proxima .px-prog{margin-top:14px; height:6px; border-radius:999px; background:#26262B; overflow:hidden;}
+  .proxima .px-prog{margin-top:10px; height:6px; border-radius:999px; background:#26262B; overflow:hidden;}
   .proxima .px-prog i{display:block; height:100%; background:linear-gradient(90deg,var(--laranja),var(--verde));}
-  .proxima .px-sub{font-size:.7rem; color:var(--texto-suave); margin-top:6px;}
-  /* ---- Atalhos ---- */
-  .atalhos{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:6px;}
-  .atalhos button{
-    display:flex; flex-direction:column; align-items:center; gap:7px; padding:13px 4px 11px; cursor:pointer;
-    background:var(--preto-card); border:1px solid var(--cinza-borda); border-radius:14px; color:var(--branco);
-    font:600 .68rem 'Poppins',sans-serif; letter-spacing:.3px;
-  }
-  .atalhos button .icc{width:32px; height:32px;}
-  .atalhos button:active{transform:scale(.97);}
-  .atalhos button:hover{border-color:rgba(240,131,74,.5);}
-  #meus-dias-sec h2.secao:first-child{margin-top:8px;}
+  .proxima .px-sub{font-size:.7rem; color:var(--texto-suave); margin-top:5px;}
+  #meus-dias-sec h2.secao{margin-top:10px;}
   .box-push .bp-tit, .box-celulas .bc-tit{display:none;}
   .cobertura{
     background:linear-gradient(160deg,#1C1C21,var(--preto-card)); border:1px solid var(--cinza-borda);
@@ -218,9 +213,10 @@
   footer span{color:var(--laranja);}
 
   @media (max-width:520px){
-    .hero{padding:22px 16px 14px;}
-    .hero img{width:88px; height:88px;}
-    .hero img.recortada{width:98px;}
+    .hero{padding:14px 14px 0; gap:12px;}
+    .hero img{width:56px; height:56px;}
+    .hero img.recortada{width:auto; height:56px; max-width:74px;}
+    .versiculo{padding:0 14px; font-size:.78rem;}
     main{padding:6px 14px 50px;}
   }
 </style>
@@ -229,24 +225,20 @@
 
 <div class="hero">
   <img src="logo1.png" alt="Aliançados" id="logo-img">
-  <h1>PLANO <span>DEVOCIONAL</span></h1>
-  <div class="lema">Equipe 02 Efraim · Novo Testamento</div>
-  <div class="versiculo">
-    “Eu sou a videira, vós as varas; quem está em mim, e eu nele, esse dá muito fruto.”
-    <b>João 15:5</b>
+  <div class="titulo">
+    <h1>PLANO <span>DEVOCIONAL</span></h1>
+    <div class="lema">Equipe 02 Efraim · Novo Testamento</div>
   </div>
+</div>
+<div class="versiculo">
+  “Eu sou a videira, vós as varas; quem está em mim, e eu nele, esse dá muito fruto.”
+  <b>João 15:5</b>
 </div>
 
 <main>
   <!-- Obreiro: primeiro só os dias dele; a lista de todos fica logo abaixo -->
   <section id="meus-dias-sec">
     <div id="proxima" class="proxima"></div>
-    <div class="atalhos">
-      <button type="button" data-ir="meus-dias"><span class="icc" data-icc="calendario"></span>Meus dias</button>
-      <button type="button" data-ir="box-push"><span class="icc" data-icc="lembrete"></span>Lembrete</button>
-      <button type="button" data-ir="box-celulas"><span class="icc" data-icc="celulas"></span>Células</button>
-      <button type="button" data-ir="todos"><span class="icc" data-icc="todos"></span>Todos</button>
-    </div>
     <h2 class="secao"><span class="ic" data-ic="calendar"></span>Seus dias de devocional</h2>
     <div id="meus-dias"></div>
     <button type="button" class="btn-todos" id="btn-todos" onclick="alternarTodos()">VER A LISTA COMPLETA DE TODOS</button>
@@ -465,8 +457,6 @@ const ICONES = {
 function icone(nome){ return '<svg viewBox="0 0 24 24" aria-hidden="true">' + (ICONES[nome] || "") + '</svg>'; }
 function pintarIcones(raiz){
   (raiz || document).querySelectorAll(".ic[data-ic]").forEach(el => { if(!el.firstChild) el.innerHTML = icone(el.dataset.ic); });
-  if(typeof iconeCor === "function")   /* config.js antigo em cache: segue sem os ícones coloridos */
-    (raiz || document).querySelectorAll(".icc[data-icc]").forEach(el => { if(!el.firstChild) el.innerHTML = iconeCor(el.dataset.icc); });
 }
 
 /* Links da barra inferior: #todos abre a lista completa; #lembrete vai ao lembrete */
@@ -515,17 +505,6 @@ function montarProxima(){
     '<div class="px-prog"><i style="width:' + pct + '%"></i></div>' +
     '<div class="px-sub">' + feitas + ' de ' + meus.length + ' leituras suas registradas no plano</div>';
 }
-
-/* Atalhos do topo */
-document.querySelectorAll(".atalhos [data-ir]").forEach(b => b.onclick = () => {
-  if(b.dataset.ir === "todos"){
-    if(document.getElementById("resto").style.display === "none") alternarTodos();
-    else document.getElementById("resto").scrollIntoView({ behavior: "smooth" });
-    return;
-  }
-  const alvo = document.getElementById(b.dataset.ir);
-  if(alvo) window.scrollTo({ top: alvo.getBoundingClientRect().top + scrollY - 110, behavior: "smooth" });
-});
 
 /* ---------- Os dias do próprio obreiro ---------- */
 function linhaMinha(l, hoje){

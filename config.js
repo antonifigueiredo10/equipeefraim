@@ -305,6 +305,97 @@ async function montarBoxCelulas(el, quantas = 3){
   }
 }
 
+/* ======================= LEMBRETE (PUSH) DO DEVOCIONAL =======================
+   No dia da leitura, o obreiro recebe uma notificação às 07:00 e, se ainda não
+   marcou como lida, outra às 20:00. Quem envia é a Edge Function push-devocional. */
+const VAPID_PUBLICA = "BL42ys-5soV1oPjjGSQrg2ZwtTXWuPC1vLIgxUoVR9MbLDJGAzZFFOwQ37IK23VmC1esDAX4-iPKZeCWeu5NjKY";
+
+function b64paraU8(b64){
+  const p = "=".repeat((4 - b64.length % 4) % 4);
+  const s = atob((b64 + p).replace(/-/g, "+").replace(/_/g, "/"));
+  return Uint8Array.from(s, c => c.charCodeAt(0));
+}
+function ehIOS(){ return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); }
+function ehApp(){ return window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true; }
+
+async function registrarSW(){
+  if(!("serviceWorker" in navigator)) return null;
+  try{ return await navigator.serviceWorker.register("/sw.js"); }catch(e){ return null; }
+}
+
+/* 'ativo' | 'inativo' | 'negado' | 'ios-instalar' | 'sem-suporte' */
+async function estadoPush(){
+  if(ehIOS() && !ehApp()) return "ios-instalar";
+  if(!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) return "sem-suporte";
+  if(Notification.permission === "denied") return "negado";
+  const reg = await registrarSW();
+  const sub = reg && await reg.pushManager.getSubscription();
+  return sub && Notification.permission === "granted" ? "ativo" : "inativo";
+}
+
+async function salvarInscricao(sub){
+  const j = sub.toJSON();
+  const { error } = await sb.from("push_inscricoes").upsert({
+    endpoint: j.endpoint, user_id: SESSAO.user.id, p256dh: j.keys.p256dh, auth: j.keys.auth
+  }, { onConflict: "endpoint" });
+  if(error) throw error;
+}
+
+async function ativarPush(){
+  const perm = await Notification.requestPermission();
+  if(perm !== "granted") throw new Error("NEGADO");
+  const reg = await registrarSW();
+  await navigator.serviceWorker.ready;
+  let sub = await reg.pushManager.getSubscription();
+  if(!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64paraU8(VAPID_PUBLICA) });
+  await salvarInscricao(sub);
+  /* notificação de teste, para a pessoa ver que funcionou */
+  const { data: { session } } = await sb.auth.getSession();
+  await fetch(SUPABASE_URL + "/functions/v1/push-devocional", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + session.access_token, "apikey": SUPABASE_ANON_KEY },
+    body: JSON.stringify({ tipo: "teste" })
+  }).catch(() => {});
+}
+
+async function desativarPush(){
+  const reg = await registrarSW();
+  const sub = reg && await reg.pushManager.getSubscription();
+  if(sub){
+    await sb.from("push_inscricoes").delete().eq("endpoint", sub.endpoint);
+    await sub.unsubscribe();
+  }
+}
+
+/* Caixa "Lembrete do devocional" */
+async function montarBoxPush(el){
+  if(!el) return;
+  el.className = "box-push";
+  const estado = await estadoPush();
+  /* aparelho já inscrito: renova a inscrição no banco sem perguntar nada */
+  if(estado === "ativo"){
+    try{ const reg = await registrarSW(); const sub = await reg.pushManager.getSubscription(); if(sub) salvarInscricao(sub); }catch(e){}
+    el.innerHTML = '<div class="bp-linha"><span>🔔 <b>Lembrete ligado</b> — você será avisado no dia da sua leitura.</span>' +
+                   '<button type="button" class="bp-sec">desligar</button></div>';
+    el.querySelector(".bp-sec").onclick = async () => { await desativarPush(); montarBoxPush(el); };
+    return;
+  }
+  const textos = {
+    "inativo":     '<p>Receba um aviso no celular no dia da sua leitura do devocional.</p><button type="button" class="bp-btn">🔔 ATIVAR LEMBRETE</button>',
+    "negado":      '<p>As notificações estão bloqueadas para este site. Libere nas configurações do navegador (cadeado ao lado do endereço) e recarregue a página.</p>',
+    "ios-instalar":'<p>No iPhone, o lembrete funciona com o app instalado: toque em <b>Compartilhar</b> ⬆️ e depois em <b>Adicionar à Tela de Início</b>. Abra pelo ícone EQUIPE EFRAIM e ative aqui.</p>',
+    "sem-suporte": '<p>Este navegador não recebe notificações. No Android use o Chrome; no iPhone, instale o app na Tela de Início.</p>'
+  };
+  el.innerHTML = '<div class="bp-tit">🔔 Lembrete do devocional</div>' + textos[estado];
+  const b = el.querySelector(".bp-btn");
+  if(b) b.onclick = async () => {
+    b.disabled = true; b.textContent = "ativando...";
+    try{ await ativarPush(); montarBoxPush(el); }
+    catch(e){ b.disabled = false; b.textContent = "🔔 ATIVAR LEMBRETE";
+      el.insertAdjacentHTML("beforeend", '<small>' + (e.message === "NEGADO" ? "Você não permitiu as notificações." : "Não deu certo agora. Tente de novo.") + '</small>'); }
+  };
+}
+
 /* Estilo da barra + oculta a página até o login ser confirmado
    (evita o "flash" de conteúdo antes do redirecionamento) */
 (function(){
@@ -363,6 +454,20 @@ async function montarBoxCelulas(el, quantas = 3){
       display:block; text-align:center; margin-top:12px; padding:12px; border-radius:12px; text-decoration:none;
       background:linear-gradient(135deg,#F0834A,#D96A32); color:#fff; font:700 .78rem 'Poppins',sans-serif; letter-spacing:1px;
     }
+    .box-push{
+      background:#151518; border:1px solid #2A2A2F; border-radius:16px; padding:14px 16px; margin:0 0 22px;
+      font-family:'Poppins',system-ui,sans-serif; color:#B8B2AA; font-size:.8rem; line-height:1.5;
+    }
+    .box-push .bp-tit{font-size:.72rem; font-weight:700; color:#F0834A; letter-spacing:2px; text-transform:uppercase; margin-bottom:8px;}
+    .box-push p{margin-bottom:10px;}
+    .box-push b{color:#F7F3EE;}
+    .box-push small{display:block; margin-top:8px; color:#E05555;}
+    .box-push .bp-btn{
+      width:100%; padding:13px; border:none; border-radius:12px; cursor:pointer; color:#fff;
+      background:linear-gradient(135deg,#F0834A,#D96A32); font:700 .8rem 'Poppins',sans-serif; letter-spacing:1px;
+    }
+    .box-push .bp-linha{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+    .box-push .bp-sec{background:none; border:1px solid #2A2A2F; color:#B8B2AA; border-radius:999px; padding:6px 12px; font-size:.7rem; cursor:pointer; white-space:nowrap;}
     #convite-foto{
       position:fixed; inset:0; z-index:100; background:rgba(0,0,0,.72);
       display:flex; align-items:center; justify-content:center; padding:20px;

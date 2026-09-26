@@ -188,6 +188,7 @@
 
 <main>
   <div id="box-celulas"></div>
+  <div id="box-push"></div>
 
   <!-- Obreiro: primeiro só os dias dele; a lista de todos fica logo abaixo -->
   <section id="meus-dias-sec">
@@ -442,6 +443,7 @@ function montarTudo(){
   }
   montarBarraUsuario();
   montarBoxCelulas(document.getElementById("box-celulas"));
+  montarBoxPush(document.getElementById("box-push"));
   try{
     await carregarPlano();
     montarTudo();

@@ -654,32 +654,51 @@ async function carregarObreiros(){
   try{
     const r = await chamarAdmin("listar");
     OBREIROS = r.lista;
+    /* situação de cada conta: pendente (aguardando liberação) · ativo · bloqueado */
+    const { data: st } = await sb.from("perfis").select("nome,status");
+    const mapa = {};
+    (st || []).forEach(p => mapa[p.nome] = p.status);
+    OBREIROS.forEach(o => o.status = o.ativou ? (mapa[o.nome] || "ativo") : null);
+    /* quem espera liberação aparece primeiro */
+    OBREIROS.sort((a, b) => (b.status === "pendente") - (a.status === "pendente"));
   }catch(e){
     cont.innerHTML = "<p style='color:var(--vermelho); font-size:.85rem;'>Não foi possível carregar (" +
       e.message + "). Se a mensagem falar em função não encontrada, a função admin-efraim ainda não foi instalada no Supabase.</p>";
     return;
   }
 
-  const ativos = OBREIROS.filter(o => o.ativou).length;
+  const liberados  = OBREIROS.filter(o => o.status === "ativo").length;
+  const aguardando = OBREIROS.filter(o => o.status === "pendente").length;
+  const bloqueados = OBREIROS.filter(o => o.status === "bloqueado").length;
+  const semSenha   = OBREIROS.filter(o => !o.ativou).length;
   document.getElementById("resumo-obreiros").innerHTML =
-    '<div class="box"><b>' + ativos + '/' + OBREIROS.length + '</b><span>já criaram senha</span></div>' +
-    '<div class="box"><b>' + (OBREIROS.length - ativos) + '</b><span>pendentes</span></div>';
+    '<div class="box"><b>' + liberados + '/' + OBREIROS.length + '</b><span>liberados</span></div>' +
+    '<div class="box"><b>' + aguardando + '</b><span>aguardando liberação</span></div>' +
+    '<div class="box"><b>' + bloqueados + '</b><span>bloqueados</span></div>' +
+    '<div class="box"><b>' + semSenha + '</b><span>sem senha ainda</span></div>';
 
   cont.innerHTML = "";
   OBREIROS.forEach(o => {
     const div = document.createElement("div");
     div.className = "obreiro";
     const selo = o.papel === "lider" ? '<span class="selo">liderança</span>' : '';
-    const estado = o.ativou
-      ? '<span class="estado ativo">✓ acesso ativo</span>'
-      : '<span class="estado pendente">aguardando primeiro acesso</span>';
+    const estados = {
+      ativo:     '<span class="estado ativo">✓ liberado</span>',
+      pendente:  '<span class="estado pendente">⏳ criou a senha · aguardando sua liberação</span>',
+      bloqueado: '<span class="estado" style="color:var(--vermelho)">⛔ bloqueado</span>'
+    };
+    const estado = o.ativou ? estados[o.status] : '<span class="estado">ainda não criou a senha</span>';
+    let acesso = "";
+    if(o.status === "pendente")  acesso = '<button data-acao="liberar" style="border-color:var(--verde);color:var(--verde)">liberar</button><button data-acao="bloquear">bloquear</button>';
+    if(o.status === "ativo")     acesso = '<button data-acao="bloquear">bloquear</button>';
+    if(o.status === "bloqueado") acesso = '<button data-acao="liberar" style="border-color:var(--verde);color:var(--verde)">desbloquear</button>';
 
     div.innerHTML =
       '<div class="quem"><b>' + o.nome + '</b>' + selo + estado + '</div>' +
-      '<div class="btns">' +
-        '<button data-acao="redefinir">redefinir acesso</button>' +
+      '<div class="btns">' + acesso +
+        (o.ativou ? '<button data-acao="redefinir">nova senha</button>' : '') +
         '<button data-acao="papel">' + (o.papel === "lider" ? "tirar liderança" : "tornar líder") + '</button>' +
-        '<button data-acao="remover" class="perigo">remover</button>' +
+        '<button data-acao="remover" class="perigo">excluir</button>' +
       '</div>';
 
     div.querySelectorAll("button").forEach(b => {
@@ -693,8 +712,10 @@ async function acaoObreiro(acao, o, botao){
   limparMsgObreiros();
 
   const perguntas = {
+    liberar:   "Liberar o acesso de " + o.nome + "?\n\nEle passa a entrar no site com o nome e a senha que criou.",
+    bloquear:  "Bloquear o acesso de " + o.nome + "?\n\nEle não consegue mais entrar, mas nada é apagado. Você pode desbloquear quando quiser.",
     redefinir: "Liberar o nome de " + o.nome + " para criar senha nova?\n\nA senha atual deixa de valer. As leituras e respostas dele são guardadas e voltam quando ele criar a senha nova.",
-    remover:   "Remover " + o.nome + " da equipe?\n\nO acesso e as respostas dele serão apagados. Isso não tem volta.",
+    remover:   "EXCLUIR " + o.nome + " da equipe?\n\nO nome sai da lista e o acesso e as respostas dele são apagados. Isso não tem volta.\n(Se for só temporário, use BLOQUEAR.)",
     papel:     o.papel === "lider"
                  ? "Tirar a liderança de " + o.nome + "?\n\nEle deixa de ver as respostas dos outros e de administrar acessos."
                  : "Tornar " + o.nome + " líder?\n\nEle passa a ver as respostas de todos e a administrar acessos, como você."
@@ -706,6 +727,11 @@ async function acaoObreiro(acao, o, botao){
   botao.disabled = true;
 
   try{
+    if(acao === "liberar" || acao === "bloquear"){
+      const { data, error } = await sb.rpc("definir_acesso", { p_nome: o.nome, p_status: acao === "liberar" ? "ativo" : "bloqueado" });
+      if(error) throw new Error(error.message.includes("NAO_PODE_ALTERAR_PROPRIO") ? "NAO_PODE_ALTERAR_PROPRIO" : error.message);
+      msgObreiros("ok", o.nome + (acao === "liberar" ? " está liberado para entrar no site." : " foi bloqueado."));
+    }
     if(acao === "redefinir"){
       const r = await chamarAdmin("redefinir", { nome: o.nome });
       mostrarCodigo(o.nome, r.codigo, "Nome liberado para senha nova");
@@ -713,7 +739,7 @@ async function acaoObreiro(acao, o, botao){
     }
     if(acao === "remover"){
       await chamarAdmin("remover", { nome: o.nome });
-      msgObreiros("ok", o.nome + " foi removido da equipe.");
+      msgObreiros("ok", o.nome + " foi excluído da equipe.");
       document.getElementById("codigo-novo").style.display = "none";
     }
     if(acao === "papel"){
@@ -752,6 +778,7 @@ function explicarErro(codigo){
     ULTIMO_LIDER:   "Você é o único líder — promova outra pessoa antes de fazer isso, senão ninguém consegue administrar o site.",
     NAO_REMOVA_A_SI:"Você não pode remover a si mesmo.",
     NAO_REBAIXE_A_SI:"Você não pode tirar a própria liderança.",
+    NAO_PODE_ALTERAR_PROPRIO:"Você não pode bloquear o próprio acesso.",
     JA_EXISTE:      "Já existe alguém com esse nome na lista.",
     SEM_SESSAO:     "Sua sessão expirou. Saia e entre de novo.",
     SESSAO_INVALIDA:"Sua sessão expirou. Saia e entre de novo."

@@ -170,6 +170,7 @@ const FORMATO = (new URLSearchParams(location.search).get("f") || "story").toLow
 document.body.className = FORMATO;
 
 let PLANO = [];
+const INICIO_PLANO = "2026-09-27";   /* o plano da equipe recomeçou nesta data: leituras anteriores ficam de fora */
 let PDF_DOC = null, PDF_FILE = null, PDF_NOME = "Plano_Devocional_Efraim.pdf";
 
 const ABREV = {"Mateus":"Mt","Marcos":"Mc","Lucas":"Lc","João":"Jo","Atos":"At","Romanos":"Rm",
@@ -468,9 +469,10 @@ function baixarEAbrir(){
 
   document.querySelectorAll("#formato a").forEach(a => a.classList.toggle("ativo", a.dataset.f === FORMATO));
   try{
-    const { data: plano, error } = await sb.from("devocional")
+    const { data: dados, error } = await sb.from("devocional")
       .select("data,livro,capitulo,referencia,nome").order("data");
-    if(error || !plano || !plano.length) throw new Error("O plano ainda não foi carregado no banco.");
+    const plano = (dados || []).filter(l => l.data >= INICIO_PLANO);
+    if(error || !plano.length) throw new Error("O plano ainda não foi carregado no banco.");
     PLANO = plano;
 
     const logo = await logoPronta();

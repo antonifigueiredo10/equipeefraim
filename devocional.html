@@ -299,6 +299,7 @@
 let PLANO = [];      // todas as leituras
 let FEITAS = [];     // marcações de toda a equipe
 let MINHAS = new Set();
+const INICIO_PLANO = "2026-09-27";   // o plano da equipe recomeçou nesta data: leituras anteriores ficam de fora
 
 const MESES = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
 
@@ -319,10 +320,10 @@ async function carregarPlano(){
   const { data: plano, error: e1 } = await sb.from("devocional")
     .select("data,livro,capitulo,referencia,nome").order("data");
   if(e1 || !plano) throw new Error("Não foi possível carregar o plano.");
-  PLANO = plano;
+  PLANO = plano.filter(l => l.data >= INICIO_PLANO);
 
   const { data: feitas } = await sb.from("leituras").select("data,nome,user_id");
-  FEITAS = feitas || [];
+  FEITAS = (feitas || []).filter(l => l.data >= INICIO_PLANO);
   MINHAS = new Set(FEITAS.filter(l => l.user_id === SESSAO.user.id).map(l => l.data));
 }
 

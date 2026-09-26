@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0B0B0D">
+<meta name="robots" content="noindex,nofollow">
+<title>Mapa de Células — Equipe Efraim | Aliançados</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-title" content="EQUIPE EFRAIM">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,500&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root{
+    --laranja:#F0834A; --laranja-claro:#F9A56E; --laranja-escuro:#D96A32;
+    --preto:#0B0B0D; --preto-card:#151518; --cinza-borda:#2A2A2F;
+    --branco:#F7F3EE; --texto-suave:#B8B2AA; --verde:#3DBB7A;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--preto); color:var(--branco); font-family:'Poppins',system-ui,sans-serif; min-height:100vh;
+    background-image:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(240,131,74,.18), transparent 60%);
+  }
+  .topo{text-align:center; padding:26px 18px 6px;}
+  .topo h1{font-family:'Playfair Display',serif; font-weight:800; font-size:clamp(1.5rem,5.5vw,2rem); letter-spacing:1px;}
+  .topo h1 span{color:var(--laranja);}
+  .topo p{color:var(--texto-suave); font-size:.75rem; letter-spacing:3px; text-transform:uppercase; margin-top:6px; font-weight:300;}
+  main{max-width:760px; margin:0 auto; padding:10px 16px 60px;}
+
+  #mapa{height:52vh; min-height:320px; border-radius:16px; border:1px solid var(--cinza-borda); margin-top:12px;}
+  .leaflet-popup-content-wrapper{border-radius:12px;}
+  .leaflet-popup-content{font-family:'Poppins',sans-serif; font-size:.8rem; line-height:1.5; margin:12px 14px;}
+  .leaflet-popup-content b{font-size:.9rem;}
+  .leaflet-popup-content a{color:#D96A32; font-weight:600;}
+  .pino{background:var(--laranja); border:2px solid #fff; border-radius:50% 50% 50% 0; transform:rotate(-45deg); box-shadow:0 2px 6px rgba(0,0,0,.5);}
+  .eu{background:#3B82F6; border:3px solid #fff; border-radius:50%; box-shadow:0 0 0 6px rgba(59,130,246,.3);}
+
+  .barra-acoes{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;}
+  .barra-acoes button, .barra-acoes select{
+    flex:1; min-width:150px; padding:12px; border-radius:12px; border:1px solid var(--laranja);
+    background:transparent; color:var(--laranja); font:600 .78rem 'Poppins',sans-serif; cursor:pointer;
+  }
+  .barra-acoes select{color:var(--branco); border-color:var(--cinza-borda); background:#0F0F12;}
+  .aviso{font-size:.78rem; color:var(--texto-suave); margin-top:10px; line-height:1.5; text-align:center;}
+
+  h2{font-size:.72rem; font-weight:600; color:var(--laranja); text-transform:uppercase; letter-spacing:2.5px; margin:24px 0 10px;}
+  .cel{
+    display:flex; gap:12px; align-items:flex-start; background:var(--preto-card); border:1px solid var(--cinza-borda);
+    border-radius:14px; padding:13px 14px; margin-bottom:9px; cursor:pointer;
+  }
+  .cel.perto{border-color:rgba(240,131,74,.55);}
+  .cel .km{min-width:60px; text-align:center; font-weight:700; color:var(--laranja); font-size:.88rem; padding-top:2px;}
+  .cel .info{flex:1; min-width:0;}
+  .cel .info b{display:block; font-size:.95rem; font-weight:600;}
+  .cel .info span{display:block; font-size:.74rem; color:var(--texto-suave); line-height:1.5;}
+  .cel .links{display:flex; flex-direction:column; gap:6px;}
+  .cel .links a{border:1px solid var(--laranja); color:var(--laranja); border-radius:999px; padding:6px 12px; font-size:.7rem; text-decoration:none; font-weight:600; text-align:center; white-space:nowrap;}
+  .voltar{display:block; text-align:center; margin-top:26px; color:var(--texto-suave); font-size:.78rem; text-decoration:none; letter-spacing:1px;}
+  footer{text-align:center; padding:24px 20px 40px; color:var(--texto-suave); font-size:.7rem; letter-spacing:2px; text-transform:uppercase; font-weight:300;}
+  footer span{color:var(--laranja);}
+</style>
+</head>
+<body>
+
+<div class="topo">
+  <h1>MAPA DE <span>CÉLULAS</span></h1>
+  <p>Aliançados · Campo Grande/MS</p>
+</div>
+
+<main>
+  <div id="mapa"></div>
+
+  <div class="barra-acoes">
+    <button type="button" id="btn-local" onclick="usarLocal(true)">📍 USAR MINHA LOCALIZAÇÃO</button>
+    <select id="filtro-dia" onchange="montarLista()">
+      <option value="">Todos os dias</option>
+      <option>segunda</option><option>terça</option><option>quarta</option>
+      <option>quinta</option><option>sexta</option><option>sábado</option><option>domingo</option>
+    </select>
+  </div>
+  <div class="aviso" id="aviso">Permita a localização para ver as células mais próximas de você.</div>
+
+  <h2 id="tit-lista">Células</h2>
+  <div id="lista"></div>
+
+  <a class="voltar" href="devocional.html">← Voltar</a>
+</main>
+
+<footer>Aliançados · <span>Lugar de Crescimento</span> · 2026</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+/* Mapa de células — exige login. A localização fica só no aparelho. */
+let MAPA, POS = null, MARCAS = {}, EU = null;
+
+function pinoIcone(){ return L.divIcon({ className: "", html: '<div class="pino" style="width:22px;height:22px"></div>', iconSize: [22,22], iconAnchor: [11,22], popupAnchor: [0,-20] }); }
+function euIcone(){ return L.divIcon({ className: "", html: '<div class="eu" style="width:18px;height:18px"></div>', iconSize: [18,18], iconAnchor: [9,9] }); }
+
+function telLink(t){
+  const n = (t || "").split("/")[0].replace(/\D/g, "");
+  return n ? (n.length <= 11 ? "55" + n : n) : "";
+}
+function popup(c){
+  const zap = telLink(c.telefone);
+  return '<b>' + c.nome + '</b><br>' +
+    (c.lideres ? 'Líderes: ' + c.lideres + '<br>' : '') +
+    (c.modelo ? 'Célula de ' + c.modelo + '<br>' : '') +
+    (c.dia ? c.dia + ' · ' + (c.horario || '') + '<br>' : '') +
+    c.endereco + ' — ' + (c.bairro || '') + '<br>' +
+    (c.km != null ? '<b style="color:#D96A32">' + textoDist(c.km) + ' de você</b><br>' : '') +
+    '<a href="' + linkRota(c) + '" target="_blank" rel="noopener">Como chegar</a>' +
+    (zap ? ' · <a href="https://wa.me/' + zap + '" target="_blank" rel="noopener">WhatsApp</a>' : '');
+}
+
+function montarLista(){
+  const dia = document.getElementById("filtro-dia").value;
+  let lista = POS ? ordenarPorDistancia(CELULAS, POS) : CELULAS.slice();
+  if(dia) lista = lista.filter(c => (c.dia || "").toLowerCase().startsWith(dia));
+  document.getElementById("tit-lista").textContent = POS ? "Mais próximas de você" : "Células (" + lista.length + ")";
+  document.getElementById("lista").innerHTML = lista.length ? lista.map((c, i) =>
+    '<div class="cel' + (POS && i < 3 ? ' perto' : '') + '" data-id="' + c.id + '">' +
+      (POS ? '<div class="km">' + textoDist(c.km) + '</div>' : '') +
+      '<div class="info"><b>' + c.nome + '</b>' +
+        '<span>' + (c.dia || '') + ' · ' + (c.horario || '') + ' · ' + (c.modelo || '') + '</span>' +
+        '<span>' + c.endereco + ' — ' + (c.bairro || '') + '</span>' +
+        '<span>Líderes: ' + (c.lideres || '—') + '</span></div>' +
+      '<div class="links"><a href="' + linkRota(c) + '" target="_blank" rel="noopener">ir</a></div>' +
+    '</div>').join("") : "<p class='aviso'>Nenhuma célula nesse dia.</p>";
+  document.querySelectorAll(".cel").forEach(d => d.onclick = e => {
+    if(e.target.tagName === "A") return;
+    const m = MARCAS[d.dataset.id];
+    if(m){ MAPA.setView(m.getLatLng(), 15); m.openPopup(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  });
+}
+
+async function usarLocal(forcar){
+  const aviso = document.getElementById("aviso");
+  aviso.textContent = "Procurando sua localização...";
+  try{
+    POS = await pegarLocalizacao(forcar);
+    CELULAS.forEach(c => { c.km = distKm(POS.lat, POS.lng, c.lat, c.lng); MARCAS[c.id].setPopupContent(popup(c)); });
+    if(EU) EU.setLatLng([POS.lat, POS.lng]); else EU = L.marker([POS.lat, POS.lng], { icon: euIcone() }).addTo(MAPA).bindPopup("Você está aqui");
+    const perto = ordenarPorDistancia(CELULAS, POS).slice(0, 3);
+    MAPA.fitBounds(L.latLngBounds([[POS.lat, POS.lng], ...perto.map(c => [c.lat, c.lng])]).pad(0.3));
+    aviso.textContent = "A célula mais perto é a " + perto[0].nome + ", a " + textoDist(perto[0].km) + ".";
+  }catch(e){
+    aviso.textContent = e && e.code === 1
+      ? "Localização bloqueada. Libere nas configurações do navegador (cadeado ao lado do endereço) e toque em USAR MINHA LOCALIZAÇÃO."
+      : "Não foi possível pegar sua localização agora. Tente de novo.";
+  }
+  montarLista();
+}
+
+(async function(){
+  const perfil = await exigirLogin();
+  if(!perfil) return;
+  montarBarraUsuario();
+  if(EH_LIDER()) document.querySelector(".voltar").href = "index.html";
+
+  MAPA = L.map("mapa").setView([-20.4697, -54.6201], 12);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19, attribution: "&copy; OpenStreetMap"
+  }).addTo(MAPA);
+
+  try{ await carregarCelulas(); }
+  catch(e){ document.getElementById("aviso").textContent = "Não foi possível carregar as células."; return; }
+  CELULAS.forEach(c => { MARCAS[c.id] = L.marker([c.lat, c.lng], { icon: pinoIcone() }).addTo(MAPA).bindPopup(popup(c)); });
+  MAPA.fitBounds(L.latLngBounds(CELULAS.map(c => [c.lat, c.lng])).pad(0.1));
+  montarLista();
+  usarLocal(false);
+})();
+</script>
+</body>
+</html>

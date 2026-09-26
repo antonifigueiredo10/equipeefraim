@@ -215,6 +215,86 @@ async function enviarFoto(arquivo){
   }
 }
 
+/* ======================= CÉLULAS PERTO DE MIM =======================
+   Tabela "celulas" no Supabase (só quem está liberado lê).
+   A localização do obreiro fica só no aparelho dele — nada é gravado. */
+let CELULAS = null;
+async function carregarCelulas(){
+  if(CELULAS) return CELULAS;
+  const { data, error } = await sb.from("celulas").select("*").eq("ativa", true).order("nome");
+  if(error) throw error;
+  CELULAS = data || [];
+  return CELULAS;
+}
+
+function distKm(a, b, c, d){
+  const r = x => x * Math.PI / 180, R = 6371;
+  const dLat = r(c - a), dLng = r(d - b);
+  const h = Math.sin(dLat/2)**2 + Math.cos(r(a)) * Math.cos(r(c)) * Math.sin(dLng/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+function textoDist(km){
+  return km < 1 ? Math.round(km * 1000) + " m" : km.toFixed(1).replace(".", ",") + " km";
+}
+function linkRota(c){
+  return "https://www.google.com/maps/dir/?api=1&destination=" + c.lat + "," + c.lng;
+}
+
+/* Pede a localização (o navegador mostra o pedido de permissão).
+   Guarda a última posição por 10 min para não perguntar a cada página. */
+function pegarLocalizacao(forcar){
+  return new Promise((ok, erro) => {
+    try{
+      const g = JSON.parse(sessionStorage.getItem("efraim-local") || "null");
+      if(!forcar && g && Date.now() - g.t < 6e5) return ok(g);
+    }catch(e){}
+    if(!navigator.geolocation) return erro(new Error("SEM_GPS"));
+    navigator.geolocation.getCurrentPosition(
+      p => {
+        const g = { lat: p.coords.latitude, lng: p.coords.longitude, t: Date.now() };
+        try{ sessionStorage.setItem("efraim-local", JSON.stringify(g)); }catch(e){}
+        ok(g);
+      },
+      e => erro(e),
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 300000 }
+    );
+  });
+}
+
+function ordenarPorDistancia(lista, pos){
+  return lista.map(c => ({ ...c, km: distKm(pos.lat, pos.lng, c.lat, c.lng) })).sort((a, b) => a.km - b.km);
+}
+
+/* Caixa "Células perto de você" para a página inicial */
+async function montarBoxCelulas(el, quantas = 3){
+  if(!el) return;
+  el.className = "box-celulas";
+  el.innerHTML = '<div class="bc-tit">📍 Células perto de você</div><div class="bc-corpo">procurando sua localização...</div>' +
+                 '<a class="bc-mapa" href="celulas.html">🗺️ VER MAPA DE CÉLULAS</a>';
+  const corpo = el.querySelector(".bc-corpo");
+  let lista;
+  try{ lista = await carregarCelulas(); }
+  catch(e){ corpo.textContent = "Não foi possível carregar as células agora."; return; }
+  try{
+    const pos = await pegarLocalizacao();
+    const perto = ordenarPorDistancia(lista, pos).slice(0, quantas);
+    corpo.innerHTML = perto.map(c =>
+      '<div class="bc-item">' +
+        '<div class="bc-km">' + textoDist(c.km) + '</div>' +
+        '<div class="bc-info"><b>' + c.nome + '</b><span>' + (c.bairro || "") + ' · ' + (c.dia || "") + ' ' + (c.horario || "") + '</span></div>' +
+        '<a class="bc-ir" href="' + linkRota(c) + '" target="_blank" rel="noopener">ir</a>' +
+      '</div>').join("");
+  }catch(e){
+    corpo.innerHTML = '<p>Para mostrar as células mais próximas, o app precisa da sua localização.</p>' +
+      '<button type="button" class="bc-permitir">📍 PERMITIR LOCALIZAÇÃO</button>' +
+      (e && e.code === 1 ? '<small>Se você já recusou antes, libere nas configurações do navegador (cadeado ao lado do endereço).</small>' : '');
+    corpo.querySelector(".bc-permitir").onclick = async () => {
+      try{ await pegarLocalizacao(true); montarBoxCelulas(el, quantas); }
+      catch(e2){ corpo.querySelector("small") || corpo.insertAdjacentHTML("beforeend", '<small>Localização bloqueada. Libere nas configurações do navegador (cadeado ao lado do endereço) e toque de novo.</small>'); }
+    };
+  }
+}
+
 /* Estilo da barra + oculta a página até o login ser confirmado
    (evita o "flash" de conteúdo antes do redirecionamento) */
 (function(){
@@ -244,6 +324,29 @@ async function enviarFoto(arquivo){
     }
     .avatar img{width:100%; height:100%; object-fit:cover; display:block;}
     .avatar.grande{width:96px; height:96px; font-size:1.8rem; margin:0 auto 14px; cursor:default;}
+    .box-celulas{
+      background:linear-gradient(135deg, rgba(240,131,74,.12), #151518 60%); border:1px solid rgba(240,131,74,.45);
+      border-radius:16px; padding:16px; margin:6px 0 22px; font-family:'Poppins',system-ui,sans-serif; color:#F7F3EE;
+    }
+    .box-celulas .bc-tit{font-size:.72rem; font-weight:700; color:#F0834A; letter-spacing:2px; text-transform:uppercase; margin-bottom:10px;}
+    .box-celulas .bc-corpo{font-size:.82rem; color:#B8B2AA;}
+    .box-celulas .bc-corpo p{margin-bottom:10px; line-height:1.5;}
+    .box-celulas .bc-corpo small{display:block; margin-top:8px; font-size:.7rem; line-height:1.5;}
+    .box-celulas .bc-item{display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid #2A2A2F;}
+    .box-celulas .bc-item:last-child{border-bottom:none;}
+    .box-celulas .bc-km{min-width:58px; text-align:center; font-weight:700; color:#F0834A; font-size:.85rem;}
+    .box-celulas .bc-info{flex:1; min-width:0;}
+    .box-celulas .bc-info b{display:block; color:#F7F3EE; font-size:.88rem; font-weight:600;}
+    .box-celulas .bc-info span{font-size:.72rem; color:#B8B2AA;}
+    .box-celulas .bc-ir{border:1px solid #F0834A; color:#F0834A; border-radius:999px; padding:6px 14px; font-size:.72rem; text-decoration:none; font-weight:600;}
+    .box-celulas .bc-permitir{
+      width:100%; padding:12px; border:1px solid #F0834A; background:transparent; color:#F0834A;
+      border-radius:12px; font:700 .78rem 'Poppins',sans-serif; letter-spacing:1px; cursor:pointer;
+    }
+    .box-celulas .bc-mapa{
+      display:block; text-align:center; margin-top:12px; padding:12px; border-radius:12px; text-decoration:none;
+      background:linear-gradient(135deg,#F0834A,#D96A32); color:#fff; font:700 .78rem 'Poppins',sans-serif; letter-spacing:1px;
+    }
     #convite-foto{
       position:fixed; inset:0; z-index:100; background:rgba(0,0,0,.72);
       display:flex; align-items:center; justify-content:center; padding:20px;

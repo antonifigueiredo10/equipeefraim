@@ -187,6 +187,8 @@
 </div>
 
 <main>
+  <div id="box-celulas"></div>
+
   <!-- Obreiro: primeiro só os dias dele; a lista de todos fica logo abaixo -->
   <section id="meus-dias-sec">
     <h2 class="secao">📌 Seus dias de devocional</h2>
@@ -439,6 +441,7 @@ function montarTudo(){
     document.getElementById("resto").style.display = "none";
   }
   montarBarraUsuario();
+  montarBoxCelulas(document.getElementById("box-celulas"));
   try{
     await carregarPlano();
     montarTudo();

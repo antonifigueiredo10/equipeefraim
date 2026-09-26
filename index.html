@@ -260,11 +260,14 @@
   <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:20px;">
     <a href="escala.html" style="display:inline-block; padding:12px 24px; background:linear-gradient(135deg, var(--laranja), var(--laranja-escuro)); color:#fff; border-radius:999px; text-decoration:none; font-weight:700; font-size:.85rem; letter-spacing:1px; box-shadow:0 6px 24px rgba(240,131,74,.35);">📋 ESCALA DE DOMINGO</a>
     <a href="devocional.html" style="display:inline-block; padding:12px 24px; background:transparent; border:1px solid var(--laranja); color:var(--laranja); border-radius:999px; text-decoration:none; font-weight:700; font-size:.85rem; letter-spacing:1px;">📖 PLANO DEVOCIONAL</a>
+    <a href="celulas.html" style="display:inline-block; padding:12px 24px; background:transparent; border:1px solid var(--laranja); color:var(--laranja); border-radius:999px; text-decoration:none; font-weight:700; font-size:.85rem; letter-spacing:1px;">📍 CÉLULAS</a>
   </div>
   <div class="demo" id="aviso-demo"></div>
 </div>
 
 <main>
+  <div id="box-celulas"></div>
+
   <!-- ============ FORMULÁRIO ============ -->
   <div id="formulario">
     <p class="intro">Servo(a), confirme sua <strong>disponibilidade</strong> para as próximas escalas.<br>Sua resposta ajuda a montar a escala e os postos de serviço. 🙏</p>
@@ -807,6 +810,7 @@ function explicarErro(codigo){
   /* Obreiro usa só o devocional; escala e disponibilidade ficam com a liderança */
   if(!EH_LIDER()){ location.replace("devocional.html"); return; }
   montarBarraUsuario();
+  montarBoxCelulas(document.getElementById("box-celulas"));
   document.getElementById("nome-logado").textContent = perfil.nome;
   if(EH_LIDER()) document.getElementById("link-admin").style.display = "block";
   await carregarNomes();

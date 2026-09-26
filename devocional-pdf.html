@@ -10,7 +10,7 @@
   :root{
     --laranja:#FF8126; --pill-bg:#FDE7D4; --pill-tx:#C9681C;
     --fundo:#F2F5F9; --card:#FFFFFF; --escuro:#17181D; --escuro2:#23242A;
-    --cinza:#8A9099; --cinza2:#9AA0A8;
+    --cinza:#8A9099; --cinza2:#9AA0A8; --zap:#25D366;
   }
   *{box-sizing:border-box; margin:0; padding:0; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
   body{background:#DDE2E9; font-family:'Segoe UI',system-ui,-apple-system,sans-serif; color:var(--escuro);}
@@ -18,22 +18,35 @@
   /* Barra de controle — some na impressão */
   .controle{
     position:sticky; top:0; z-index:10; background:var(--escuro); border-bottom:1px solid #2A2B31;
-    padding:12px 16px; display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap;
+    padding:10px 14px 12px;
   }
-  .controle span{font-size:.78rem; color:#B9BDC4;}
-  .controle button, .controle a{
-    padding:9px 18px; border-radius:999px; border:1px solid var(--laranja);
-    background:transparent; color:var(--laranja); font-size:.75rem; cursor:pointer;
-    font-family:inherit; text-decoration:none;
+  .controle .ct{max-width:520px; margin:0 auto; display:flex; flex-direction:column; gap:9px;}
+  .controle .ct-status{font-size:.74rem; color:#B9BDC4; text-align:center;}
+  .controle .ct-acoes{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .controle .ct-acoes button{
+    display:flex; align-items:center; justify-content:center; gap:7px; padding:12px 8px;
+    border:none; border-radius:12px; cursor:pointer; color:#fff;
+    font-family:inherit; font-size:.8rem; font-weight:700; letter-spacing:.2px; line-height:1;
   }
-  .controle button.destaque{background:var(--laranja); color:#fff; font-weight:600;}
-  .controle button:hover, .controle a:hover{background:rgba(255,129,38,.14);}
+  .controle .ct-acoes button svg{width:18px; height:18px; flex:none; fill:currentColor;}
+  .controle .ct-acoes .pdf{background:var(--laranja); box-shadow:0 4px 16px rgba(255,129,38,.28);}
+  .controle .ct-acoes .zap{background:var(--zap); box-shadow:0 4px 16px rgba(37,211,102,.28);}
+  .controle .ct-acoes button:active{transform:scale(.98);}
+  .controle .ct-acoes button:disabled{opacity:.5; cursor:default;}
+  .controle .ct-sec{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .controle .ct-formato{display:inline-flex; border:1px solid #3A3B42; border-radius:999px; padding:3px; gap:2px;}
+  .controle .ct-formato a{padding:6px 14px; border-radius:999px; font-size:.72rem; font-weight:600; color:#B9BDC4; text-decoration:none;}
+  .controle .ct-formato a.ativo{background:rgba(255,129,38,.18); color:var(--laranja);}
+  .controle .ct-voltar{font-size:.74rem; color:#B9BDC4; text-decoration:none; padding:6px 4px;}
+  .controle .ct-voltar:hover{color:var(--laranja);}
 
   .folha{margin:18px auto; }
   .pagina{background:var(--fundo); box-shadow:0 6px 26px rgba(0,0,0,.22); margin:0 auto 16px;}
 
   /* ============ STORY (WhatsApp) ============ */
   body.story .pagina{width:323pt; height:699pt; padding:14pt;}
+  /* durante a paginação a página fica sempre no tamanho do PDF, em qualquer tela */
+  body.medindo .pagina{width:323pt !important; height:699pt !important; padding:14pt !important;}
 
   .cab{background:var(--escuro); border-radius:14pt; padding:13pt 14pt; display:flex; align-items:center;}
   .cab img{width:30pt; margin-right:11pt;}
@@ -49,7 +62,7 @@
 
   .st{margin-top:9pt;}
   .st .lin{display:flex; margin-bottom:8pt;}
-  .st .b{background:var(--card); border-radius:12pt; padding:9pt 11pt; width:145.5pt;}
+  .st .b{background:var(--card); border-radius:12pt; padding:9pt 11pt; flex:1; min-width:0;}
   .st .b:first-child{margin-right:8pt;}
   .st .b .et{font-size:5.4pt; color:var(--cinza2); letter-spacing:1.8pt;}
   .st .b .v{font-size:13pt; font-weight:700; margin-top:3pt;}
@@ -61,15 +74,23 @@
   .marca .ar{font-size:6.6pt; color:var(--laranja); margin-left:6pt;}
   .marca .aps{font-size:5.6pt; color:#8E939B; margin-top:3pt;}
 
-  .tit{font-size:6.4pt; color:var(--laranja); letter-spacing:2.4pt; font-weight:700; margin:9pt 0 6pt 4pt;}
+  .tit{font-size:7pt; color:var(--laranja); letter-spacing:2.4pt; font-weight:700; margin:9pt 0 6pt 4pt;}
 
-  .c{background:var(--card); border-radius:9pt; padding:5.5pt 11pt; margin-bottom:4pt;}
-  .c .d{font-size:6.4pt; color:var(--cinza);}
-  .c .n{font-size:8.8pt; font-weight:700; margin-top:.5pt;}
-  .c .r{display:inline-block; background:var(--pill-bg); color:var(--pill-tx); border-radius:20pt;
-        padding:1.8pt 7pt; font-size:5.9pt; font-weight:700; margin-top:3pt;}
+  /* Cartão da leitura: data, obreiro e referência em uma linha, com letra grande */
+  .c{background:var(--card); border-radius:10pt; padding:6.5pt 10pt; margin-bottom:4pt; display:flex; align-items:center; gap:9pt;}
+  .c .d{flex:none; min-width:36pt; text-align:center; font-size:10pt; font-weight:700; line-height:1.1;}
+  .c .d small{display:block; font-size:6pt; font-weight:600; color:var(--cinza); letter-spacing:1pt; text-transform:uppercase; margin-top:1.5pt;}
+  .c .n{flex:1; min-width:0; font-size:11.5pt; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .c .r{flex:none; background:var(--pill-bg); color:var(--pill-tx); border-radius:20pt;
+        padding:3pt 8pt; font-size:7.6pt; font-weight:700; white-space:nowrap;}
   .c.hoje{border:1.2pt solid var(--laranja);}
   .c.hoje .r{background:var(--laranja); color:#fff;}
+
+  /* No celular a página corre solta na largura da tela (o PDF continua 323×699pt) */
+  @media screen and (max-width:480px){
+    body.story .folha{margin:12px 10px;}
+    body.story .pagina{width:auto; height:auto; padding:12pt;}
+  }
 
   /* ============ A4 (impressão) ============ */
   body.a4 .pagina{width:210mm; min-height:297mm; padding:12mm 11mm 13mm; background:#fff;}
@@ -103,19 +124,30 @@
     body.a4 tr{page-break-inside:avoid;}
   }
   @page{margin:0;}
-  body.a4{ }
-  @media print{ body.a4{ } }
 </style>
 </head>
 <body>
 
-<div class="controle">
-  <span id="status">Carregando o plano...</span>
-  <button class="destaque" onclick="window.print()">Salvar como PDF</button>
-  <a href="devocional-pdf.html?f=story">📱 story</a>
-  <a href="devocional-pdf.html?f=a4">🖨️ A4</a>
-  <a href="devocional.html">← voltar</a>
-</div>
+<div class="controle"><div class="ct">
+  <div class="ct-status" id="status">Carregando o plano...</div>
+  <div class="ct-acoes">
+    <button type="button" class="pdf" onclick="window.print()">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm7 1.5V9h5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 11.5v6.5m-3-3 3 3 3-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Salvar como PDF
+    </button>
+    <button type="button" class="zap" id="btn-zap" onclick="enviarWhats()" disabled>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.885-9.885 9.885m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+      Enviar no WhatsApp
+    </button>
+  </div>
+  <div class="ct-sec">
+    <div class="ct-formato" id="formato">
+      <a href="devocional-pdf.html?f=story" data-f="story">📱 Story</a>
+      <a href="devocional-pdf.html?f=a4" data-f="a4">🖨️ A4</a>
+    </div>
+    <a class="ct-voltar" href="devocional.html">← voltar</a>
+  </div>
+</div></div>
 
 <div class="folha" id="folha"></div>
 <img src="logo1.png" id="logo-fonte" style="display:none" alt="">
@@ -128,14 +160,14 @@
    ?f=story  → páginas 323×699pt, para mandar no WhatsApp
    ?f=a4     → tabela completa em A4, para imprimir
    O navegador faz o PDF: "Salvar como PDF" no diálogo de impressão.
+   "Enviar no WhatsApp" abre o WhatsApp com as leituras da semana em texto.
    Segue o modelo do devocional impresso da equipe (fundo claro).
    ================================================================ */
 
 const FORMATO = (new URLSearchParams(location.search).get("f") || "story").toLowerCase() === "a4" ? "a4" : "story";
 document.body.className = FORMATO;
 
-const POR_PAGINA = 14;   // cartões por página no story
-const NA_CAPA    = 4;    // cartões que cabem abaixo da capa
+let PLANO = [];
 
 const ABREV = {"Mateus":"Mt","Marcos":"Mc","Lucas":"Lc","João":"Jo","Atos":"At","Romanos":"Rm",
   "1 Coríntios":"1Co","2 Coríntios":"2Co","Gálatas":"Gl","Efésios":"Ef","Filipenses":"Fp",
@@ -152,6 +184,7 @@ function dm(iso){ const p = iso.split("-"); return p[2]+"/"+p[1]; }
 function diaSemana(iso){
   return new Date(iso+"T12:00:00").toLocaleDateString("pt-BR",{weekday:"short"}).replace(".","");
 }
+function ref(l){ return l.referencia.replace("-", " "); }
 
 /* A logo entra recortada, para o PDF sair fiel ao modelo */
 function logoPronta(){
@@ -184,24 +217,26 @@ function logoPronta(){
     if(img.complete && img.naturalWidth>0) processa(); else img.onload = processa;
   });
 }
+/* Garante que a logo recortada já esteja decodificada antes de medir as páginas */
+function imagemPronta(src){
+  return new Promise(resolve => { const im = new Image(); im.onload = im.onerror = () => resolve(); im.src = src; });
+}
 
 function cartao(l, hoje){
   return '<div class="c' + (l.data === hoje ? " hoje" : "") + '">' +
-    '<div class="d">' + br(l.data) + '</div>' +
+    '<div class="d">' + dm(l.data) + '<small>' + diaSemana(l.data) + '</small></div>' +
     '<div class="n">' + l.nome + '</div>' +
-    '<div class="r">' + l.referencia + '</div></div>';
+    '<div class="r">' + ref(l) + '</div></div>';
 }
 
 /* ---------------- STORY ---------------- */
-function montarStory(plano, logo){
-  const hoje = hojeISO();
+function capaStory(plano, logo){
   const livros = [...new Set(plano.map(l => l.livro))];
   const pessoas = new Set(plano.map(l => l.nome)).size;
   const periodo = dm(plano[0].data) + " -> " + dm(plano[plano.length-1].data);
   const abrev = livros.map(l => ABREV[l] || l).join(" • ");
 
-  let html = '<div class="pagina">' +
-    '<div class="cab"><img src="' + logo + '">' +
+  return '<div class="cab"><img src="' + logo + '">' +
       '<div><div class="et">PLANO DEVOCIONAL</div>' +
       '<h1>Equipe 02 Efraim<br><span class="o">(frutífera)</span></h1></div></div>' +
     '<div class="cob"><div class="et">COBERTURA PASTORAL</div>' +
@@ -218,15 +253,34 @@ function montarStory(plano, logo){
     '<div class="marca"><img src="' + logo + '">' +
       '<div><div><b>Aliançados</b><span class="ar">@ aliancados_br</span></div>' +
       '<div class="aps">Ap.denilsonfonseca &nbsp; Ap.elisafonseca</div></div></div>' +
-    '<div class="tit">PRÓXIMAS LEITURAS</div>' +
-    plano.slice(0, NA_CAPA).map(l => cartao(l, hoje)).join("") +
-  '</div>';
+    '<div class="tit">PRÓXIMAS LEITURAS</div>';
+}
 
-  const resto = plano.slice(NA_CAPA);
-  for(let i = 0; i < resto.length; i += POR_PAGINA){
-    html += '<div class="pagina">' + resto.slice(i, i+POR_PAGINA).map(l => cartao(l, hoje)).join("") + '</div>';
+/* Pagina medindo de verdade: cada cartão entra na página enquanto couber,
+   sempre no tamanho do PDF (323×699pt), em qualquer tela. */
+function montarStory(plano, logo){
+  const hoje = hojeISO();
+  const folha = document.getElementById("folha");
+  folha.innerHTML = "";
+  document.body.classList.add("medindo");
+
+  function novaPagina(html){
+    const p = document.createElement("div");
+    p.className = "pagina"; p.innerHTML = html || "";
+    folha.appendChild(p); return p;
   }
-  return html;
+  function cabe(p, el){
+    const limite = p.getBoundingClientRect().bottom - parseFloat(getComputedStyle(p).paddingBottom);
+    return el.getBoundingClientRect().bottom <= limite + 0.5;
+  }
+
+  let pag = novaPagina(capaStory(plano, logo));
+  plano.forEach(l => {
+    pag.insertAdjacentHTML("beforeend", cartao(l, hoje));
+    const el = pag.lastElementChild;
+    if(!cabe(pag, el)){ pag = novaPagina(); pag.appendChild(el); }
+  });
+  document.body.classList.remove("medindo");
 }
 
 /* ---------------- A4 ---------------- */
@@ -234,7 +288,7 @@ function montarA4(plano, logo){
   const hoje = hojeISO();
   const linhas = plano.map(l =>
     '<tr><td class="d">' + br(l.data) + '</td><td class="w">' + diaSemana(l.data) + '</td>' +
-    '<td><span class="pill">' + l.referencia + '</span></td>' +
+    '<td><span class="pill">' + ref(l) + '</span></td>' +
     '<td class="n">' + l.nome + '</td></tr>').join("");
 
   return '<div class="pagina">' +
@@ -250,23 +304,44 @@ function montarA4(plano, logo){
   '</div>';
 }
 
+/* ---------------- WhatsApp: as leituras da semana, em texto ---------------- */
+function enviarWhats(){
+  if(!PLANO.length) return;
+  const hoje = hojeISO();
+  let i = PLANO.findIndex(l => l.data >= hoje);
+  if(i < 0) i = Math.max(0, PLANO.length - 7);
+  const semana = PLANO.slice(i, i + 7);
+  const linhas = semana.map(l => "• *" + diaSemana(l.data) + " " + dm(l.data) + "* · " + l.nome + " · " + ref(l));
+  const msg =
+    "📖 *PLANO DEVOCIONAL · Equipe 02 Efraim*\n" +
+    "_Leituras da semana_\n\n" +
+    linhas.join("\n") + "\n\n" +
+    "🙏 Ore pelo obreiro do dia e leia junto.\n" +
+    "Plano completo, lembrete e marcação de leitura:\n" +
+    "https://equipeefraim.com.br/devocional.html";
+  window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank", "noopener");
+}
+
 /* ---------------- Início ---------------- */
 (async function(){
   const perfil = await exigirLogin();
   if(!perfil) return;
 
+  document.querySelectorAll("#formato a").forEach(a => a.classList.toggle("ativo", a.dataset.f === FORMATO));
   const status = document.getElementById("status");
   try{
     const { data: plano, error } = await sb.from("devocional")
       .select("data,livro,capitulo,referencia,nome").order("data");
     if(error || !plano || !plano.length) throw new Error("O plano ainda não foi carregado no banco.");
+    PLANO = plano;
 
     const logo = await logoPronta();
-    document.getElementById("folha").innerHTML =
-      FORMATO === "a4" ? montarA4(plano, logo) : montarStory(plano, logo);
+    await imagemPronta(logo);
+    if(FORMATO === "a4") document.getElementById("folha").innerHTML = montarA4(plano, logo);
+    else montarStory(plano, logo);
 
-    status.textContent = plano.length + " leituras · " + br(plano[0].data) + " a " + br(plano[plano.length-1].data) +
-      (FORMATO === "a4" ? " · A4 para imprimir" : " · formato do WhatsApp");
+    status.textContent = plano.length + " leituras · " + br(plano[0].data) + " a " + br(plano[plano.length-1].data);
+    document.getElementById("btn-zap").disabled = false;
   }catch(e){
     status.textContent = e.message;
   }

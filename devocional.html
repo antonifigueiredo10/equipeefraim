@@ -125,13 +125,53 @@
   .leitura .marcar-mini.feita{border-color:var(--verde); color:var(--verde);}
   .sub-secao{font-size:.7rem; color:var(--texto-suave); letter-spacing:2px; text-transform:uppercase; margin:16px 0 8px 2px;}
   #meus-dias-sec{display:none;}
+  /* ---- Ícones (traço fino, laranja) ---- */
+  .ic{display:inline-flex; align-items:center; justify-content:center; flex:none;}
+  .ic svg{width:100%; height:100%; stroke:currentColor; fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round;}
+  h2.secao{display:flex; align-items:center; gap:10px;}
+  h2.secao .ic{
+    width:28px; height:28px; padding:6px; border-radius:9px; color:var(--laranja);
+    background:rgba(240,131,74,.12); border:1px solid rgba(240,131,74,.3);
+  }
+  /* ---- Próxima leitura (destaque) ---- */
+  .proxima{
+    position:relative; overflow:hidden; border-radius:20px; padding:20px 20px 18px; margin:6px 0 14px;
+    background:linear-gradient(135deg, rgba(240,131,74,.22), rgba(240,131,74,.04) 55%), var(--preto-card);
+    border:1px solid rgba(240,131,74,.5); box-shadow:0 10px 34px rgba(240,131,74,.12);
+  }
+  .proxima.hoje-e-dia{border-color:rgba(61,187,122,.7); background:linear-gradient(135deg, rgba(61,187,122,.22), rgba(61,187,122,.04) 55%), var(--preto-card);}
+  .proxima .px-ic{position:absolute; right:-10px; top:-8px; width:120px; height:120px; color:rgba(240,131,74,.13);}
+  .proxima.hoje-e-dia .px-ic{color:rgba(61,187,122,.15);}
+  .proxima .px-ola{font-size:.8rem; color:var(--texto-suave);}
+  .proxima .px-rot{font-size:.62rem; letter-spacing:2.5px; text-transform:uppercase; color:var(--laranja); font-weight:700; margin-top:12px;}
+  .proxima.hoje-e-dia .px-rot{color:var(--verde);}
+  .proxima .px-ref{font-family:'Playfair Display',serif; font-weight:800; font-size:2rem; line-height:1.1; margin-top:4px;}
+  .proxima .px-quando{display:flex; align-items:center; gap:8px; margin-top:8px; font-size:.8rem; color:var(--texto-suave);}
+  .proxima .px-quando .ic{width:16px; height:16px; color:var(--laranja);}
+  .proxima .px-pill{display:inline-block; margin-left:auto; padding:4px 12px; border-radius:999px; font-size:.68rem; font-weight:700; background:var(--laranja); color:#fff;}
+  .proxima.hoje-e-dia .px-pill{background:var(--verde);}
+  .proxima .px-prog{margin-top:14px; height:6px; border-radius:999px; background:#26262B; overflow:hidden;}
+  .proxima .px-prog i{display:block; height:100%; background:linear-gradient(90deg,var(--laranja),var(--verde));}
+  .proxima .px-sub{font-size:.7rem; color:var(--texto-suave); margin-top:6px;}
+  /* ---- Atalhos ---- */
+  .atalhos{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:6px;}
+  .atalhos button{
+    display:flex; flex-direction:column; align-items:center; gap:7px; padding:13px 4px 11px; cursor:pointer;
+    background:var(--preto-card); border:1px solid var(--cinza-borda); border-radius:14px; color:var(--branco);
+    font:600 .68rem 'Poppins',sans-serif; letter-spacing:.3px;
+  }
+  .atalhos button .ic{width:22px; height:22px; color:var(--laranja);}
+  .atalhos button:active{transform:scale(.97);}
+  .atalhos button:hover{border-color:rgba(240,131,74,.5);}
   #meus-dias-sec h2.secao:first-child{margin-top:8px;}
   .box-push .bp-tit, .box-celulas .bc-tit{display:none;}
   .cobertura{
     background:linear-gradient(160deg,#1C1C21,var(--preto-card)); border:1px solid var(--cinza-borda);
     border-radius:16px; padding:6px 18px 16px;
   }
-  .cobertura .cb-item{padding:12px 0; border-bottom:1px solid var(--cinza-borda);}
+  .cobertura .cb-item{display:flex; align-items:center; gap:14px; padding:13px 0; border-bottom:1px solid var(--cinza-borda);}
+  .cobertura .cb-item:last-child{border-bottom:none;}
+  .cobertura .cb-item .ic{width:40px; height:40px; padding:9px; border-radius:12px; color:var(--laranja); background:rgba(240,131,74,.12); border:1px solid rgba(240,131,74,.3);}
   .cobertura .cb-item small{display:block; font-size:.62rem; letter-spacing:2px; text-transform:uppercase; color:var(--texto-suave);}
   .cobertura .cb-item b{display:block; font-size:.95rem; font-weight:600; margin-top:3px;}
   .cobertura .cb-vers{margin-top:12px; font-family:'Playfair Display',serif; font-style:italic; font-size:.82rem; color:var(--texto-suave); line-height:1.6;}
@@ -200,30 +240,37 @@
 <main>
   <!-- Obreiro: primeiro só os dias dele; a lista de todos fica logo abaixo -->
   <section id="meus-dias-sec">
-    <h2 class="secao">📌 Seus dias de devocional</h2>
+    <div id="proxima" class="proxima"></div>
+    <div class="atalhos">
+      <button type="button" data-ir="meus-dias"><span class="ic" data-ic="calendar"></span>Meus dias</button>
+      <button type="button" data-ir="box-push"><span class="ic" data-ic="bell"></span>Lembrete</button>
+      <button type="button" data-ir="box-celulas"><span class="ic" data-ic="pin"></span>Células</button>
+      <button type="button" data-ir="todos"><span class="ic" data-ic="users"></span>Todos</button>
+    </div>
+    <h2 class="secao"><span class="ic" data-ic="calendar"></span>Seus dias de devocional</h2>
     <div id="meus-dias"></div>
-    <button type="button" class="btn-todos" id="btn-todos" onclick="alternarTodos()">📋 VER A LISTA COMPLETA DE TODOS</button>
+    <button type="button" class="btn-todos" id="btn-todos" onclick="alternarTodos()">VER A LISTA COMPLETA DE TODOS</button>
   </section>
 
   <div id="resto">
-  <h2 class="secao">📖 Leitura de hoje</h2>
+  <h2 class="secao"><span class="ic" data-ic="book"></span>Leitura de hoje</h2>
   <div class="hoje" id="hoje">
     <div class="quando">carregando...</div>
   </div>
 
-  <h2 class="secao">📊 Como a equipe está</h2>
+  <h2 class="secao"><span class="ic" data-ic="chart"></span>Como a equipe está</h2>
   <div class="cards" id="cards"></div>
   <div class="barra-progresso"><i id="barra" style="width:0%"></i></div>
 
-  <h2 class="secao">🗓️ Próximas leituras</h2>
+  <h2 class="secao"><span class="ic" data-ic="clock"></span>Próximas leituras</h2>
   <div id="proximas"></div>
 
-  <h2 class="secao">📋 Plano completo</h2>
+  <h2 class="secao"><span class="ic" data-ic="list"></span>Plano completo</h2>
   <input type="text" class="busca" id="busca" placeholder="Buscar por nome, livro ou capítulo...">
   <div id="plano-todo"></div>
   <button class="ver-mais" id="btn-ver-mais" onclick="alternarPlano()">ver o plano completo</button>
 
-  <h2 class="secao">⬇️ Levar para o grupo</h2>
+  <h2 class="secao"><span class="ic" data-ic="download"></span>Levar para o grupo</h2>
   <div class="acoes">
     <a href="devocional-pdf.html?f=story" target="_blank">📱 PDF para o WhatsApp</a>
     <a href="devocional-pdf.html?f=a4" target="_blank">🖨️ PDF para imprimir</a>
@@ -231,17 +278,17 @@
   </div><!-- /resto -->
 
   <!-- Depois do devocional: lembrete, células perto e a cobertura pastoral -->
-  <h2 class="secao">🔔 Lembrete</h2>
+  <h2 class="secao"><span class="ic" data-ic="bell"></span>Lembrete</h2>
   <div id="box-push"></div>
 
-  <h2 class="secao">📍 Células</h2>
+  <h2 class="secao"><span class="ic" data-ic="pin"></span>Células perto de você</h2>
   <div id="box-celulas"></div>
 
-  <h2 class="secao">🙏 Cobertura pastoral</h2>
+  <h2 class="secao"><span class="ic" data-ic="church"></span>Cobertura pastoral</h2>
   <div class="cobertura">
-    <div class="cb-item"><small>Apóstolos</small><b>Ap. Denilson Fonseca &amp; Apª. Elisa Fonseca</b></div>
-    <div class="cb-item"><small>Bispo e Pastora</small><b>Bispo André Sampaio &amp; Pra. Leidiane Sampaio</b></div>
-    <div class="cb-item"><small>Pastores da Equipe Efraim</small><b>Pr. Joel &amp; Pra. Vilma</b></div>
+    <div class="cb-item"><span class="ic" data-ic="crown"></span><div><small>Apóstolos</small><b>Ap. Denilson Fonseca &amp; Apª. Elisa Fonseca</b></div></div>
+    <div class="cb-item"><span class="ic" data-ic="shield"></span><div><small>Bispo e Pastora</small><b>Bispo André Sampaio &amp; Pra. Leidiane Sampaio</b></div></div>
+    <div class="cb-item"><span class="ic" data-ic="users"></span><div><small>Pastores da Equipe Efraim</small><b>Pr. Joel &amp; Pra. Vilma</b></div></div>
   </div>
 
   <a class="voltar" href="index.html">← Voltar para a disponibilidade</a>
@@ -399,6 +446,66 @@ document.getElementById("busca").addEventListener("input", e => {
   }
 });
 
+/* ---------- Ícones (desenhados em SVG, sem depender de nada externo) ---------- */
+const ICONES = {
+  book:'<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+  bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+  pin:'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+  calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  chart:'<path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/>',
+  download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/>',
+  church:'<path d="M10 9h4M12 7v5M14 22v-4a2 2 0 0 0-4 0v4M18 22V5.6a1 1 0 0 0-.5-.9L12 2 6.5 4.7a1 1 0 0 0-.5.9V22M18 10l3.5 1.8a1 1 0 0 1 .5.9V21a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-7.3a1 1 0 0 1 .5-.9L6 10"/>',
+  crown:'<path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7z"/><path d="M5 20h14"/>',
+  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>',
+  users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  check:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>'
+};
+function icone(nome){ return '<svg viewBox="0 0 24 24" aria-hidden="true">' + (ICONES[nome] || "") + '</svg>'; }
+function pintarIcones(raiz){ (raiz || document).querySelectorAll(".ic[data-ic]").forEach(el => { if(!el.firstChild) el.innerHTML = icone(el.dataset.ic); }); }
+
+/* Cartão de destaque: a próxima leitura do obreiro */
+function montarProxima(){
+  const cx = document.getElementById("proxima");
+  if(!cx) return;
+  const hoje = hojeISO();
+  const meus = PLANO.filter(l => l.nome === PERFIL.nome);
+  const prox = meus.find(l => l.data >= hoje);
+  const feitas = meus.filter(l => MINHAS.has(l.data)).length;
+  const pct = meus.length ? Math.round(feitas / meus.length * 100) : 0;
+  const ola = '<div class="px-ola">Olá, <b style="color:var(--branco)">' + PERFIL.nome.split(" ")[0] + '</b> 👋</div>';
+  if(!prox){
+    cx.className = "proxima";
+    cx.innerHTML = '<span class="ic px-ic">' + icone("book") + '</span>' + ola +
+      '<div class="px-rot">Devocional</div><div class="px-ref" style="font-size:1.3rem">' +
+      (meus.length ? "Suas leituras terminaram 🙌" : "Aguardando entrar no rodízio") + '</div>';
+    return;
+  }
+  const dias = Math.round((new Date(prox.data + "T12:00:00") - new Date(hoje + "T12:00:00")) / 864e5);
+  const ehHoje = dias === 0;
+  const d = prox.data.split("-");
+  cx.className = "proxima" + (ehHoje ? " hoje-e-dia" : "");
+  cx.innerHTML = '<span class="ic px-ic">' + icone("book") + '</span>' + ola +
+    '<div class="px-rot">' + (ehHoje ? "Hoje é o seu dia!" : "Sua próxima leitura") + '</div>' +
+    '<div class="px-ref">' + prox.referencia.replace("-", " ") + '</div>' +
+    '<div class="px-quando"><span class="ic">' + icone("calendar") + '</span>' + diaDaSemana(prox.data) + ', ' + d[2] + '/' + d[1] +
+      '<span class="px-pill">' + (ehHoje ? "HOJE" : dias === 1 ? "AMANHÃ" : "EM " + dias + " DIAS") + '</span></div>' +
+    '<div class="px-prog"><i style="width:' + pct + '%"></i></div>' +
+    '<div class="px-sub">' + feitas + ' de ' + meus.length + ' leituras suas registradas no plano</div>';
+}
+
+/* Atalhos do topo */
+document.querySelectorAll(".atalhos [data-ir]").forEach(b => b.onclick = () => {
+  if(b.dataset.ir === "todos"){
+    if(document.getElementById("resto").style.display === "none") alternarTodos();
+    else document.getElementById("resto").scrollIntoView({ behavior: "smooth" });
+    return;
+  }
+  const alvo = document.getElementById(b.dataset.ir);
+  if(alvo) window.scrollTo({ top: alvo.getBoundingClientRect().top + scrollY - 110, behavior: "smooth" });
+});
+
 /* ---------- Os dias do próprio obreiro ---------- */
 function linhaMinha(l, hoje){
   const d = dataCurta(l.data);
@@ -440,12 +547,12 @@ function alternarTodos(){
   const resto = document.getElementById("resto");
   const abrindo = resto.style.display === "none";
   resto.style.display = abrindo ? "block" : "none";
-  document.getElementById("btn-todos").textContent = abrindo ? "▲ ESCONDER A LISTA DE TODOS" : "📋 VER A LISTA COMPLETA DE TODOS";
+  document.getElementById("btn-todos").textContent = abrindo ? "▲ ESCONDER A LISTA DE TODOS" : "VER A LISTA COMPLETA DE TODOS";
   if(abrindo) resto.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function montarTudo(){
-  if(!EH_LIDER()) montarMeusDias();
+  if(!EH_LIDER()){ montarProxima(); montarMeusDias(); }
   montarHoje();
   montarCards();
   montarProximas();
@@ -463,6 +570,7 @@ function montarTudo(){
     document.getElementById("meus-dias-sec").style.display = "block";
     document.getElementById("resto").style.display = "none";
   }
+  pintarIcones();
   montarBarraUsuario();
   montarBoxCelulas(document.getElementById("box-celulas"));
   montarBoxPush(document.getElementById("box-push"));

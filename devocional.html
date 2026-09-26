@@ -116,6 +116,20 @@
   .leitura .meio b{display:block; font-size:.92rem; font-weight:600;}
   .leitura .meio span{font-size:.75rem; color:var(--texto-suave);}
   .leitura .ok{color:var(--verde); font-size:1rem;}
+  .leitura.passou{opacity:.72;}
+  .leitura .estado{font-size:.68rem; color:var(--laranja); white-space:nowrap; text-transform:uppercase; letter-spacing:1px;}
+  .leitura .marcar-mini{
+    padding:8px 12px; border-radius:999px; border:1px solid var(--laranja); background:transparent;
+    color:var(--laranja); font:600 .68rem 'Poppins',sans-serif; letter-spacing:.5px; cursor:pointer; white-space:nowrap;
+  }
+  .leitura .marcar-mini.feita{border-color:var(--verde); color:var(--verde);}
+  .sub-secao{font-size:.7rem; color:var(--texto-suave); letter-spacing:2px; text-transform:uppercase; margin:16px 0 8px 2px;}
+  #meus-dias-sec{display:none;}
+  .btn-todos{
+    display:block; width:100%; margin:18px 0 6px; padding:15px; border-radius:14px; cursor:pointer;
+    background:linear-gradient(135deg, var(--laranja), var(--laranja-escuro)); border:none; color:#fff;
+    font:700 .82rem 'Poppins',sans-serif; letter-spacing:1px; box-shadow:0 6px 24px rgba(240,131,74,.3);
+  }
 
   .acoes{display:flex; gap:8px; margin-top:18px; flex-wrap:wrap;}
   .acoes a, .acoes button{
@@ -173,6 +187,14 @@
 </div>
 
 <main>
+  <!-- Obreiro: primeiro só os dias dele; a lista de todos fica logo abaixo -->
+  <section id="meus-dias-sec">
+    <h2 class="secao">📌 Seus dias de devocional</h2>
+    <div id="meus-dias"></div>
+    <button type="button" class="btn-todos" id="btn-todos" onclick="alternarTodos()">📋 VER A LISTA COMPLETA DE TODOS</button>
+  </section>
+
+  <div id="resto">
   <h2 class="secao">📖 Leitura de hoje</h2>
   <div class="hoje" id="hoje">
     <div class="quando">carregando...</div>
@@ -195,6 +217,7 @@
     <a href="devocional-pdf.html?f=story" target="_blank">📱 PDF para o WhatsApp</a>
     <a href="devocional-pdf.html?f=a4" target="_blank">🖨️ PDF para imprimir</a>
   </div>
+  </div><!-- /resto -->
 
   <a class="voltar" href="index.html">← Voltar para a disponibilidade</a>
 </main>
@@ -263,13 +286,13 @@ function montarHoje(){
     '<div class="ref">' + leitura.referencia + '</div>' +
     '<div class="quem">' + (minha ? "É a sua vez, " + PERFIL.nome.split(" ")[0] + " 🙌" : leitura.nome) + '</div>' +
     (minha
-      ? '<button class="marcar' + (jaFiz ? " feita" : "") + '" id="btn-marcar" onclick="alternarLeitura(\'' + hoje + '\')">' +
+      ? '<button class="marcar' + (jaFiz ? " feita" : "") + '" id="btn-marcar" onclick="alternarLeitura(\'' + hoje + '\', this)">' +
         (jaFiz ? "✓ leitura registrada — desfazer" : "MARCAR COMO LIDA") + '</button>'
       : '<div class="aviso">Ore por ' + leitura.nome.split(" ")[0] + ' e leia junto. O plano é da equipe inteira. 🙏</div>');
 }
 
-async function alternarLeitura(data){
-  const btn = document.getElementById("btn-marcar");
+async function alternarLeitura(data, botao){
+  const btn = botao || document.getElementById("btn-marcar");
   btn.disabled = true;
   try{
     if(MINHAS.has(data)){
@@ -351,7 +374,53 @@ document.getElementById("busca").addEventListener("input", e => {
   }
 });
 
+/* ---------- Os dias do próprio obreiro ---------- */
+function linhaMinha(l, hoje){
+  const d = dataCurta(l.data);
+  const lida = MINHAS.has(l.data);
+  const passou = l.data < hoje;
+  let direita;
+  if(l.data > hoje){
+    const dias = Math.round((new Date(l.data + "T12:00:00") - new Date(hoje + "T12:00:00")) / 864e5);
+    direita = '<span class="estado">' + (dias === 1 ? "amanhã" : "em " + dias + " dias") + '</span>';
+  }else{
+    direita = '<button type="button" class="marcar-mini' + (lida ? " feita" : "") + '" onclick="alternarLeitura(\'' + l.data + '\', this)">' +
+              (lida ? "✓ lida" : (l.data === hoje ? "marcar como lida" : "marcar (atrasada)")) + '</button>';
+  }
+  return '<div class="leitura sua' + (l.data === hoje ? " atual" : "") + (passou && lida ? " passou" : "") + '">' +
+    '<div class="dia">' + d.dia + '<small>' + d.mes + '</small></div>' +
+    '<div class="meio"><b>' + l.referencia + '</b><span>' + diaDaSemana(l.data) + (l.data === hoje ? " · hoje é o seu dia 🙌" : "") + '</span></div>' +
+    direita + '</div>';
+}
+
+function montarMeusDias(){
+  const hoje = hojeISO();
+  const meus = PLANO.filter(l => l.nome === PERFIL.nome);
+  const cx = document.getElementById("meus-dias");
+  if(!meus.length){
+    cx.innerHTML = "<p style='color:var(--texto-suave); font-size:.85rem; line-height:1.6;'>Você ainda não tem dias no plano devocional. Fale com a liderança para entrar no rodízio.</p>";
+    return;
+  }
+  const vindo   = meus.filter(l => l.data >= hoje);
+  const pendent = meus.filter(l => l.data < hoje && !MINHAS.has(l.data));
+  const feitas  = meus.filter(l => l.data < hoje && MINHAS.has(l.data));
+  let html = vindo.length ? vindo.map(l => linhaMinha(l, hoje)).join("")
+                          : "<p style='color:var(--texto-suave); font-size:.85rem;'>Você não tem mais leituras até o fim do plano. 🙌</p>";
+  if(pendent.length) html += '<div class="sub-secao">Ficaram para trás</div>' + pendent.map(l => linhaMinha(l, hoje)).join("");
+  if(feitas.length)  html += '<div class="sub-secao">Já lidas</div>' + feitas.map(l => linhaMinha(l, hoje)).join("");
+  cx.innerHTML = html;
+}
+
+function alternarTodos(){
+  const resto = document.getElementById("resto");
+  const abrindo = resto.style.display === "none";
+  resto.style.display = abrindo ? "block" : "none";
+  document.getElementById("btn-todos").textContent = abrindo ? "▲ ESCONDER A LISTA DE TODOS" : "📋 VER A LISTA COMPLETA DE TODOS";
+  if(abrindo) resto.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 function montarTudo(){
+  if(!EH_LIDER()) montarMeusDias();
   montarHoje();
   montarCards();
   montarProximas();
@@ -363,7 +432,12 @@ function montarTudo(){
   const perfil = await exigirLogin();
   if(!perfil) return;
   /* "Voltar" só faz sentido para a liderança (obreiro só tem o devocional) */
-  if(!EH_LIDER()) document.querySelectorAll(".voltar").forEach(a => a.style.display = "none");
+  if(!EH_LIDER()){
+    document.querySelectorAll(".voltar").forEach(a => a.style.display = "none");
+    /* Obreiro vê primeiro os próprios dias; a lista de todos abre pelo botão */
+    document.getElementById("meus-dias-sec").style.display = "block";
+    document.getElementById("resto").style.display = "none";
+  }
   montarBarraUsuario();
   try{
     await carregarPlano();

@@ -465,7 +465,8 @@ const ICONES = {
 function icone(nome){ return '<svg viewBox="0 0 24 24" aria-hidden="true">' + (ICONES[nome] || "") + '</svg>'; }
 function pintarIcones(raiz){
   (raiz || document).querySelectorAll(".ic[data-ic]").forEach(el => { if(!el.firstChild) el.innerHTML = icone(el.dataset.ic); });
-  (raiz || document).querySelectorAll(".icc[data-icc]").forEach(el => { if(!el.firstChild) el.innerHTML = iconeCor(el.dataset.icc); });
+  if(typeof iconeCor === "function")   /* config.js antigo em cache: segue sem os ícones coloridos */
+    (raiz || document).querySelectorAll(".icc[data-icc]").forEach(el => { if(!el.firstChild) el.innerHTML = iconeCor(el.dataset.icc); });
 }
 
 /* Links da barra inferior: #todos abre a lista completa; #lembrete vai ao lembrete */

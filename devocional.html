@@ -125,6 +125,17 @@
   .leitura .marcar-mini.feita{border-color:var(--verde); color:var(--verde);}
   .sub-secao{font-size:.7rem; color:var(--texto-suave); letter-spacing:2px; text-transform:uppercase; margin:16px 0 8px 2px;}
   #meus-dias-sec{display:none;}
+  #meus-dias-sec h2.secao:first-child{margin-top:8px;}
+  .box-push .bp-tit, .box-celulas .bc-tit{display:none;}
+  .cobertura{
+    background:linear-gradient(160deg,#1C1C21,var(--preto-card)); border:1px solid var(--cinza-borda);
+    border-radius:16px; padding:6px 18px 16px;
+  }
+  .cobertura .cb-item{padding:12px 0; border-bottom:1px solid var(--cinza-borda);}
+  .cobertura .cb-item small{display:block; font-size:.62rem; letter-spacing:2px; text-transform:uppercase; color:var(--texto-suave);}
+  .cobertura .cb-item b{display:block; font-size:.95rem; font-weight:600; margin-top:3px;}
+  .cobertura .cb-vers{margin-top:12px; font-family:'Playfair Display',serif; font-style:italic; font-size:.82rem; color:var(--texto-suave); line-height:1.6;}
+  .cobertura .cb-vers span{font-family:'Poppins',sans-serif; font-style:normal; font-weight:700; color:var(--laranja); font-size:.72rem; margin-left:4px;}
   .btn-todos{
     display:block; width:100%; margin:18px 0 6px; padding:15px; border-radius:14px; cursor:pointer;
     background:linear-gradient(135deg, var(--laranja), var(--laranja-escuro)); border:none; color:#fff;
@@ -187,9 +198,6 @@
 </div>
 
 <main>
-  <div id="box-celulas"></div>
-  <div id="box-push"></div>
-
   <!-- Obreiro: primeiro só os dias dele; a lista de todos fica logo abaixo -->
   <section id="meus-dias-sec">
     <h2 class="secao">📌 Seus dias de devocional</h2>
@@ -221,6 +229,20 @@
     <a href="devocional-pdf.html?f=a4" target="_blank">🖨️ PDF para imprimir</a>
   </div>
   </div><!-- /resto -->
+
+  <!-- Depois do devocional: lembrete, células perto e a cobertura pastoral -->
+  <h2 class="secao">🔔 Lembrete</h2>
+  <div id="box-push"></div>
+
+  <h2 class="secao">📍 Células</h2>
+  <div id="box-celulas"></div>
+
+  <h2 class="secao">🙏 Cobertura pastoral</h2>
+  <div class="cobertura">
+    <div class="cb-item"><small>Apóstolos</small><b>Ap. Denilson Fonseca &amp; Apª. Elisa Fonseca</b></div>
+    <div class="cb-item"><small>Bispo e Pastora</small><b>Bispo André Sampaio &amp; Pra. Leidiane Sampaio</b></div>
+    <div class="cb-item"><small>Pastores da Equipe Efraim</small><b>Pr. Joel &amp; Pra. Vilma</b></div>
+  </div>
 
   <a class="voltar" href="index.html">← Voltar para a disponibilidade</a>
 </main>

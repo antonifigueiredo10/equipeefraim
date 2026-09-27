@@ -636,6 +636,26 @@ function msgObreiros(tipo, texto){
 }
 function limparMsgObreiros(){ document.getElementById("msg-obreiros").className = "msg"; }
 
+/* Mostra a senha temporária, com o recado pronto para o WhatsApp */
+function mostrarSenha(nome, senha){
+  const cx = document.getElementById("codigo-novo");
+  const recado = "Paz, " + nome.split(" ")[0] + "! Sua senha do site foi resetada. Entre em https://equipeefraim.com.br com seu nome e a senha temporária " +
+                 senha + " . Depois troque em Perfil → Trocar minha senha.";
+  cx.innerHTML =
+    '<div class="rotulo">Senha temporária de ' + nome + '</div>' +
+    '<div class="valor">' + senha + '</div>' +
+    '<div class="aviso">Mande <b>no privado</b>. Ele entra com essa senha e troca em Perfil → Trocar minha senha.</div>' +
+    '<button type="button" id="btn-copiar-codigo">copiar recado do WhatsApp</button>';
+  cx.style.display = "block";
+  document.getElementById("btn-copiar-codigo").onclick = function(){
+    navigator.clipboard.writeText(recado).then(() => {
+      this.textContent = "copiado!";
+      setTimeout(() => this.textContent = "copiar recado do WhatsApp", 1800);
+    });
+  };
+  cx.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
 /* Mostra o código gerado, com o recado pronto para o WhatsApp */
 function mostrarCodigo(nome, codigo, titulo){
   const cx = document.getElementById("codigo-novo");
@@ -669,8 +689,8 @@ async function carregarPedidos(){
     const div = document.createElement("div");
     div.className = "obreiro";
     div.innerHTML = '<div class="quem"><b>' + p.nome + '</b><span class="estado pendente">pediu em ' + quando + '</span></div>' +
-      '<div class="btns"><button data-a="liberar">liberar senha nova</button><button data-a="ignorar">ignorar</button></div>';
-    div.querySelector('[data-a=liberar]').onclick = e => acaoObreiro("redefinir", { nome: p.nome }, e.target);
+      '<div class="btns"><button data-a="liberar">resetar senha</button><button data-a="ignorar">ignorar</button></div>';
+    div.querySelector('[data-a=liberar]').onclick = e => acaoObreiro("senha", { nome: p.nome }, e.target);
     div.querySelector('[data-a=ignorar]').onclick = async () => {
       await sb.from("pedidos_senha").delete().eq("nome", p.nome);
       carregarPedidos();
@@ -735,7 +755,7 @@ async function carregarObreiros(){
       '<div class="quem"><b>' + o.nome + '</b>' + selo + estado + '</div>' +
       '<div class="btns">' + acesso +
         (o.foto ? '<button data-acao="tirarfoto">tirar foto</button>' : '') +
-        (o.ativou ? '<button data-acao="redefinir">nova senha</button>' : '') +
+        (o.ativou ? '<button data-acao="senha">resetar senha</button>' : '') +
         '<button data-acao="papel">' + (o.papel === "lider" ? "tirar liderança" : "tornar líder") + '</button>' +
         '<button data-acao="remover" class="perigo">excluir</button>' +
       '</div>';
@@ -754,6 +774,7 @@ async function acaoObreiro(acao, o, botao){
     tirarfoto: "Tirar a foto de perfil de " + o.nome + "?",
     liberar:   "Liberar o acesso de " + o.nome + "?\n\nEle passa a entrar no site com o nome e a senha que criou.",
     bloquear:  "Bloquear o acesso de " + o.nome + "?\n\nEle não consegue mais entrar, mas nada é apagado. Você pode desbloquear quando quiser.",
+    senha:     "Resetar a senha de " + o.nome + "?\n\nVocê recebe uma senha temporária para mandar no privado. Ele entra com ela e pode trocar em Perfil → Trocar minha senha. Nada é apagado.",
     redefinir: "Liberar o nome de " + o.nome + " para criar senha nova?\n\nA senha atual deixa de valer. As leituras e respostas dele são guardadas e voltam quando ele criar a senha nova.",
     remover:   "EXCLUIR " + o.nome + " da equipe?\n\nO nome sai da lista e o acesso e as respostas dele são apagados. Isso não tem volta.\n(Se for só temporário, use BLOQUEAR.)",
     papel:     o.papel === "lider"
@@ -778,6 +799,12 @@ async function acaoObreiro(acao, o, botao){
       const { data, error } = await sb.rpc("definir_acesso", { p_nome: o.nome, p_status: acao === "liberar" ? "ativo" : "bloqueado" });
       if(error) throw new Error(error.message.includes("NAO_PODE_ALTERAR_PROPRIO") ? "NAO_PODE_ALTERAR_PROPRIO" : error.message);
       msgObreiros("ok", o.nome + (acao === "liberar" ? " está liberado para entrar no site." : " foi bloqueado."));
+    }
+    if(acao === "senha"){
+      const r = await chamarAdmin("senha", { nome: o.nome });
+      mostrarSenha(o.nome, r.senha);
+      msgObreiros("ok", "Senha de " + o.nome + " resetada. Mande a senha temporária no privado.");
+      await sb.from("pedidos_senha").delete().eq("nome", o.nome);
     }
     if(acao === "redefinir"){
       const r = await chamarAdmin("redefinir", { nome: o.nome });
@@ -827,6 +854,8 @@ function explicarErro(codigo){
     NAO_REBAIXE_A_SI:"Você não pode tirar a própria liderança.",
     NAO_PODE_ALTERAR_PROPRIO:"Você não pode bloquear o próprio acesso.",
     JA_EXISTE:      "Já existe alguém com esse nome na lista.",
+    SEM_CONTA:      "Essa pessoa ainda não criou senha. Mande o código de primeiro acesso.",
+    ACAO_DESCONHECIDA: "A função admin-efraim no Supabase está desatualizada: Edge Functions → admin-efraim → cole o arquivo edge-function-admin.ts → Deploy.",
     SEM_SESSAO:     "Sua sessão expirou. Saia e entre de novo.",
     SESSAO_INVALIDA:"Sua sessão expirou. Saia e entre de novo."
   };

@@ -169,6 +169,7 @@ function abrirPerfil(){
       '<button type="button" class="fp-op" data-a="avisos"><span>' + iconeCor("lembrete") + '</span><i class="fp-av">Avisos do devocional</i></button>' +
       '<a class="fp-op" href="celulas.html"><span>' + iconeCor("celulas") + '</span>Mapa de células</a>' +
       '<a class="fp-op" href="manual.html"><span>' + iconeCor("devocional") + '</span>Como usar o app</a>' +
+      '<button type="button" class="fp-op" data-a="senha"><span>' + iconeCor("escala") + '</span>Trocar minha senha</button>' +
       (EH_LIDER() ? '<a class="fp-op" href="index.html#aprovar"><span>' + iconeCor("todos") + '</span><i class="fp-apr">Aprovar acessos</i></a>' : '') +
       '<button type="button" class="fp-sair" data-a="sair">Sair do app</button>' +
     '</div>';
@@ -178,11 +179,24 @@ function abrirPerfil(){
     if(a && a.dataset.a === "foto"){ cx.remove(); escolherFoto(); }
     if(a && a.dataset.a === "sair"){ sair(); }
     if(a && a.dataset.a === "avisos"){ alternarAvisos(a); }
+    if(a && a.dataset.a === "senha"){ trocarMinhaSenha(); }
   };
   document.body.appendChild(cx);
   rotuloAvisos(cx.querySelector('[data-a="avisos"]'));
   if(EH_LIDER()) contarPendentes(cx.querySelector(".fp-apr"));
 }
+/* A própria pessoa troca a senha (também serve depois da senha temporária da liderança) */
+async function trocarMinhaSenha(){
+  const s1 = prompt("Digite a senha nova (pelo menos 6 caracteres):");
+  if(s1 === null) return;
+  if(s1.length < 6){ alert("A senha precisa ter pelo menos 6 caracteres."); return; }
+  const s2 = prompt("Digite a senha nova de novo, para conferir:");
+  if(s2 === null) return;
+  if(s1 !== s2){ alert("As duas senhas não são iguais. Tente de novo."); return; }
+  const { error } = await sb.auth.updateUser({ password: s1 });
+  alert(error ? "Não deu certo agora. Saia, entre de novo e tente outra vez." : "Senha trocada! Use a nova na próxima vez que entrar.");
+}
+
 /* Quantos criaram a senha e esperam a liderança liberar */
 async function contarPendentes(el){
   if(!el) return;

@@ -170,7 +170,8 @@ function abrirPerfil(){
       '<a class="fp-op" href="celulas.html"><span>' + iconeCor("celulas") + '</span>Mapa de células</a>' +
       '<a class="fp-op" href="manual.html"><span>' + iconeCor("devocional") + '</span>Como usar o app</a>' +
       '<button type="button" class="fp-op" data-a="senha"><span>' + iconeCor("escala") + '</span>Trocar minha senha</button>' +
-      (EH_LIDER() ? '<a class="fp-op" href="index.html#aprovar"><span>' + iconeCor("todos") + '</span><i class="fp-apr">Aprovar acessos</i></a>' : '') +
+      (EH_LIDER() ? '<a class="fp-op" href="index.html#aprovar"><span>' + iconeCor("todos") + '</span><i class="fp-apr">Aprovar acessos</i></a>' +
+                    '<a class="fp-op" href="index.html#obreiros"><span>' + iconeCor("escala") + '</span>Obreiros e senhas</a>' : '') +
       '<button type="button" class="fp-sair" data-a="sair">Sair do app</button>' +
     '</div>';
   cx.onclick = e => {

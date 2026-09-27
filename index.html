@@ -200,6 +200,15 @@
   .pend-item button.nao{border-color:var(--vermelho); color:var(--vermelho);}
   .pend-nota{font-size:.7rem; color:var(--texto-suave); margin-top:10px; line-height:1.5;}
 
+  .oh-busca{
+    width:100%; padding:10px 12px; border:1px solid var(--cinza-borda); border-radius:10px; background:#0F0F12;
+    color:var(--branco); font-family:'Poppins',sans-serif; font-size:.9rem; margin:10px 0 2px;
+  }
+  .oh-busca:focus{outline:none; border-color:var(--laranja);}
+  #obreiros-home .codigo-caixa{margin:10px 0 4px;}
+  #obreiros-home .msg{margin-top:8px; padding:10px; font-size:.8rem;}
+  #obreiros-home .pend-item small.cod{font-family:ui-monospace,'Courier New',monospace; letter-spacing:2px; color:var(--laranja-claro);}
+
   /* ========== LISTA DE OBREIROS ========== */
   .obreiro{
     display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
@@ -289,6 +298,16 @@
     <div class="pend-tit">⏳ Aguardando sua aprovação<span id="pend-n"></span></div>
     <div id="pend-lista"></div>
     <div class="pend-nota">Quem cria a senha só entra depois que você libera. A lista completa, com bloqueio e exclusão, fica em PAINEL → OBREIROS.</div>
+  </div>
+
+  <!-- ============ OBREIROS (só a liderança): resetar senha sem entrar no painel ============ -->
+  <div id="obreiros-home" class="pend-box" style="display:none">
+    <div class="pend-tit">👥 Obreiros<span id="oh-n"></span></div>
+    <input type="text" id="oh-busca" class="oh-busca" placeholder="Buscar pelo nome..." oninput="montarObreirosHome()">
+    <div id="oh-resultado" class="codigo-caixa"></div>
+    <div id="oh-msg" class="msg"></div>
+    <div id="oh-lista"></div>
+    <div class="pend-nota">Resetar senha gera uma senha temporária para mandar no privado; nada é apagado. Incluir, excluir, bloquear e liderança ficam em PAINEL → OBREIROS.</div>
   </div>
 
   <div id="box-celulas"></div>
@@ -629,16 +648,18 @@ function trocarAbaPainel(qual){
   if(!escala && OBREIROS.length === 0) carregarObreiros();
 }
 
+function painelAberto(){ const p = document.getElementById("painel"); return p && p.style.display === "block"; }
 function msgObreiros(tipo, texto){
-  const el = document.getElementById("msg-obreiros");
+  const el = document.getElementById(painelAberto() ? "msg-obreiros" : "oh-msg");
+  if(!el) return;
   el.className = "msg " + tipo;
   el.textContent = texto;
 }
-function limparMsgObreiros(){ document.getElementById("msg-obreiros").className = "msg"; }
+function limparMsgObreiros(){ ["msg-obreiros", "oh-msg"].forEach(id => { const el = document.getElementById(id); if(el) el.className = "msg"; }); }
 
 /* Mostra a senha temporária, com o recado pronto para o WhatsApp */
 function mostrarSenha(nome, senha){
-  const cx = document.getElementById("codigo-novo");
+  const cx = document.getElementById(painelAberto() ? "codigo-novo" : "oh-resultado");
   const recado = "Paz, " + nome.split(" ")[0] + "! Sua senha do site foi resetada. Entre em https://equipeefraim.com.br com seu nome e a senha temporária " +
                  senha + " . Depois troque em Perfil → Trocar minha senha.";
   cx.innerHTML =
@@ -862,6 +883,35 @@ function explicarErro(codigo){
   return textos[codigo] || ("Não deu certo (" + codigo + "). Tente de novo.");
 }
 
+/* ---------- Obreiros na página inicial da liderança (busca + resetar senha) ---------- */
+function semAcento(s){ return String(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
+async function montarObreirosHome(){
+  const box = document.getElementById("obreiros-home");
+  if(!EH_LIDER() || !box) return;
+  if(!OBREIROS.length){ try{ await carregarObreiros(); }catch(e){} }
+  if(!OBREIROS.length){ box.style.display = "none"; return; }
+  const f = semAcento(document.getElementById("oh-busca").value.trim());
+  const lista = OBREIROS.slice().sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"))
+                        .filter(o => !f || semAcento(o.nome).includes(f));
+  document.getElementById("oh-n").textContent = OBREIROS.length;
+  document.getElementById("oh-lista").innerHTML = lista.map(o => {
+    const est = !o.ativou ? 'ainda não criou a senha · código <small class="cod">' + (o.codigo || "") + '</small>'
+              : o.status === "pendente" ? "criou a senha · aguardando sua liberação"
+              : o.status === "bloqueado" ? "bloqueado" : "liberado";
+    return '<div class="pend-item" data-nome="' + o.nome.replace(/"/g, "&quot;") + '"><div><b>' + o.nome +
+      (o.papel === "lider" ? ' <span class="selo">liderança</span>' : '') + '</b><small>' + est + '</small></div>' +
+      '<div class="btns">' + (o.ativou ? '<button type="button" class="ok">resetar senha</button>' : '') + '</div></div>';
+  }).join("") || "<p class='pend-nota'>Ninguém com esse nome.</p>";
+  box.querySelectorAll("button.ok").forEach(b => b.onclick = async () => {
+    const o = OBREIROS.find(x => x.nome === b.closest(".pend-item").dataset.nome);
+    await acaoObreiro("senha", o, b);
+    montarObreirosHome();
+    document.getElementById("oh-resultado").scrollIntoView({ behavior:"smooth", block:"center" });
+  });
+  box.style.display = "block";
+  if(location.hash === "#obreiros") setTimeout(() => box.scrollIntoView({ behavior:"smooth", block:"start" }), 200);
+}
+
 /* ---------- Aprovação de acesso: quem criou a senha e espera a liberação ---------- */
 async function montarPendentes(){
   const box = document.getElementById("pendentes");
@@ -908,6 +958,7 @@ async function decidirAcesso(btn, status){
   if(!EH_LIDER()){ location.replace("devocional.html"); return; }
   montarBarraUsuario();
   montarPendentes();
+  montarObreirosHome();
   montarBoxCelulas(document.getElementById("box-celulas"));
   document.getElementById("nome-logado").textContent = perfil.nome;
   if(EH_LIDER()) document.getElementById("link-admin").style.display = "block";

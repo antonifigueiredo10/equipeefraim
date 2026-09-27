@@ -283,7 +283,7 @@
 let PLANO = [];      // todas as leituras
 let FEITAS = [];     // marcações de toda a equipe
 let MINHAS = new Set();
-const INICIO_PLANO = "2026-09-27";   // o plano da equipe recomeçou nesta data: leituras anteriores ficam de fora
+const INICIO_PLANO = "2026-09-28";   // o plano da equipe recomeçou nesta data: leituras anteriores ficam de fora
 
 const MESES = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
 
@@ -459,7 +459,7 @@ function montarProxima(){
     cx.className = "proxima";
     cx.innerHTML = '<span class="ic px-ic">' + icone("book") + '</span>' + ola +
       '<div class="px-rot">Devocional</div><div class="px-ref" style="font-size:1.3rem">' +
-      (meus.length ? "Suas leituras terminaram 🙌" : "Aguardando entrar no rodízio") + '</div>';
+      (meus.length ? "Suas leituras terminaram 🙌" : "Acompanhando o plano da equipe") + '</div>';
     return;
   }
   const dias = Math.round((new Date(prox.data + "T12:00:00") - new Date(hoje + "T12:00:00")) / 864e5);
@@ -499,7 +499,7 @@ function montarMeusDias(){
   const meus = PLANO.filter(l => l.nome === PERFIL.nome);
   const cx = document.getElementById("meus-dias");
   if(!meus.length){
-    cx.innerHTML = "<p style='color:var(--texto-suave); font-size:.85rem; line-height:1.6;'>Você ainda não tem dias no plano devocional. Fale com a liderança para entrar no rodízio.</p>";
+    cx.innerHTML = "<p style='color:var(--texto-suave); font-size:.85rem; line-height:1.6;'>Você não está no rodízio de leituras. Acompanhe o plano da equipe na aba Plano.</p>";
     return;
   }
   const vindo   = meus.filter(l => l.data >= hoje);

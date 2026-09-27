@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0B0B0D">
+<meta name="robots" content="noindex,nofollow">
+<title>Como usar o app — Equipe Efraim | Aliançados</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-title" content="EQUIPE EFRAIM">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,500&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --laranja:#F0834A; --laranja-claro:#F9A56E; --laranja-escuro:#D96A32;
+    --preto:#0B0B0D; --preto-card:#151518; --cinza-borda:#2A2A2F;
+    --branco:#F7F3EE; --texto-suave:#B8B2AA; --verde:#3DBB7A;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--preto); color:var(--branco); font-family:'Poppins',system-ui,sans-serif; min-height:100vh;
+    background-image:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(240,131,74,.18), transparent 60%);
+  }
+  .hero{display:flex; align-items:center; gap:14px; max-width:600px; margin:0 auto; padding:16px 18px 0;}
+  .hero .logo{width:64px; height:64px; flex:none; object-fit:cover; object-position:50% 45%; border-radius:50%; border:1px solid rgba(240,131,74,.4); box-shadow:0 0 28px rgba(240,131,74,.28);}
+  .hero .logo.recortada{width:auto; height:64px; max-width:84px; object-fit:contain; border-radius:0; border:none; box-shadow:none;}
+  .hero h1{font-family:'Playfair Display',serif; font-weight:800; font-size:clamp(1.25rem,5vw,1.7rem); letter-spacing:1px; line-height:1.15;}
+  .hero h1 span{color:var(--laranja);}
+  .hero .lema{color:var(--texto-suave); font-size:.66rem; letter-spacing:2.5px; text-transform:uppercase; margin-top:4px; font-weight:300;}
+  main{max-width:600px; margin:0 auto; padding:14px 18px 50px;}
+  .intro{font-size:.84rem; color:var(--texto-suave); line-height:1.6; margin-bottom:14px;}
+  .intro b{color:var(--branco);}
+  .tela{background:var(--preto-card); border:1px solid var(--cinza-borda); border-radius:16px; padding:14px 16px; margin-bottom:10px;}
+  .tela.lider{border-color:rgba(240,131,74,.5); background:linear-gradient(160deg, rgba(240,131,74,.12), var(--preto-card) 60%);}
+  .t-cab{display:flex; align-items:center; gap:12px; margin-bottom:8px;}
+  .t-cab .t-ic{width:36px; height:36px; flex:none;}
+  .t-cab .t-ic svg{width:100%; height:100%; display:block;}
+  .t-cab b{display:block; font-size:1rem;}
+  .t-cab small{display:block; font-size:.68rem; color:var(--laranja); letter-spacing:1.5px; text-transform:uppercase; margin-top:1px;}
+  .tela ul{list-style:none;}
+  .tela li{position:relative; padding-left:16px; font-size:.84rem; color:var(--texto-suave); line-height:1.55; margin-top:6px;}
+  .tela li::before{content:""; position:absolute; left:2px; top:.6em; width:6px; height:6px; border-radius:50%; background:var(--laranja);}
+  .tela li b{color:var(--branco); font-weight:600;}
+  footer{text-align:center; padding:26px 20px 36px; color:var(--texto-suave); font-size:.7rem; letter-spacing:2px; text-transform:uppercase; font-weight:300;}
+  footer span{color:var(--laranja);}
+  @media (max-width:520px){
+    .hero{padding:14px 14px 0; gap:12px;}
+    .hero .logo{width:56px; height:56px;}
+    .hero .logo.recortada{width:auto; height:56px; max-width:74px;}
+    main{padding:12px 12px 40px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <img src="logo1.png" alt="Aliançados" class="logo" id="logo-img">
+  <div>
+    <h1>COMO USAR <span>O APP</span></h1>
+    <div class="lema">Manual das telas · Equipe 02 Efraim</div>
+  </div>
+</div>
+
+<main>
+  <p class="intro">Tudo fica na <b>barra de baixo</b>: Início, Plano, Células, Escala e Perfil. Aqui vai o essencial de cada tela.</p>
+  <div id="telas"></div>
+</main>
+
+<footer>Aliançados · <span>Lugar de Crescimento</span> · 2026 · equipeefraim.com.br</footer>
+
+<!-- O texto do manual. O PDF para o grupo é gerado a partir deste mesmo bloco. -->
+<script id="manual-dados" type="application/json">
+[
+  {"icone":"chave", "titulo":"Entrar e primeiro acesso", "sub":"equipeefraim.com.br", "itens":[
+    "Na primeira vez, toque em <b>PRIMEIRO ACESSO</b>, escolha seu nome, digite o código que a liderança te passou e crie sua senha.",
+    "Criou a senha? Aguarde a liderança liberar. Até lá aparece <b>“Aguardando aprovação do líder”</b>.",
+    "Depois é só <b>ENTRAR</b> com nome e senha. Esqueceu? Toque em <b>Pedir nova senha</b> e a liderança libera."
+  ]},
+  {"icone":"inicio", "titulo":"Início", "sub":"sua leitura e a escala", "itens":[
+    "O cartão do topo mostra <b>sua próxima leitura</b> e em quantos dias ela é.",
+    "Abaixo, seus <b>3 próximos dias</b> no devocional. No dia, aparece o botão <b>marcar como lida</b>.",
+    "Em <b>Você vai servir na escala?</b> toque em SIM ou NÃO em cada culto. Vai direto para a liderança e pode mudar depois."
+  ]},
+  {"icone":"devocional", "titulo":"Plano", "sub":"o devocional da equipe", "itens":[
+    "<b>Leitura de hoje</b> e de quem é a vez.",
+    "<b>Próximas leituras</b> e o <b>plano completo</b>, com busca por nome, livro ou capítulo.",
+    "Em <b>Levar para o grupo</b>: PDF para o WhatsApp (o botão <b>Enviar no WhatsApp</b> já manda o arquivo pronto) e PDF para imprimir."
+  ]},
+  {"icone":"celulas", "titulo":"Células", "sub":"perto de você", "itens":[
+    "Mostra as células mais perto de onde você está, com dia e horário.",
+    "Toque em <b>ir</b> para abrir a rota no mapa do celular.",
+    "Permita a <b>localização</b> quando o app pedir. Sem ela, a lista sai sem distância."
+  ]},
+  {"icone":"escala", "titulo":"Escala", "sub":"os cultos da semana", "itens":[
+    "Três botões no topo: <b>domingo à noite, quarta e domingo de manhã</b>. Abre no próximo culto.",
+    "Seus cartões ficam <b>em verde</b>, e o aviso <b>Sua função neste culto</b> diz o que fazer e a hora de chegar.",
+    "Embaixo: uniforme, comunicados e liderança."
+  ]},
+  {"icone":"perfil", "titulo":"Perfil", "sub":"último botão da barra", "itens":[
+    "<b>Trocar minha foto</b>: a foto aparece para a equipe.",
+    "<b>Avisos do devocional</b>: liga ou desliga os avisos neste celular.",
+    "<b>Como usar o app</b> abre este manual. <b>Sair do app</b> encerra sua sessão."
+  ]},
+  {"icone":"lembrete", "titulo":"Avisos no celular", "sub":"para não esquecer a leitura", "itens":[
+    "No dia da sua leitura o app avisa às <b>7h</b> e, se ainda não marcou, às <b>20h</b>.",
+    "Ao abrir o app instalado ele pede permissão. Toque em <b>Permitir</b>.",
+    "No <b>iPhone</b> só funciona com o app na Tela de Início: no Safari, <b>Compartilhar → Adicionar à Tela de Início</b>. No Android, toque em <b>Instalar</b> na faixa que aparece."
+  ]},
+  {"icone":"todos", "titulo":"Liderança", "sub":"só para líderes e colíderes", "lider":true, "itens":[
+    "Na página inicial: <b>Aguardando sua aprovação</b> lista quem criou a senha. <b>Liberar</b> ou <b>Recusar</b> na hora.",
+    "<b>PAINEL → DISPONIBILIDADE</b>: quem respondeu SIM ou NÃO para cada culto, com CSV.",
+    "<b>PAINEL → OBREIROS</b>: incluir, bloquear, excluir e liberar senha nova."
+  ]}
+]
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+const ICONE_CHAVE = '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="17" cy="24" r="10" fill="#F7C23C"/><circle cx="17" cy="24" r="4" fill="#B8860B"/><path d="M26 22h18v6h-4v5h-5v-5h-3v5h-5v-5h-1z" fill="#E0A31F"/></svg>';
+function iconeTela(n){ return n === "chave" ? ICONE_CHAVE : (typeof iconeCor === "function" ? iconeCor(n) : ""); }
+function montarManual(){
+  const dados = JSON.parse(document.getElementById("manual-dados").textContent);
+  document.getElementById("telas").innerHTML = dados
+    .filter(t => !t.lider || EH_LIDER())
+    .map(t => '<section class="tela' + (t.lider ? " lider" : "") + '"><div class="t-cab"><span class="t-ic">' + iconeTela(t.icone) + '</span>' +
+      '<div><b>' + t.titulo + '</b><small>' + t.sub + '</small></div></div><ul>' +
+      t.itens.map(i => '<li>' + i + '</li>').join("") + '</ul></section>').join("");
+}
+(async function(){
+  const perfil = await exigirLogin();
+  if(!perfil) return;
+  montarBarraUsuario();
+  montarManual();
+})();
+</script>
+
+<script>
+/* Logo: remove o fundo cinza (mantém cruz + brilho) */
+(function(){
+  const img = document.getElementById("logo-img");
+  let feito = false;
+  function processa(){
+    if(feito) return;
+    try{
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      const ctx = c.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      const d = ctx.getImageData(0, 0, c.width, c.height), p = d.data;
+      let minX = c.width, minY = c.height, maxX = 0, maxY = 0;
+      for(let i = 0; i < p.length; i += 4){
+        const mx = Math.max(p[i], p[i+1], p[i+2]), mn = Math.min(p[i], p[i+1], p[i+2]);
+        const a = Math.max(0, Math.min(255, (mx - mn - 6) * 2.2));
+        p[i+3] = a;
+        if(a > 40){
+          const px = (i/4) % c.width, py = Math.floor((i/4) / c.width);
+          if(px < minX) minX = px; if(px > maxX) maxX = px;
+          if(py < minY) minY = py; if(py > maxY) maxY = py;
+        }
+      }
+      if(maxX <= minX || maxY <= minY) return;
+      ctx.putImageData(d, 0, 0);
+      const pad = 40;
+      const sx = Math.max(0, minX - pad), sy = Math.max(0, minY - pad);
+      const sw = Math.min(c.width, maxX + pad) - sx, sh = Math.min(c.height, maxY + pad) - sy;
+      const c2 = document.createElement("canvas");
+      c2.width = sw; c2.height = sh;
+      c2.getContext("2d").drawImage(c, sx, sy, sw, sh, 0, 0, sw, sh);
+      feito = true; img.onload = null;
+      img.src = c2.toDataURL("image/png");
+      img.classList.add("recortada");
+    }catch(e){}
+  }
+  if(img.complete && img.naturalWidth > 0) processa(); else img.onload = processa;
+})();
+</script>
+</body>
+</html>

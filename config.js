@@ -518,6 +518,7 @@ async function salvarInscricao(sub){
 }
 
 async function ativarPush(){
+  if(!SESSAO || !PERFIL) throw new Error("SEM_SESSAO");   /* sem login não há como guardar a inscrição */
   const perm = await Notification.requestPermission();
   if(perm !== "granted") throw new Error("NEGADO");
   const reg = await registrarSW();
@@ -551,6 +552,7 @@ function avisosAdiado(){
   try{ const t = +localStorage.getItem("efraim-avisos-adiado"); return t && Date.now() - t < 864e5; }catch(e){ return false; }
 }
 async function avisosAutomatico(){
+  if(!SESSAO || !PERFIL) return;   /* só com alguém logado: nunca na tela de login */
   try{
     const estado = await estadoPush();
     if(estado === "ativo"){   /* aparelho já inscrito: renova a inscrição no banco sem perguntar nada */
@@ -584,6 +586,7 @@ function mostrarPedidoAvisos(){
     this.disabled = true; this.textContent = "ativando...";
     try{ await ativarPush(); cx.remove(); }
     catch(e){
+      if(e.message === "SEM_SESSAO"){ cx.remove(); return; }
       this.disabled = false; this.textContent = "🔔 PERMITIR AVISOS";
       cx.querySelector("p").innerHTML = e.message === "NEGADO"
         ? "Você não permitiu. Para ligar depois: <b>Perfil</b> → Avisos do devocional."
@@ -619,7 +622,7 @@ async function alternarAvisos(el){
    iPhone: mostra o passo a passo (Compartilhar → Adicionar à Tela de Início). */
 let EVENTO_INSTALAR = null;
 window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); EVENTO_INSTALAR = e; mostrarInstalar(); });
-window.addEventListener("appinstalled", () => { const f = document.getElementById("faixa-instalar"); if(f) f.remove(); avisosAutomatico(); });
+window.addEventListener("appinstalled", () => { const f = document.getElementById("faixa-instalar"); if(f) f.remove(); if(SESSAO && PERFIL) avisosAutomatico(); });
 
 function instalarAdiado(){
   try{ const t = +localStorage.getItem("efraim-instalar-adiado"); return t && Date.now() - t < 3 * 864e5; }catch(e){ return false; }

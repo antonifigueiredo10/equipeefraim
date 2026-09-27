@@ -182,6 +182,24 @@
   .abas-painel button.ativa{background:var(--laranja); color:#fff; box-shadow:0 4px 14px rgba(240,131,74,.3);}
   #painel-obreiros{display:none;}
 
+  /* ========== APROVAÇÃO DE ACESSO (topo da página da liderança) ========== */
+  .pend-box{
+    background:linear-gradient(160deg, rgba(240,131,74,.16), var(--preto-card) 60%); border:1px solid rgba(240,131,74,.55);
+    border-radius:16px; padding:14px 16px; margin-bottom:18px;
+  }
+  .pend-tit{font-size:.74rem; font-weight:700; color:var(--laranja); letter-spacing:2px; text-transform:uppercase;}
+  .pend-tit span{background:var(--laranja); color:#fff; border-radius:999px; padding:1px 8px; margin-left:6px; letter-spacing:0;}
+  .pend-item{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid var(--cinza-borda);}
+  .pend-item:last-child{border-bottom:none;}
+  .pend-item b{font-size:.92rem;}
+  .pend-item small{display:block; font-size:.7rem; color:var(--texto-suave); margin-top:2px;}
+  .pend-item .btns{display:flex; gap:6px; flex:none;}
+  .pend-item button{padding:8px 12px; border-radius:999px; border:1px solid var(--cinza-borda); background:transparent; color:var(--texto-suave); font:700 .68rem 'Poppins',sans-serif; cursor:pointer;}
+  .pend-item button:disabled{opacity:.5;}
+  .pend-item button.ok{border-color:var(--verde); color:var(--verde);}
+  .pend-item button.nao{border-color:var(--vermelho); color:var(--vermelho);}
+  .pend-nota{font-size:.7rem; color:var(--texto-suave); margin-top:10px; line-height:1.5;}
+
   /* ========== LISTA DE OBREIROS ========== */
   .obreiro{
     display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
@@ -266,6 +284,13 @@
 </div>
 
 <main>
+  <!-- ============ APROVAÇÃO DE ACESSO (só a liderança vê; some quando não há ninguém esperando) ============ -->
+  <div id="pendentes" class="pend-box" style="display:none">
+    <div class="pend-tit">⏳ Aguardando sua aprovação<span id="pend-n"></span></div>
+    <div id="pend-lista"></div>
+    <div class="pend-nota">Quem cria a senha só entra depois que você libera. A lista completa, com bloqueio e exclusão, fica em PAINEL → OBREIROS.</div>
+  </div>
+
   <div id="box-celulas"></div>
 
   <!-- ============ FORMULÁRIO ============ -->
@@ -808,6 +833,44 @@ function explicarErro(codigo){
   return textos[codigo] || ("Não deu certo (" + codigo + "). Tente de novo.");
 }
 
+/* ---------- Aprovação de acesso: quem criou a senha e espera a liberação ---------- */
+async function montarPendentes(){
+  const box = document.getElementById("pendentes");
+  if(!EH_LIDER() || !box) return;
+  let lista = [];
+  try{
+    const { data, error } = await sb.from("perfis").select("id,nome,status,criado_em").eq("status", "pendente").order("criado_em");
+    if(error) throw error;
+    lista = data || [];
+  }catch(e){ box.style.display = "none"; return; }
+  if(!lista.length){ box.style.display = "none"; return; }
+  document.getElementById("pend-n").textContent = lista.length;
+  document.getElementById("pend-lista").innerHTML = lista.map(p => {
+    const d = p.criado_em ? new Date(p.criado_em) : null;
+    const q = d ? d.toLocaleDateString("pt-BR", { day:"2-digit", month:"2-digit" }) + " às " + d.toLocaleTimeString("pt-BR", { hour:"2-digit", minute:"2-digit" }) : "";
+    return '<div class="pend-item" data-nome="' + p.nome.replace(/"/g, "&quot;") + '"><div><b>' + p.nome + '</b><small>criou a senha' + (q ? " em " + q : "") + '</small></div>' +
+      '<div class="btns"><button type="button" class="ok" onclick="decidirAcesso(this, \'ativo\')">Liberar</button>' +
+      '<button type="button" class="nao" onclick="decidirAcesso(this, \'bloqueado\')">Recusar</button></div></div>';
+  }).join("");
+  box.style.display = "block";
+  if(location.hash === "#aprovar") setTimeout(() => box.scrollIntoView({ behavior:"smooth", block:"start" }), 200);
+}
+async function decidirAcesso(btn, status){
+  const item = btn.closest(".pend-item"), nome = item.dataset.nome;
+  item.querySelectorAll("button").forEach(b => b.disabled = true);
+  try{
+    const { error } = await sb.rpc("definir_acesso", { p_nome: nome, p_status: status });
+    if(error) throw error;
+    item.querySelector("small").textContent = status === "ativo" ? "liberado ✓ já pode entrar" : "recusado (bloqueado)";
+    item.querySelector(".btns").innerHTML = "";
+    const n = document.getElementById("pend-n"); n.textContent = Math.max(0, (+n.textContent || 1) - 1);
+    if(typeof carregarObreiros === "function" && document.getElementById("painel").style.display === "block") carregarObreiros();
+  }catch(e){
+    item.querySelector("small").textContent = "Não deu certo agora. Tente de novo.";
+    item.querySelectorAll("button").forEach(b => b.disabled = false);
+  }
+}
+
 /* ---------- Início: exige login antes de mostrar qualquer coisa ---------- */
 (async function(){
   const perfil = await exigirLogin();
@@ -815,6 +878,7 @@ function explicarErro(codigo){
   /* Obreiro usa só o devocional; escala e disponibilidade ficam com a liderança */
   if(!EH_LIDER()){ location.replace("devocional.html"); return; }
   montarBarraUsuario();
+  montarPendentes();
   montarBoxCelulas(document.getElementById("box-celulas"));
   document.getElementById("nome-logado").textContent = perfil.nome;
   if(EH_LIDER()) document.getElementById("link-admin").style.display = "block";

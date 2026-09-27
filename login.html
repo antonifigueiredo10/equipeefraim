@@ -204,7 +204,7 @@ const DESTINO = new URLSearchParams(location.search).get("destino") || "index.ht
 /* Volta do guardião: conta ainda não liberada ou bloqueada pela liderança */
 const AVISO = new URLSearchParams(location.search).get("aviso");
 if(AVISO === "pendente"){
-  mostrar("msg-entrar", "aviso", "Sua senha foi criada! Agora aguarde a liderança liberar seu acesso. Assim que liberarem, é só entrar com seu nome e senha.");
+  mostrar("msg-entrar", "aviso", "⏳ Aguardando aprovação do líder. Sua senha foi criada e seu nome já aparece para a liderança liberar. Assim que liberarem, é só entrar com seu nome e senha.");
 }else if(AVISO === "bloqueado"){
   mostrar("msg-entrar", "erro", "Seu acesso está bloqueado. Fale com a liderança.");
 }

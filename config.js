@@ -168,6 +168,7 @@ function abrirPerfil(){
       '<button type="button" class="fp-op" data-a="foto"><span>' + iconeCor("perfil") + '</span>Trocar minha foto</button>' +
       '<button type="button" class="fp-op" data-a="avisos"><span>' + iconeCor("lembrete") + '</span><i class="fp-av">Avisos do devocional</i></button>' +
       '<a class="fp-op" href="celulas.html"><span>' + iconeCor("celulas") + '</span>Mapa de células</a>' +
+      (EH_LIDER() ? '<a class="fp-op" href="index.html#aprovar"><span>' + iconeCor("todos") + '</span><i class="fp-apr">Aprovar acessos</i></a>' : '') +
       '<button type="button" class="fp-sair" data-a="sair">Sair do app</button>' +
     '</div>';
   cx.onclick = e => {
@@ -179,6 +180,15 @@ function abrirPerfil(){
   };
   document.body.appendChild(cx);
   rotuloAvisos(cx.querySelector('[data-a="avisos"]'));
+  if(EH_LIDER()) contarPendentes(cx.querySelector(".fp-apr"));
+}
+/* Quantos criaram a senha e esperam a liderança liberar */
+async function contarPendentes(el){
+  if(!el) return;
+  try{
+    const { count } = await sb.from("perfis").select("id", { count:"exact", head:true }).eq("status", "pendente");
+    el.textContent = count ? "Aprovar acessos · " + count + " aguardando" : "Aprovar acessos · ninguém esperando";
+  }catch(e){}
 }
 
 /* Página inicial: liderança = painel (index); obreiro = devocional */

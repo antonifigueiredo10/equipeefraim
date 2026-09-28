@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0B0B0D">
+<meta name="robots" content="noindex,nofollow">
+<title>Aniversariantes — Equipe Efraim | Aliançados</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-title" content="EQUIPE EFRAIM">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,500&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --laranja:#F0834A; --laranja-claro:#F9A56E; --laranja-escuro:#D96A32;
+    --preto:#0B0B0D; --preto-card:#151518; --cinza-borda:#2A2A2F;
+    --branco:#F7F3EE; --texto-suave:#B8B2AA; --verde:#3DBB7A; --amarelo:#F2C94C;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--preto); color:var(--branco); font-family:'Poppins',system-ui,sans-serif; min-height:100vh;
+    background-image:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(240,131,74,.18), transparent 60%);
+  }
+  .hero{display:flex; align-items:center; gap:14px; max-width:600px; margin:0 auto; padding:16px 18px 0;}
+  .hero .bolo{width:60px; height:60px; flex:none; filter:drop-shadow(0 0 18px rgba(240,131,74,.35));}
+  .hero .bolo svg{width:100%; height:100%; display:block;}
+  .hero h1{font-family:'Playfair Display',serif; font-weight:800; font-size:clamp(1.25rem,5.4vw,1.7rem); letter-spacing:1px; line-height:1.15;}
+  .hero h1 span{color:var(--laranja);}
+  .hero .lema{color:var(--texto-suave); font-size:.66rem; letter-spacing:2.5px; text-transform:uppercase; margin-top:4px; font-weight:300;}
+  main{max-width:600px; margin:0 auto; padding:16px 18px 40px;}
+
+  /* aniversário de hoje */
+  .hoje{
+    display:flex; align-items:center; gap:14px; padding:16px; border-radius:18px; margin-bottom:14px;
+    border:1px solid rgba(242,201,76,.6); background:linear-gradient(135deg, rgba(242,201,76,.2), rgba(240,131,74,.14) 45%, var(--preto-card) 85%);
+  }
+  .hoje .av{width:64px; height:64px; font-size:1.05rem; border-color:var(--amarelo); color:var(--amarelo);}
+  .hoje .h-rot{font-size:.66rem; letter-spacing:2px; text-transform:uppercase; color:var(--amarelo); font-weight:700;}
+  .hoje .h-nome{font-family:'Playfair Display',serif; font-size:1.35rem; font-weight:800; line-height:1.2; margin-top:2px;}
+  .hoje .h-sub{font-size:.78rem; color:var(--texto-suave); margin-top:3px;}
+
+  .secao{display:flex; align-items:center; gap:10px; margin:18px 2px 8px; font-size:.7rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--laranja);}
+  .secao::after{content:""; flex:1; height:1px; background:linear-gradient(90deg, rgba(240,131,74,.5), transparent);}
+  .secao.atual{color:var(--amarelo);}
+  .secao.atual::after{background:linear-gradient(90deg, rgba(242,201,76,.5), transparent);}
+
+  .pessoa{
+    display:flex; align-items:center; gap:12px; background:var(--preto-card); border:1px solid var(--cinza-borda);
+    border-radius:14px; padding:10px 14px; margin-bottom:8px;
+  }
+  .pessoa.e-hoje{border-color:rgba(242,201,76,.6);}
+  .pessoa.passou{opacity:.6;}
+  .pessoa .dia{min-width:44px; text-align:center; font-weight:700; font-size:1.05rem; line-height:1.1;}
+  .pessoa .dia small{display:block; font-weight:300; font-size:.6rem; color:var(--texto-suave); text-transform:uppercase; letter-spacing:1px;}
+  .av{
+    width:42px; height:42px; flex:none; border-radius:50%; overflow:hidden; border:1.5px solid var(--laranja);
+    background:rgba(240,131,74,.1); color:var(--laranja); display:flex; align-items:center; justify-content:center; font-size:.74rem; font-weight:700;
+  }
+  .av img{width:100%; height:100%; object-fit:cover; display:block;}
+  .pessoa .nome{flex:1; min-width:0; font-weight:600; font-size:.92rem;}
+  .pessoa .nome small{display:block; font-weight:400; font-size:.72rem; color:var(--texto-suave);}
+  .pessoa .quando{font-size:.64rem; letter-spacing:1px; text-transform:uppercase; color:var(--laranja); white-space:nowrap; font-weight:600;}
+  .pessoa.e-hoje .quando{color:var(--amarelo);}
+
+  .vazio{font-size:.84rem; color:var(--texto-suave); line-height:1.6; text-align:center; padding:26px 10px;}
+  .rodape{margin-top:20px; padding:14px 16px; border-radius:14px; border:1px dashed var(--cinza-borda); font-size:.78rem; color:var(--texto-suave); line-height:1.55; text-align:center;}
+  .rodape b{color:var(--branco);}
+  .rodape button{
+    display:block; margin:10px auto 0; padding:10px 18px; border-radius:999px; border:1px solid var(--laranja);
+    background:rgba(240,131,74,.1); color:var(--laranja); font:700 .78rem 'Poppins',sans-serif; cursor:pointer;
+  }
+  @media (max-width:520px){ .hero{padding:14px 14px 0; gap:12px;} main{padding:12px 12px 36px;} }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <span class="bolo" id="bolo"></span>
+  <div>
+    <h1>ANIVER<span>SARIANTES</span></h1>
+    <div class="lema">Parabéns · Equipe 02 Efraim</div>
+  </div>
+</div>
+
+<main>
+  <div id="conteudo"><p class="vazio">Carregando...</p></div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+function escN(s){ return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function hojeLocal(){ const d = new Date(); d.setHours(0, 0, 0, 0); return d; }
+/* quantos dias até o próximo aniversário (0 = hoje) */
+function diasAte(mmdd){
+  const hoje = hojeLocal();
+  const [m, d] = mmdd.split("-").map(Number);
+  let alvo = new Date(hoje.getFullYear(), m - 1, d);
+  if(alvo < hoje) alvo = new Date(hoje.getFullYear() + 1, m - 1, d);
+  return Math.round((alvo - hoje) / 864e5);
+}
+function avatar(p, extra){
+  return '<div class="av' + (extra || "") + '">' + (p.foto ? '<img alt="" src="' + p.foto + '">' : escN(iniciais(p.nome))) + '</div>';
+}
+
+async function carregarAniversariantes(){
+  let lista = null;
+  /* todos os liberados (função do banco) */
+  try{
+    const r = await sb.rpc("aniversariantes");
+    if(!r.error && Array.isArray(r.data)) lista = r.data.map(x => ({ nome: x.nome, aniversario: x.aniversario, fotoId: x.foto_id || null }));
+  }catch(e){}
+  /* reserva: a liderança lê os perfis direto (se a coluna já existir) */
+  if(lista === null){
+    try{
+      const { data, error } = await sb.from("perfis").select("id,nome,aniversario,foto_em");
+      if(!error) lista = (data || []).filter(x => x.aniversario).map(x => ({ nome: x.nome, aniversario: x.aniversario, fotoId: x.foto_em ? x.id : null }));
+    }catch(e){}
+  }
+  lista = lista || [];
+  /* o próprio aniversário aparece mesmo antes da regra do banco */
+  const meu = typeof meuAniversario === "function" ? meuAniversario() : "";
+  if(meu && !lista.some(x => x.nome === PERFIL.nome)) lista.push({ nome: PERFIL.nome, aniversario: meu, fotoId: PERFIL.foto_em ? SESSAO.user.id : null });
+  lista = lista.filter(x => /^\d{4}-\d{2}-\d{2}$/.test(x.aniversario || ""));
+  try{
+    const urls = await urlsDeFotos([...new Set(lista.map(x => x.fotoId).filter(Boolean))]);
+    lista.forEach(x => { x.foto = x.fotoId ? urls[x.fotoId] || null : null; });
+  }catch(e){}
+  lista.forEach(x => { x.mmdd = x.aniversario.slice(5); x.dias = diasAte(x.mmdd); });
+  return lista;
+}
+
+function montar(lista){
+  const cx = document.getElementById("conteudo");
+  const hoje = hojeLocal();
+  const mesAtual = hoje.getMonth();
+  let html = "";
+
+  const deHoje = lista.filter(x => x.dias === 0);
+  deHoje.forEach(p => {
+    const eu = p.nome === PERFIL.nome;
+    html += '<div class="hoje">' + avatar(p) +
+      '<div><div class="h-rot">🎉 Hoje é aniversário</div><div class="h-nome">' + escN(eu ? "Seu, " + chamarPor(p.nome) + "!" : chamarPor(p.nome)) + '</div>' +
+      '<div class="h-sub">' + (eu ? "Parabéns! A Equipe Efraim celebra a sua vida. 🙏" : "Deseje parabéns e ore por " + escN(chamarPor(p.nome)) + ". 🙏") + '</div></div></div>';
+  });
+
+  if(!lista.length){
+    html += '<p class="vazio">Ainda não tem datas por aqui.<br>Cada obreiro informa a própria no <b>Perfil</b>.</p>';
+  }else{
+    /* os 12 meses, começando pelo atual (os próximos aparecem primeiro) */
+    for(let k = 0; k < 12; k++){
+      const m = (mesAtual + k) % 12;
+      const doMes = lista.filter(x => parseInt(x.mmdd.slice(0, 2), 10) - 1 === m)
+                         .sort((a, b) => a.mmdd.localeCompare(b.mmdd) || a.nome.localeCompare(b.nome));
+      if(!doMes.length) continue;
+      html += '<div class="secao' + (k === 0 ? " atual" : "") + '">' + MESES_ANIV[m] + (k === 0 ? " · este mês" : "") + '</div>';
+      doMes.forEach(p => {
+        const dia = parseInt(p.mmdd.slice(3), 10);
+        const passou = k === 0 && dia < hoje.getDate();
+        const quando = p.dias === 0 ? "hoje 🎉" : p.dias === 1 ? "amanhã" : passou ? "já foi" : "em " + p.dias + " dias";
+        html += '<div class="pessoa' + (p.dias === 0 ? " e-hoje" : "") + (passou ? " passou" : "") + '">' +
+          '<div class="dia">' + dia + '<small>' + MESES_ANIV[m].slice(0, 3) + '</small></div>' +
+          avatar(p) +
+          '<div class="nome">' + escN(p.nome) + (p.nome === PERFIL.nome ? '<small>você</small>' : '') + '</div>' +
+          '<span class="quando">' + quando + '</span></div>';
+      });
+    }
+  }
+
+  const tenho = (typeof meuAniversario === "function" && meuAniversario()) || lista.some(x => x.nome === PERFIL.nome);
+  html += '<div class="rodape">' + (tenho
+      ? 'Falta alguém? Cada obreiro informa a data em <b>Perfil → Data de aniversário</b>.'
+      : 'O seu ainda não está aqui. Informe o <b>dia e o mês</b> do seu aniversário.<button type="button" id="btn-informar">🎂 Informar o meu</button>') +
+    '</div>';
+  cx.innerHTML = html;
+  const b = document.getElementById("btn-informar");
+  if(b) b.onclick = () => {
+    abrirPerfil();
+    const f = document.getElementById("folha-perfil");
+    if(f) abrirAniversario(f);
+  };
+}
+
+(async function(){
+  const perfil = await exigirLogin();
+  if(!perfil) return;
+  document.getElementById("bolo").innerHTML = iconeCor("bolo");
+  montarBarraUsuario();
+  montar(await carregarAniversariantes());
+  /* depois de salvar a data no Perfil, a lista se atualiza sozinha */
+  document.addEventListener("aniversario-salvo", async () => montar(await carregarAniversariantes()));
+})();
+</script>
+</body>
+</html>

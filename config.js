@@ -128,6 +128,7 @@ function montarBarraUsuario(){
   carregarMinhaFoto();
   montarNavInferior();
   setTimeout(avisosAutomatico, 900);
+  setTimeout(faixaAniversario, 600);
 }
 
 /* ======================= ÍCONES COLORIDOS + BARRA INFERIOR =======================
@@ -140,6 +141,10 @@ const ICONES_COR = {
   perfil:'<circle cx="24" cy="24" r="20" fill="#4FA3E8"/><circle cx="24" cy="19" r="7" fill="#FBD5B0"/><path d="M11 37c3-6 8-9 13-9s10 3 13 9a20 20 0 0 1-26 0z" fill="#2D6FB8"/>',
   escala:'<rect x="10" y="8" width="28" height="36" rx="3" fill="#C98B5A"/><rect x="13" y="12" width="22" height="29" rx="2" fill="#fff"/><rect x="18" y="5" width="12" height="7" rx="2" fill="#7A7A85"/><path d="M17 20h14M17 26h14M17 32h9" stroke="#9AA0A8" stroke-width="2.5" stroke-linecap="round"/><path d="m29 32 2 2 4-4" stroke="#3DBB7A" stroke-width="2.5" fill="none" stroke-linecap="round"/>',
   todos:'<circle cx="17" cy="17" r="6" fill="#FBD5B0"/><path d="M5 38c1-7 6-11 12-11s11 4 12 11z" fill="#8E6CFF"/><circle cx="32" cy="17" r="6" fill="#F2C49B"/><path d="M22 38c1-7 5-11 10-11s10 4 11 11z" fill="#F0834A"/>',
+  bolo:'<rect x="15" y="13" width="3" height="11" rx="1.2" fill="#8E6CFF"/><rect x="22.5" y="11" width="3" height="13" rx="1.2" fill="#4FA3E8"/><rect x="30" y="13" width="3" height="11" rx="1.2" fill="#3DBB7A"/>' +
+        '<path d="M16.5 6c2.2 2.6 2.2 4.4 0 5.6-2.2-1.2-2.2-3 0-5.6zM24 4c2.2 2.6 2.2 4.4 0 5.6-2.2-1.2-2.2-3 0-5.6zM31.5 6c2.2 2.6 2.2 4.4 0 5.6-2.2-1.2-2.2-3 0-5.6z" fill="#F7C23C"/>' +
+        '<rect x="8" y="23" width="32" height="17" rx="3.5" fill="#F0834A"/><path d="M8 27a3.5 3.5 0 0 1 3.5-3.5h25A3.5 3.5 0 0 1 40 27v3c-3.2 2.6-6.4 2.6-9.6 0s-6.4-2.6-9.6 0-6.4 2.6-9.6 0L8 31z" fill="#FFF3E6"/>' +
+        '<circle cx="16" cy="35" r="1.6" fill="#FFF3E6"/><circle cx="24" cy="36" r="1.6" fill="#FFF3E6"/><circle cx="32" cy="35" r="1.6" fill="#FFF3E6"/><rect x="5" y="39" width="38" height="4.5" rx="2.2" fill="#C98B5A"/>',
   calendario:'<rect x="6" y="9" width="36" height="33" rx="4" fill="#fff"/><path d="M6 13a4 4 0 0 1 4-4h28a4 4 0 0 1 4 4v7H6z" fill="#E8553B"/><rect x="14" y="5" width="4" height="9" rx="2" fill="#7A7A85"/><rect x="30" y="5" width="4" height="9" rx="2" fill="#7A7A85"/><rect x="12" y="25" width="6" height="5" rx="1" fill="#F0834A"/><rect x="21" y="25" width="6" height="5" rx="1" fill="#D5D8DE"/><rect x="30" y="25" width="6" height="5" rx="1" fill="#D5D8DE"/><rect x="12" y="33" width="6" height="5" rx="1" fill="#D5D8DE"/><rect x="21" y="33" width="6" height="5" rx="1" fill="#D5D8DE"/>'
 };
 function iconeCor(n){ return '<svg viewBox="0 0 48 48" aria-hidden="true">' + (ICONES_COR[n] || "") + '</svg>'; }
@@ -148,8 +153,8 @@ function montarNavInferior(){
   if(document.getElementById("nav-inferior")) return;
   const pag = location.pathname.split("/").pop() || "index.html";
   const itens = EH_LIDER()
-    ? [["inicio","Início","index.html"],["devocional","Devocional","devocional.html"],["celulas","Células","celulas.html"],["escala","Escala","escala.html"],["perfil","Perfil",""]]
-    : [["inicio","Início","devocional.html"],["devocional","Plano","devocional.html#todos"],["celulas","Células","celulas.html"],["escala","Escala","escala.html"],["perfil","Perfil",""]];
+    ? [["inicio","Início","index.html"],["devocional","Devocional","devocional.html"],["celulas","Células","celulas.html"],["escala","Escala","escala.html"],["bolo","Parabéns","aniversariantes.html"],["perfil","Perfil",""]]
+    : [["inicio","Início","devocional.html"],["devocional","Plano","devocional.html#todos"],["celulas","Células","celulas.html"],["escala","Escala","escala.html"],["bolo","Parabéns","aniversariantes.html"],["perfil","Perfil",""]];
   const nav = document.createElement("nav");
   nav.id = "nav-inferior";
   nav.innerHTML = itens.map(([ic, rot, href]) => {
@@ -240,6 +245,33 @@ async function salvarAniversario(cx, btn){
   if(PERFIL) PERFIL.aniversario = v;
   cx.querySelector(".fp-aniv-rot").textContent = rotuloAniversario();
   cx.querySelector(".fp-aniv").hidden = true;
+  document.dispatchEvent(new Event("aniversario-salvo"));
+  setTimeout(() => { const f = document.getElementById("folha-perfil"); if(f) f.remove(); }, 700);
+}
+
+/* Faixa na tela inicial: "Hoje é aniversário de ..." (toque abre a aba Parabéns) */
+async function faixaAniversario(){
+  if(!estouNaHome() || document.getElementById("faixa-aniv")) return;
+  const d = new Date();
+  const mmdd = String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  let nomes = [];
+  try{
+    const r = await sb.rpc("aniversariantes");
+    if(!r.error && Array.isArray(r.data)) nomes = r.data.filter(x => String(x.aniversario || "").slice(5) === mmdd).map(x => x.nome);
+  }catch(e){}
+  const meu = meuAniversario();
+  if(meu && meu.slice(5) === mmdd && !nomes.includes(PERFIL.nome)) nomes.push(PERFIL.nome);
+  if(!nomes.length) return;
+  const juntar = l => l.length > 1 ? l.slice(0, -1).join(", ") + " e " + l[l.length - 1] : (l[0] || "");
+  const outros = nomes.filter(n => n !== PERFIL.nome).map(chamarPor);
+  const texto = nomes.includes(PERFIL.nome)
+    ? "<b>Parabéns, " + chamarPor(PERFIL.nome) + "!</b> Hoje é o seu dia 🎉" + (outros.length ? " (e de " + juntar(outros) + ")" : "")
+    : "<b>Hoje é aniversário de " + juntar(outros) + "</b> 🎉 Deseje parabéns!";
+  const a = document.createElement("a");
+  a.id = "faixa-aniv"; a.href = "aniversariantes.html";
+  a.innerHTML = '<span class="fa-ic">' + iconeCor("bolo") + '</span><span class="fa-txt">' + texto + '</span><span class="fa-seta">›</span>';
+  const barra = document.getElementById("barra-usuario");
+  if(barra) barra.after(a); else document.body.insertBefore(a, document.body.firstChild);
 }
 
 /* A própria pessoa troca a senha (também serve depois da senha temporária da liderança) */
@@ -876,6 +908,18 @@ document.addEventListener("DOMContentLoaded", () => setTimeout(mostrarInstalar, 
     #folha-perfil .fp-aniv-salvar{border:none; color:#fff; background:linear-gradient(135deg,#F0834A,#D96A32);}
     #folha-perfil .fp-aniv-salvar:disabled{opacity:.6;}
     #folha-perfil .fp-aniv-msg{font-size:.74rem; color:#F9A56E; margin-top:8px; min-height:1em;}
+    #faixa-aniv{
+      display:flex; align-items:center; gap:12px; max-width:600px; margin:10px auto 0; padding:11px 14px; border-radius:14px;
+      width:calc(100% - 24px); text-decoration:none; color:#F7F3EE; font:400 .82rem 'Poppins',sans-serif; line-height:1.4;
+      border:1px solid rgba(242,201,76,.6); background:linear-gradient(135deg, rgba(242,201,76,.2), rgba(240,131,74,.12) 55%, #151518);
+      animation:fi-sobe .35s ease-out;
+    }
+    #faixa-aniv b{color:#F2C94C; font-weight:700;}
+    #faixa-aniv .fa-ic{width:34px; height:34px; flex:none;}
+    #faixa-aniv .fa-ic svg{width:100%; height:100%; display:block;}
+    #faixa-aniv .fa-txt{flex:1; min-width:0;}
+    #faixa-aniv .fa-seta{color:#F2C94C; font-size:1.3rem; line-height:1;}
+    #nav-inferior .ni-rot{white-space:nowrap;}
     #folha-perfil .fp-sair{width:100%; margin-top:6px; padding:13px; border-radius:14px; border:1px solid #E05555; background:transparent; color:#E05555; font:700 .82rem 'Poppins',sans-serif; cursor:pointer;}
     .icc{display:inline-flex; flex:none;}
     .icc svg{width:100%; height:100%; display:block;}

@@ -273,7 +273,7 @@ function lerPedido(){
 function guardarPedido(p){ try{ localStorage.setItem(CHAVE_PEDIDO, JSON.stringify(p)); }catch(e){} }
 function limparPedido(){ try{ localStorage.removeItem(CHAVE_PEDIDO); }catch(e){} }
 function mostrarAguarde(p){
-  document.getElementById("ag-ola").textContent = "Paz, " + chamarPor(p.nome) + "! ";
+  document.getElementById("ag-ola").textContent = "Graça e Paz, " + chamarPor(p.nome) + "! ";
   document.getElementById("ag-num").textContent = p.num || "";
   modoLogin("aguarde");
 }
@@ -334,7 +334,7 @@ async function enviarSolicitacao(){
   if(data === "NUMERO_INVALIDO"){ mostrar("msg-entrar", "erro", "Confira o número do WhatsApp, com DDD."); return; }
   if(error || data !== "OK"){
     /* não deu para registrar no app: o obreiro manda o pedido direto para a liderança pelo WhatsApp */
-    const texto = "Paz! Sou " + nome + ", da Equipe Efraim. Quero acesso ao app. Meu WhatsApp: " + document.getElementById("whats-entrar").value;
+    const texto = "Graça e Paz! Sou " + nome + ", da Equipe Efraim. Quero acesso ao app. Meu WhatsApp: " + document.getElementById("whats-entrar").value;
     const m = document.getElementById("msg-entrar");
     m.className = "msg aviso";
     m.innerHTML = "Toque abaixo para mandar seu pedido para a liderança pelo WhatsApp (escolha a conversa com o seu líder):" +

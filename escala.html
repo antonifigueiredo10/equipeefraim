@@ -212,6 +212,9 @@ async function carregarNomesPosicoes(){
   }catch(e){ NOMES_POSICOES = {}; NOMES_PESSOAS = {}; }
 }
 function nomePosicao(n){ return NOMES_POSICOES[n] || n; }
+/* Nome das posições: só o administrador (Antonio). A liderança troca só quem serve. */
+const EDITA_POSICOES = ["antonio"];
+function podeEditarPosicoes(){ return !!(PERFIL && PERFIL.nome && EDITA_POSICOES.includes(normal(PERFIL.nome))); }
 function chavePessoas(c, titulo, funcao){ return c.data + "|" + titulo + "|" + funcao; }
 async function salvarAjustes(posicoes, pessoas){
   const { error } = await sb.from("devocional").upsert({
@@ -283,28 +286,30 @@ function montar(i){
       '<div class="chip"><b>⏰ Chegada</b>' + c.chegada + ' (1 hora antes)</div>' +
       '<div class="chip"><b>👕 Uniforme</b>' + esc(c.uniforme) + '</div>' +
     '</div>';
+  const edPos = EDITANDO && podeEditarPosicoes();
   if(EDITANDO){
-    html += '<div class="barra-edicao">✏️ <b>Editando a escala.</b> No campo laranja, o nome da posição (vale em todos os cultos). ' +
-            'No campo verde, <b>quem serve</b> nela (vale só neste culto). Para casal, escreva (casal). Campo vazio volta ao original.' +
+    html += '<div class="barra-edicao">✏️ <b>' + (edPos ? 'Editando a escala.</b> No campo laranja, o nome da posição (vale em todos os cultos). No campo verde, '
+                                                       : 'Editando quem serve.</b> No campo verde, ') +
+            '<b>quem serve</b> em cada posição (vale só neste culto). Para casal, escreva (casal). Campo vazio volta ao original.' +
             '<div class="be-btns"><button type="button" class="be-cancelar" onclick="cancelarEdicao()">CANCELAR</button>' +
             '<button type="button" class="be-salvar" onclick="salvarEdicao(this)">SALVAR</button></div><div class="be-msg"></div></div>';
   }else if(typeof EH_LIDER === "function" && EH_LIDER()){
     if(SALVO_AGORA){ html += '<div class="salvo-ok">✅ Escala salva. A equipe já vê as mudanças.</div>'; SALVO_AGORA = false; }
-    html += '<button type="button" class="btn-editar-nomes" onclick="editarNomes()">✏️ Editar escala (posições e nomes)</button>';
+    html += '<button type="button" class="btn-editar-nomes" onclick="editarNomes()">✏️ ' + (podeEditarPosicoes() ? 'Editar escala (posições e nomes)' : 'Editar nomes dos obreiros') + '</button>';
   }
   let cartoes = "";
   /* no modo edição, o campo mostra o que já foi digitado (ou o nome atual) */
   const valorEd = orig => (orig in PENDENTE) ? PENDENTE[orig] : nomePosicao(orig);
   const campo = orig => '<input class="ed" type="text" maxlength="80" data-orig="' + escAttr(orig) + '" value="' + escAttr(valorEd(orig)) + '">';
   c.grupos.forEach(([titulo, itens]) => {
-    cartoes += '<div class="secao">' + (EDITANDO ? campo(titulo) : esc(nomePosicao(titulo))) + '<div class="faixa"></div></div>';
+    cartoes += '<div class="secao">' + (edPos ? campo(titulo) : esc(nomePosicao(titulo))) + '<div class="faixa"></div></div>';
     itens.forEach(([funcao, padrao, dica]) => {
       const ch = chavePessoas(c, titulo, funcao);
       PADRAO_PESSOAS[ch] = padrao;
       const nomes = NOMES_PESSOAS[ch] || padrao;          /* quem serve: o ajuste da liderança ou o da escala */
       const minha = ehMinha(nomes);
       if(minha) minhas.push(nomePosicao(funcao));
-      const rotulo = EDITANDO
+      const rotulo = edPos
         ? campo(funcao) + (nomePosicao(funcao) !== funcao ? '<span class="orig">original: ' + esc(funcao) + '</span>' : '')
         : esc(nomePosicao(funcao));
       const valorP = (ch in PENDENTE_P) ? PENDENTE_P[ch] : nomes;

@@ -131,7 +131,15 @@
   }
   input.ed:focus{outline:none; box-shadow:0 0 0 2px rgba(240,131,74,.35);}
   .secao input.ed{text-align:center; font-family:'Playfair Display',serif; font-size:.95rem; color:var(--laranja-claro);}
-  .card .funcao .orig{display:block; font-size:.62rem; color:var(--texto-suave); text-transform:none; letter-spacing:0; font-weight:300; margin-top:3px;}
+  .card .orig{display:block; font-size:.62rem; color:var(--texto-suave); text-transform:none; letter-spacing:0; font-weight:300; margin-top:3px;}
+  .card.editando{flex-direction:column; align-items:stretch; gap:8px;}
+  .card.editando .nomes{text-align:left;}
+  .card .nomes label.ed-rot{display:block; font-size:.6rem; color:var(--texto-suave); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:4px; font-weight:600;}
+  textarea.ed-p{
+    width:100%; padding:8px 10px; border:1px solid var(--verde); border-radius:10px; background:#0F0F12; resize:vertical;
+    color:var(--branco); font:600 .84rem 'Poppins',sans-serif; line-height:1.4;
+  }
+  textarea.ed-p:focus{outline:none; box-shadow:0 0 0 2px rgba(61,187,122,.35);}
   .salvo-ok{
     margin-top:12px; padding:10px 12px; border-radius:12px; text-align:center; font-size:.78rem; font-weight:600;
     background:rgba(61,187,122,.12); border:1px solid rgba(61,187,122,.4); color:var(--verde);
@@ -184,36 +192,41 @@ const AVISOS = [
   "Não permitir que crianças fiquem correndo, orientando sempre os pais quando ocorrer.",
   "Horário de chegada: 1 hora antes do culto."
 ];
-/* ---------- Nomes das posições trocados pela liderança ----------
+/* ---------- Ajustes da escala feitos pela liderança ----------
    Ficam numa linha reservada da tabela do devocional (data 2000-01-01, livro "__config_escala__").
    O plano devocional ignora essa linha, porque só mostra leituras a partir de INICIO_PLANO.
-   Assim a liderança muda os nomes pelo app, sem nenhuma mudança no banco.
-   A chave é o nome original da posição: vale em todos os cultos em que ela aparece. */
+   Assim a liderança ajusta a escala pelo app, sem nenhuma mudança no banco.
+   posicoes: nome original da posição -> nome novo (vale em todos os cultos)
+   pessoas:  "data|seção|posição" -> quem serve (vale só naquele culto) */
 const CONFIG_ESCALA = { data: "2000-01-01", livro: "__config_escala__" };
-let NOMES_POSICOES = {};
-let EDITANDO = false, CULTO_ATUAL = 0, PENDENTE = {}, SALVO_AGORA = false;
+let NOMES_POSICOES = {}, NOMES_PESSOAS = {}, PADRAO_PESSOAS = {};
+let EDITANDO = false, CULTO_ATUAL = 0, PENDENTE = {}, PENDENTE_P = {}, SALVO_AGORA = false;
 async function carregarNomesPosicoes(){
   try{
     const { data } = await sb.from("devocional").select("referencia")
       .eq("data", CONFIG_ESCALA.data).eq("livro", CONFIG_ESCALA.livro).maybeSingle();
     const m = data && data.referencia ? JSON.parse(data.referencia) : {};
-    NOMES_POSICOES = (m && typeof m === "object" && !Array.isArray(m)) ? m : {};
-  }catch(e){ NOMES_POSICOES = {}; }
+    const ok = x => (x && typeof x === "object" && !Array.isArray(x)) ? x : {};
+    if(m && m.v === 2){ NOMES_POSICOES = ok(m.posicoes); NOMES_PESSOAS = ok(m.pessoas); }
+    else{ NOMES_POSICOES = ok(m); NOMES_PESSOAS = {}; }   /* formato antigo: só nomes das posições */
+  }catch(e){ NOMES_POSICOES = {}; NOMES_PESSOAS = {}; }
 }
 function nomePosicao(n){ return NOMES_POSICOES[n] || n; }
-async function salvarNomesPosicoes(mapa){
+function chavePessoas(c, titulo, funcao){ return c.data + "|" + titulo + "|" + funcao; }
+async function salvarAjustes(posicoes, pessoas){
   const { error } = await sb.from("devocional").upsert({
     data: CONFIG_ESCALA.data, livro: CONFIG_ESCALA.livro, capitulo: 0,
-    referencia: JSON.stringify(mapa), nome: "__config__", testamento: "NOVO"
+    referencia: JSON.stringify({ v: 2, posicoes, pessoas }), nome: "__config__", testamento: "NOVO"
   }, { onConflict: "data" });
   if(error) throw error;
 }
 /* guarda o que foi digitado antes de trocar de culto ou salvar */
 function guardarDigitado(){
   document.querySelectorAll("#conteudo input.ed").forEach(inp => { PENDENTE[inp.dataset.orig] = inp.value; });
+  document.querySelectorAll("#conteudo textarea.ed-p").forEach(t => { PENDENTE_P[t.dataset.chave] = t.value; });
 }
-function editarNomes(){ EDITANDO = true; PENDENTE = {}; SALVO_AGORA = false; montar(CULTO_ATUAL); }
-function cancelarEdicao(){ EDITANDO = false; PENDENTE = {}; montar(CULTO_ATUAL); }
+function editarNomes(){ EDITANDO = true; PENDENTE = {}; PENDENTE_P = {}; SALVO_AGORA = false; montar(CULTO_ATUAL); }
+function cancelarEdicao(){ EDITANDO = false; PENDENTE = {}; PENDENTE_P = {}; montar(CULTO_ATUAL); }
 async function salvarEdicao(btn){
   guardarDigitado();
   const mapa = Object.assign({}, NOMES_POSICOES);
@@ -221,10 +234,15 @@ async function salvarEdicao(btn){
     const novo = String(PENDENTE[orig] || "").trim();
     if(!novo || novo === orig) delete mapa[orig]; else mapa[orig] = novo;
   });
+  const pessoas = Object.assign({}, NOMES_PESSOAS);
+  Object.keys(PENDENTE_P).forEach(ch => {
+    const novo = String(PENDENTE_P[ch] || "").replace(/\s+/g, " ").trim();
+    if(!novo || novo === PADRAO_PESSOAS[ch]) delete pessoas[ch]; else pessoas[ch] = novo;
+  });
   btn.disabled = true; btn.textContent = "salvando...";
   try{
-    await salvarNomesPosicoes(mapa);
-    NOMES_POSICOES = mapa; EDITANDO = false; PENDENTE = {}; SALVO_AGORA = true;
+    await salvarAjustes(mapa, pessoas);
+    NOMES_POSICOES = mapa; NOMES_PESSOAS = pessoas; EDITANDO = false; PENDENTE = {}; PENDENTE_P = {}; SALVO_AGORA = true;
     montar(CULTO_ATUAL);
   }catch(err){
     btn.disabled = false; btn.textContent = "SALVAR";
@@ -266,13 +284,13 @@ function montar(i){
       '<div class="chip"><b>👕 Uniforme</b>' + esc(c.uniforme) + '</div>' +
     '</div>';
   if(EDITANDO){
-    html += '<div class="barra-edicao">✏️ <b>Editando os nomes das posições.</b> O nome novo vale em todos os cultos em que a posição aparece. ' +
-            'Deixe o campo vazio para voltar ao nome original.' +
+    html += '<div class="barra-edicao">✏️ <b>Editando a escala.</b> No campo laranja, o nome da posição (vale em todos os cultos). ' +
+            'No campo verde, <b>quem serve</b> nela (vale só neste culto). Para casal, escreva (casal). Campo vazio volta ao original.' +
             '<div class="be-btns"><button type="button" class="be-cancelar" onclick="cancelarEdicao()">CANCELAR</button>' +
             '<button type="button" class="be-salvar" onclick="salvarEdicao(this)">SALVAR</button></div><div class="be-msg"></div></div>';
   }else if(typeof EH_LIDER === "function" && EH_LIDER()){
-    if(SALVO_AGORA){ html += '<div class="salvo-ok">✅ Nomes das posições salvos. A equipe já vê os nomes novos.</div>'; SALVO_AGORA = false; }
-    html += '<button type="button" class="btn-editar-nomes" onclick="editarNomes()">✏️ Editar nomes das posições</button>';
+    if(SALVO_AGORA){ html += '<div class="salvo-ok">✅ Escala salva. A equipe já vê as mudanças.</div>'; SALVO_AGORA = false; }
+    html += '<button type="button" class="btn-editar-nomes" onclick="editarNomes()">✏️ Editar escala (posições e nomes)</button>';
   }
   let cartoes = "";
   /* no modo edição, o campo mostra o que já foi digitado (ou o nome atual) */
@@ -280,14 +298,22 @@ function montar(i){
   const campo = orig => '<input class="ed" type="text" maxlength="80" data-orig="' + escAttr(orig) + '" value="' + escAttr(valorEd(orig)) + '">';
   c.grupos.forEach(([titulo, itens]) => {
     cartoes += '<div class="secao">' + (EDITANDO ? campo(titulo) : esc(nomePosicao(titulo))) + '<div class="faixa"></div></div>';
-    itens.forEach(([funcao, nomes, dica]) => {
+    itens.forEach(([funcao, padrao, dica]) => {
+      const ch = chavePessoas(c, titulo, funcao);
+      PADRAO_PESSOAS[ch] = padrao;
+      const nomes = NOMES_PESSOAS[ch] || padrao;          /* quem serve: o ajuste da liderança ou o da escala */
       const minha = ehMinha(nomes);
       if(minha) minhas.push(nomePosicao(funcao));
       const rotulo = EDITANDO
         ? campo(funcao) + (nomePosicao(funcao) !== funcao ? '<span class="orig">original: ' + esc(funcao) + '</span>' : '')
         : esc(nomePosicao(funcao));
-      cartoes += '<div class="card' + (minha ? " sua" : "") + '"><div class="funcao">' + rotulo + (dica ? '<small>' + esc(dica) + '</small>' : '') + '</div>' +
-                 '<div class="nomes">' + nomesHTML(nomes) + '</div></div>';
+      const valorP = (ch in PENDENTE_P) ? PENDENTE_P[ch] : nomes;
+      const blocoNomes = EDITANDO
+        ? '<label class="ed-rot">Quem serve</label><textarea class="ed-p" rows="2" maxlength="200" data-chave="' + escAttr(ch) + '">' + esc(valorP) + '</textarea>' +
+          (nomes !== padrao ? '<span class="orig">na escala original: ' + esc(padrao) + '</span>' : '')
+        : nomesHTML(nomes);
+      cartoes += '<div class="card' + (minha && !EDITANDO ? " sua" : "") + (EDITANDO ? " editando" : "") + '"><div class="funcao">' + rotulo + (dica ? '<small>' + esc(dica) + '</small>' : '') + '</div>' +
+                 '<div class="nomes">' + blocoNomes + '</div></div>';
     });
   });
   if(minhas.length){

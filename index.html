@@ -137,6 +137,7 @@
   .msg{display:none; text-align:center; padding:14px; border-radius:12px; margin-top:14px; font-weight:600; font-size:.88rem;}
   .msg.ok{display:block; background:rgba(61,187,122,.12); border:1px solid rgba(61,187,122,.4); color:var(--verde);}
   .msg.erro{display:block; background:rgba(224,85,85,.12); border:1px solid rgba(224,85,85,.4); color:var(--vermelho);}
+  .msg.aviso{display:block; background:rgba(240,131,74,.12); border:1px solid rgba(240,131,74,.4); color:var(--laranja-claro);}
 
   .link-painel{
     display:block; text-align:center; margin:26px 0 0; color:var(--texto-suave);
@@ -786,9 +787,12 @@ async function acaoObreiro(acao, o, botao){
     }
     if(acao === "senha"){
       const r = await chamarAdmin("senha", { nome: o.nome });
-      if(r.senha && r.senha !== "123456") throw new Error("FUNCAO_ANTIGA");
-      mostrarSenha(o.nome, "123456");
-      msgObreiros("ok", "Senha de " + o.nome + " zerada para 123456.");
+      /* função antiga no Supabase devolve uma senha temporária (efraim + 4 dígitos): também vale, é só mandar essa */
+      const senha = r.senha || "123456";
+      mostrarSenha(o.nome, senha);
+      msgObreiros(senha === "123456" ? "ok" : "aviso", senha === "123456"
+        ? "Senha de " + o.nome + " zerada para 123456."
+        : "Senha de " + o.nome + " zerada para " + senha + " (a função no Supabase ainda é a antiga, por isso não foi 123456). Mande ESSA senha para a pessoa.");
       await sb.from("pedidos_senha").delete().eq("nome", o.nome);
     }
     if(acao === "redefinir"){

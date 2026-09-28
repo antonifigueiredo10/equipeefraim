@@ -208,8 +208,10 @@ async function trocarMinhaSenha(){
 async function contarPendentes(el){
   if(!el) return;
   try{
-    const { count } = await sb.from("perfis").select("id", { count:"exact", head:true }).eq("status", "pendente");
-    el.textContent = count ? "Admin · " + count + " aguardando aprovação" : "Admin: obreiros, aprovações e senhas";
+    const a = await sb.from("perfis").select("id", { count:"exact", head:true }).eq("status", "pendente");
+    const b = await sb.from("pedidos_senha").select("nome", { count:"exact", head:true });
+    const total = (a.count || 0) + (b.count || 0);
+    el.textContent = total ? "Admin · " + total + " pedido(s) esperando você" : "Admin: obreiros, aprovações e senhas";
   }catch(e){}
 }
 

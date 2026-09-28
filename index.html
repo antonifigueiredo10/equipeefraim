@@ -194,6 +194,9 @@
   .obreiro .estado{display:block; font-size:.72rem; margin-top:3px; color:var(--texto-suave);}
   .obreiro .estado.pendente{color:var(--laranja-claro);}
   .obreiro .estado.ativo{color:var(--verde);}
+  .obreiro.com-pedido{border-color:var(--laranja); background:linear-gradient(135deg, rgba(240,131,74,.16), var(--preto-card) 60%);}
+  .obreiro .estado.pedido{color:var(--laranja-claro); font-weight:600;}
+  .obreiro .estado a.alterar{color:var(--texto-suave); font-size:.68rem; margin-left:6px; text-decoration:underline; cursor:pointer;}
   .selo{
     font-size:.6rem; text-transform:uppercase; letter-spacing:1.5px; padding:2px 9px;
     border-radius:999px; border:1px solid var(--laranja); color:var(--laranja); margin-left:7px; white-space:nowrap;
@@ -644,6 +647,25 @@ function formatarWhats(v){
   if(n.length < 10) return n;
   return "(" + n.slice(0, 2) + ") " + n.slice(2, n.length - 4) + "-" + n.slice(-4);
 }
+/* só DDD + número (tira o 55 do país, se tiver) */
+function nacional(v){
+  let n = String(v || "").replace(/\D/g, "");
+  if(n.length >= 12 && n.startsWith("55")) n = n.slice(2);
+  return n;
+}
+/* cadastra ou troca o WhatsApp de alguém na lista */
+async function alterarNumero(o){
+  limparMsgObreiros();
+  const r = prompt("WhatsApp de " + o.nome + " (com DDD):", formatarWhats(o.whatsapp || ""));
+  if(r === null) return;
+  const n = nacional(r);
+  if(n.length < 10 || n.length > 11){ msgObreiros("erro", "Número inválido. Use DDD + número, por exemplo (67) 99999-9999."); return; }
+  const { error } = await sb.from("convites").update({ whatsapp: n }).eq("nome", o.nome);
+  if(error){ msgObreiros("erro", "Não deu para salvar o número agora. Tente de novo."); return; }
+  msgObreiros("ok", "WhatsApp de " + o.nome + " salvo: " + formatarWhats(n) + ".");
+  carregarObreiros();
+}
+
 /* número clicável: abre a conversa da pessoa no WhatsApp */
 function linkConversa(v){
   return '<a href="https://wa.me/' + numeroWhats(v) + '" target="_blank" rel="noopener" style="color:var(--verde); text-decoration:underline;">' + formatarWhats(v) + '</a>';
@@ -717,12 +739,15 @@ function mostrarCodigo(nome, codigo, titulo){
 }
 
 /* Pedidos de nova senha feitos na tela de login */
+let PEDIDOS = {};   /* nome -> { whatsapp, em } */
 async function carregarPedidos(){
   const cx = document.getElementById("pedidos-senha");
   let { data, error } = await sb.from("pedidos_senha").select("nome,em,whatsapp").order("em");
   if(error){ ({ data, error } = await sb.from("pedidos_senha").select("nome,em").order("em")); }
+  PEDIDOS = {};
   if(error || !data || data.length === 0){ cx.innerHTML = ""; return []; }
-  cx.innerHTML = '<div class="card"><label>📲 Pedidos de senha pelo WhatsApp (' + data.length + ')</label></div>';
+  data.forEach(p => { PEDIDOS[p.nome] = p; });
+  cx.innerHTML = '<div class="card"><label>🔔 Pedidos de senha pelo WhatsApp (' + data.length + ')</label></div>';
   const card = cx.firstChild;
   data.forEach(p => {
     const quando = new Date(p.em).toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
@@ -730,10 +755,13 @@ async function carregarPedidos(){
     div.className = "obreiro";
     div.innerHTML = '<div class="quem"><b>' + p.nome + '</b><span class="estado pendente">📲 ' + (p.whatsapp ? linkConversa(p.whatsapp) : "sem número") + ' · pediu em ' + quando + '</span></div>' +
       '<div class="btns"><button data-a="liberar" style="border-color:var(--verde);color:var(--verde)">gerar senha e enviar</button><button data-a="ignorar">ignorar</button></div>';
-    div.querySelector('[data-a=liberar]').onclick = e => acaoObreiro("whats", { nome: p.nome, whatsappPedido: p.whatsapp }, e.target);
+    div.querySelector('[data-a=liberar]').onclick = e => {
+      const ob = OBREIROS.find(x => x.nome === p.nome) || { nome: p.nome };
+      acaoObreiro("whats", Object.assign({}, ob, { whatsappPedido: p.whatsapp }), e.target);
+    };
     div.querySelector('[data-a=ignorar]').onclick = async () => {
       await sb.from("pedidos_senha").delete().eq("nome", p.nome);
-      carregarPedidos();
+      carregarObreiros(); contarAguardando();
     };
     card.appendChild(div);
   });
@@ -741,7 +769,7 @@ async function carregarPedidos(){
 }
 
 async function carregarObreiros(){
-  carregarPedidos();
+  await carregarPedidos();
   const cont = document.getElementById("lista-obreiros");
   cont.innerHTML = "<p style='color:var(--texto-suave); font-size:.85rem;'>Carregando...</p>";
   try{
@@ -760,9 +788,13 @@ async function carregarObreiros(){
     OBREIROS.forEach(o => {
       o.status = o.ativou ? (mapa[o.nome] || "ativo") : null;
       o.foto = ids[o.nome] ? fotos[ids[o.nome]] : null;
+      o.pedido = PEDIDOS[o.nome] || null;
+      /* pediu e o cadastro ainda não tinha número: usa o do pedido */
+      if(!o.whatsapp && o.pedido && o.pedido.whatsapp) o.whatsapp = o.pedido.whatsapp;
     });
-    /* quem espera liberação aparece primeiro */
-    OBREIROS.sort((a, b) => (b.status === "pendente") - (a.status === "pendente"));
+    /* quem pediu senha aparece primeiro (mais recente no topo); depois quem espera liberação */
+    const peso = o => o.pedido ? 2 : (o.status === "pendente" ? 1 : 0);
+    OBREIROS.sort((a, b) => (peso(b) - peso(a)) || (a.pedido && b.pedido ? String(b.pedido.em).localeCompare(String(a.pedido.em)) : 0));
   }catch(e){
     cont.innerHTML = "<p style='color:var(--vermelho); font-size:.85rem;'>Não foi possível carregar (" +
       e.message + "). Tente de novo em instantes.</p>";
@@ -782,15 +814,20 @@ async function carregarObreiros(){
   cont.innerHTML = "";
   OBREIROS.forEach(o => {
     const div = document.createElement("div");
-    div.className = "obreiro";
+    div.className = "obreiro" + (o.pedido ? " com-pedido" : "");
     const selo = o.papel === "lider" ? '<span class="selo">liderança</span>' : '';
     const estados = {
       ativo:     '<span class="estado ativo">✓ liberado</span>',
       pendente:  '<span class="estado pendente">⏳ criou a senha · aguardando sua liberação</span>',
       bloqueado: '<span class="estado" style="color:var(--vermelho)">⛔ bloqueado</span>'
     };
-    const estado = (o.ativou ? estados[o.status] : '<span class="estado">ainda sem conta</span>') +
-                   (o.whatsapp ? '<span class="estado">📲 ' + linkConversa(o.whatsapp) + '</span>' : '');
+    const quandoPediu = o.pedido ? new Date(o.pedido.em).toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" }) : "";
+    const numeroDiferente = o.pedido && o.pedido.whatsapp && o.whatsapp && nacional(o.pedido.whatsapp) !== nacional(o.whatsapp);
+    const estado = (o.pedido ? '<span class="estado pedido">🔔 pediu a senha em ' + quandoPediu + '</span>' : '') +
+                   (o.ativou ? estados[o.status] : '<span class="estado">ainda sem conta</span>') +
+                   (o.whatsapp ? '<span class="estado">📲 ' + linkConversa(o.whatsapp) + '<a class="alterar" data-alterar="1">alterar</a></span>'
+                               : '<span class="estado">📲 sem número <a class="alterar" data-alterar="1">cadastrar</a></span>') +
+                   (numeroDiferente ? '<span class="estado" style="color:var(--vermelho)">⚠️ no pedido veio outro número: ' + linkConversa(o.pedido.whatsapp) + '</span>' : '');
     let acesso = "";
     if(o.status === "pendente")  acesso = '<button data-acao="liberar" style="border-color:var(--verde);color:var(--verde)">liberar</button><button data-acao="bloquear">bloquear</button>';
     if(o.status === "ativo")     acesso = '<button data-acao="bloquear">bloquear</button>';
@@ -809,6 +846,8 @@ async function carregarObreiros(){
     div.querySelectorAll("button").forEach(b => {
       b.onclick = () => acaoObreiro(b.dataset.acao, o, b);
     });
+    const alt = div.querySelector("[data-alterar]");
+    if(alt) alt.onclick = e => { e.preventDefault(); alterarNumero(o); };
     cont.appendChild(div);
   });
 }
@@ -831,11 +870,21 @@ async function acaoObreiro(acao, o, botao){
   /* senha pelo WhatsApp: confere o número antes de gerar */
   let whatsDigitado = "";
   if(acao === "whats"){
-    const sugestao = formatarWhats(o.whatsappPedido || o.whatsapp || "");
-    const r = prompt("WhatsApp de " + o.nome + " (com DDD):", sugestao);
-    if(r === null) return;
-    whatsDigitado = r.replace(/\D/g, "");
-    if(whatsDigitado.length < 10 || whatsDigitado.length > 13){ msgObreiros("erro", "Número inválido. Use DDD + número, por exemplo (67) 99999-9999."); return; }
+    const pedidoNum = o.whatsappPedido || (o.pedido && o.pedido.whatsapp) || "";
+    const salvo = o.whatsapp || "";
+    const diferente = pedidoNum && salvo && nacional(pedidoNum) !== nacional(salvo);
+    let numero = salvo || pedidoNum;
+    /* só pergunta o número se não tiver nenhum, ou se o pedido trouxe um diferente do cadastrado */
+    if(!numero || diferente){
+      const r = prompt((diferente ? "O pedido veio com um número diferente do cadastrado.\nCadastrado: " + formatarWhats(salvo) +
+                                    "\nNo pedido: " + formatarWhats(pedidoNum) + "\n\nQual usar? " : "") +
+                       "WhatsApp de " + o.nome + " (com DDD):", formatarWhats(diferente ? pedidoNum : numero));
+      if(r === null) return;
+      numero = r;
+    }
+    whatsDigitado = nacional(numero);
+    if(whatsDigitado.length < 10 || whatsDigitado.length > 11){ msgObreiros("erro", "Número inválido. Use DDD + número, por exemplo (67) 99999-9999."); return; }
+    perguntas.whats = "Gerar uma senha para " + o.nome + " e mandar no WhatsApp " + formatarWhats(whatsDigitado) + "?\n\nSe ele já tinha senha, a antiga deixa de valer. Nada é apagado.";
   }
   if(!confirm(perguntas[acao])) return;
 
@@ -864,10 +913,11 @@ async function acaoObreiro(acao, o, botao){
       const nova = await senhaAleatoriaPara(o.nome, senha);
       if(nova) senha = nova;
       /* 3) guarda o WhatsApp no cadastro e tira o pedido da fila (se der; não impede o envio) */
-      try{ await sb.from("convites").update({ whatsapp: numeroWhats(whatsDigitado) }).eq("nome", o.nome); }catch(e){}
+      try{ await sb.from("convites").update({ whatsapp: nacional(whatsDigitado) }).eq("nome", o.nome); }catch(e){}
       try{ await sb.from("pedidos_senha").delete().eq("nome", o.nome); }catch(e){}
       mostrarSenhaWhats(o.nome, senha, whatsDigitado);
       msgObreiros("ok", "Senha de " + o.nome + " pronta. Toque no botão verde para mandar no WhatsApp.");
+      contarAguardando();
     }
     if(acao === "senha"){
       const r = await chamarAdmin("senha", { nome: o.nome });
@@ -939,14 +989,20 @@ function abrirAdmin(){
   trocarAbaPainel("obreiros");
   document.getElementById("painel").scrollIntoView({ behavior:"smooth", block:"start" });
 }
-/* Quantos criaram a senha e esperam a liberação: vira o número no botão ADMIN */
+/* Pedidos de senha pelo WhatsApp + quem espera liberação: vira o número no botão ADMIN */
 async function contarAguardando(){
   try{
-    const { count } = await sb.from("perfis").select("id", { count:"exact", head:true }).eq("status", "pendente");
+    const a = await sb.from("perfis").select("id", { count:"exact", head:true }).eq("status", "pendente");
+    const b = await sb.from("pedidos_senha").select("nome", { count:"exact", head:true });
+    const total = (a.count || 0) + (b.count || 0);
     const n = document.getElementById("admin-n");
-    n.textContent = count || ""; n.style.display = count ? "inline-block" : "none";
+    const antes = +n.textContent || 0;
+    n.textContent = total || ""; n.style.display = total ? "inline-block" : "none";
+    /* chegou pedido novo com o painel aberto: atualiza a lista */
+    if(total > antes && document.getElementById("painel").style.display === "block") carregarObreiros();
   }catch(e){}
 }
+setInterval(() => { if(typeof EH_LIDER === "function" && EH_LIDER()) contarAguardando(); }, 60000);
 
 /* ---------- Início: exige login antes de mostrar qualquer coisa ---------- */
 (async function(){

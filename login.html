@@ -146,7 +146,7 @@
     <!-- Primeiro acesso ou esqueceu: pede a senha pelo WhatsApp -->
     <div id="bloco-whats" style="display:none">
       <label for="whats-entrar">Seu WhatsApp (com DDD)</label>
-      <input type="tel" id="whats-entrar" placeholder="(67) 99999-9999" inputmode="tel" autocomplete="tel" oninput="mascaraWhats(this)">
+      <input type="tel" id="whats-entrar" placeholder="(67) 99999-9999" inputmode="tel" autocomplete="tel" maxlength="19" oninput="mascaraWhats(this)">
       <div class="dica-whats">A liderança confere o seu pedido e te manda a senha por WhatsApp.</div>
     </div>
 
@@ -240,8 +240,14 @@ async function aoEscolherNome(){
     modoLogin(data === "SEM_CONTA" ? "whats" : "senha");
   }catch(e){}
 }
+/* só números; se veio com o 55 do Brasil na frente (12 ou 13 dígitos), tira o 55 */
+function digitosWhats(v){
+  let n = String(v || "").replace(/\D/g, "");
+  if(n.length >= 12 && n.startsWith("55")) n = n.slice(2);
+  return n.slice(0, 11);
+}
 function mascaraWhats(el){
-  let n = el.value.replace(/\D/g, "").slice(0, 11);
+  let n = digitosWhats(el.value);
   if(n.length > 6) el.value = "(" + n.slice(0, 2) + ") " + n.slice(2, n.length - 4) + "-" + n.slice(-4);
   else if(n.length > 2) el.value = "(" + n.slice(0, 2) + ") " + n.slice(2);
   else el.value = n;
@@ -249,7 +255,7 @@ function mascaraWhats(el){
 
 async function enviarSolicitacao(){
   const nome = document.getElementById("nome-entrar").value;
-  const num  = document.getElementById("whats-entrar").value.replace(/\D/g, "");
+  const num  = digitosWhats(document.getElementById("whats-entrar").value);
   if(num.length < 10 || num.length > 11){ mostrar("msg-entrar", "erro", "Digite o WhatsApp com DDD, por exemplo (67) 99999-9999."); return; }
   const btn = document.getElementById("btn-entrar");
   btn.disabled = true;

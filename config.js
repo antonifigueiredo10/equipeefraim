@@ -172,6 +172,15 @@ function abrirPerfil(){
       '<h3>' + PERFIL.nome + '</h3>' +
       '<div class="fp-papel">' + (EH_LIDER() ? "Liderança" : "Obreiro(a)") + ' · Equipe Efraim</div>' +
       '<button type="button" class="fp-op" data-a="foto"><span>' + iconeCor("perfil") + '</span>Trocar minha foto</button>' +
+      '<button type="button" class="fp-op" data-a="aniver"><span>' + iconeCor("calendario") + '</span><i class="fp-aniv-rot">' + rotuloAniversario() + '</i></button>' +
+      '<div class="fp-aniv" hidden>' +
+        '<div class="fp-aniv-t">Qual o dia do seu aniversário?</div>' +
+        '<div class="fp-aniv-sel"><select id="aniv-dia" aria-label="Dia">' + Array.from({ length: 31 }, (_, k) => '<option value="' + String(k + 1).padStart(2, "0") + '">' + (k + 1) + '</option>').join("") + '</select>' +
+        '<select id="aniv-mes" aria-label="Mês">' + MESES_ANIV.map((m, k) => '<option value="' + String(k + 1).padStart(2, "0") + '">' + m + '</option>').join("") + '</select></div>' +
+        '<div class="fp-aniv-btns"><button type="button" class="fp-aniv-cancelar" data-a="aniver-cancelar">cancelar</button>' +
+        '<button type="button" class="fp-aniv-salvar" data-a="aniver-salvar">SALVAR</button></div>' +
+        '<div class="fp-aniv-msg"></div>' +
+      '</div>' +
       '<button type="button" class="fp-op" data-a="avisos"><span>' + iconeCor("lembrete") + '</span><i class="fp-av">Avisos do devocional</i></button>' +
       '<a class="fp-op" href="celulas.html"><span>' + iconeCor("celulas") + '</span>Mapa de células</a>' +
       '<a class="fp-op" href="manual.html"><span>' + iconeCor("devocional") + '</span>Como usar o app</a>' +
@@ -186,11 +195,53 @@ function abrirPerfil(){
     if(a && a.dataset.a === "sair"){ sair(); }
     if(a && a.dataset.a === "avisos"){ alternarAvisos(a); }
     if(a && a.dataset.a === "senha"){ trocarMinhaSenha(); }
+    if(a && a.dataset.a === "aniver"){ abrirAniversario(cx); }
+    if(a && a.dataset.a === "aniver-cancelar"){ cx.querySelector(".fp-aniv").hidden = true; }
+    if(a && a.dataset.a === "aniver-salvar"){ salvarAniversario(cx, a); }
   };
   document.body.appendChild(cx);
   rotuloAvisos(cx.querySelector('[data-a="avisos"]'));
   if(EH_LIDER()) contarPendentes(cx.querySelector(".fp-apr"));
 }
+/* ---------- Data de aniversário (só dia e mês; o ano fica 2000 de propósito) ---------- */
+const MESES_ANIV = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+function meuAniversario(){
+  const v = (PERFIL && PERFIL.aniversario) || (SESSAO && SESSAO.user && SESSAO.user.user_metadata && SESSAO.user.user_metadata.aniversario) || "";
+  return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : "";
+}
+function rotuloAniversario(){
+  const v = meuAniversario();
+  return v ? "Aniversário · " + parseInt(v.slice(8), 10) + " de " + MESES_ANIV[parseInt(v.slice(5, 7), 10) - 1] : "Data de aniversário · informar";
+}
+function abrirAniversario(cx){
+  const f = cx.querySelector(".fp-aniv");
+  const v = meuAniversario();
+  if(v){ cx.querySelector("#aniv-dia").value = v.slice(8); cx.querySelector("#aniv-mes").value = v.slice(5, 7); }
+  f.querySelector(".fp-aniv-msg").textContent = "";
+  f.hidden = !f.hidden;
+}
+async function salvarAniversario(cx, btn){
+  const dia = cx.querySelector("#aniv-dia").value, mes = cx.querySelector("#aniv-mes").value;
+  const msg = cx.querySelector(".fp-aniv-msg");
+  const dt = new Date(2000, parseInt(mes, 10) - 1, parseInt(dia, 10));
+  if(dt.getDate() !== parseInt(dia, 10)){ msg.textContent = "Esse dia não existe nesse mês."; return; }
+  const v = "2000-" + mes + "-" + dia;
+  btn.disabled = true; msg.textContent = "salvando...";
+  let ok = false;
+  /* no perfil (a liderança vê no Admin) */
+  try{ const r = await sb.rpc("definir_aniversario", { p_data: v }); if(!r.error) ok = true; }catch(e){}
+  /* e na própria conta (vale mesmo antes da regra do banco existir) */
+  try{
+    const { data, error } = await sb.auth.updateUser({ data: { aniversario: v } });
+    if(!error){ ok = true; if(data && data.user && SESSAO) SESSAO.user = data.user; }
+  }catch(e){}
+  btn.disabled = false;
+  if(!ok){ msg.textContent = "Não deu para salvar agora. Confira a internet e tente de novo."; return; }
+  if(PERFIL) PERFIL.aniversario = v;
+  cx.querySelector(".fp-aniv-rot").textContent = rotuloAniversario();
+  cx.querySelector(".fp-aniv").hidden = true;
+}
+
 /* A própria pessoa troca a senha (também serve depois da senha temporária da liderança) */
 async function trocarMinhaSenha(){
   const s1 = prompt("Digite a senha nova (pelo menos 6 caracteres):");
@@ -813,6 +864,18 @@ document.addEventListener("DOMContentLoaded", () => setTimeout(mostrarInstalar, 
     }
     #folha-perfil .fp-op span{width:28px; height:28px; flex:none;}
     #folha-perfil .fp-op svg{width:100%; height:100%; display:block;}
+    #folha-perfil .fp-aniv{margin:-2px 0 10px; padding:14px; border-radius:14px; background:#1D1D22; border:1px solid rgba(240,131,74,.5); text-align:left;}
+    #folha-perfil .fp-aniv[hidden]{display:none;}
+    #folha-perfil .fp-aniv-t{font-size:.8rem; font-weight:600; margin-bottom:10px;}
+    #folha-perfil .fp-aniv-sel{display:flex; gap:8px;}
+    #folha-perfil .fp-aniv-sel select{flex:1; padding:11px 10px; border-radius:10px; border:1px solid #2A2A2F; background:#0B0B0D; color:#F7F3EE; font:600 .9rem 'Poppins',sans-serif;}
+    #folha-perfil .fp-aniv-sel select:first-child{flex:0 0 78px;}
+    #folha-perfil .fp-aniv-btns{display:flex; gap:8px; margin-top:10px;}
+    #folha-perfil .fp-aniv-btns button{flex:1; padding:11px; border-radius:10px; cursor:pointer; font:700 .8rem 'Poppins',sans-serif;}
+    #folha-perfil .fp-aniv-cancelar{background:transparent; border:1px solid #2A2A2F; color:#B8B2AA;}
+    #folha-perfil .fp-aniv-salvar{border:none; color:#fff; background:linear-gradient(135deg,#F0834A,#D96A32);}
+    #folha-perfil .fp-aniv-salvar:disabled{opacity:.6;}
+    #folha-perfil .fp-aniv-msg{font-size:.74rem; color:#F9A56E; margin-top:8px; min-height:1em;}
     #folha-perfil .fp-sair{width:100%; margin-top:6px; padding:13px; border-radius:14px; border:1px solid #E05555; background:transparent; color:#E05555; font:700 .82rem 'Poppins',sans-serif; cursor:pointer;}
     .icc{display:inline-flex; flex:none;}
     .icc svg{width:100%; height:100%; display:block;}

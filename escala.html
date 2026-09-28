@@ -113,6 +113,9 @@
     display:block; margin:12px auto 0; padding:9px 18px; border-radius:999px; cursor:pointer;
     border:1px dashed var(--laranja); background:transparent; color:var(--laranja); font:600 .76rem 'Poppins',sans-serif;
   }
+  .minha .de-todos{display:block; margin-top:8px; font-size:.74rem; color:var(--texto-suave);}
+  .minha.fora{border-color:var(--cinza-borda); background:var(--preto-card);}
+  .minha.fora b{color:var(--texto-suave);}
   .acoes-escala{display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:12px;}
   .acoes-escala .btn-editar-nomes{margin:0;}
   .btn-editar-nomes.auto{border-style:solid; background:rgba(240,131,74,.12);}
@@ -404,8 +407,14 @@ function ehMinha(n){
   return eu.length > 2 && normal(n).includes(eu);
 }
 
+/* obreiro vê só a própria posição; liderança, quem monta a escala (Antonio e Letícia) e pastores veem tudo */
+function verEscalaCompleta(){
+  return (typeof EH_LIDER === "function" && EH_LIDER()) || podeEditarNomes() || /^(pr|pra|ap)\.?\s/i.test((PERFIL && PERFIL.nome) || "");
+}
+
 function montar(i){
   if(EDITANDO) guardarDigitado();
+  const veTudo = verEscalaCompleta();
   CULTO_ATUAL = i;
   const c = ESCALAS[i];
   document.querySelectorAll("#cultos button").forEach((b, j) => b.classList.toggle("ativo", j === i));
@@ -430,12 +439,13 @@ function montar(i){
       '<button type="button" class="btn-editar-nomes auto" onclick="montarEscalaAutomatica(this)">⚡ Montar escala automática</button>' +
       '</div>';
   }
-  let cartoes = "";
+  const secoes = [];   /* [título, [{html, minha, todos}]] */
   /* no modo edição, o campo mostra o que já foi digitado (ou o nome atual) */
   const valorEd = orig => (orig in PENDENTE) ? PENDENTE[orig] : nomePosicao(orig);
   const campo = orig => '<input class="ed" type="text" maxlength="80" data-orig="' + escAttr(orig) + '" value="' + escAttr(valorEd(orig)) + '">';
   c.grupos.forEach(([titulo, itens]) => {
-    cartoes += '<div class="secao">' + (edPos ? campo(titulo) : esc(nomePosicao(titulo))) + '<div class="faixa"></div></div>';
+    const lista = [];
+    secoes.push(['<div class="secao">' + (edPos ? campo(titulo) : esc(nomePosicao(titulo))) + '<div class="faixa"></div></div>', lista]);
     itens.forEach(([funcao, padrao, dica]) => {
       const ch = chavePessoas(c, titulo, funcao);
       PADRAO_PESSOAS[ch] = padrao;
@@ -450,13 +460,26 @@ function montar(i){
         ? '<label class="ed-rot">Quem serve</label><textarea class="ed-p" rows="2" maxlength="200" data-chave="' + escAttr(ch) + '">' + esc(valorP) + '</textarea>' +
           (nomes !== padrao ? '<span class="orig">na escala original: ' + esc(padrao) + '</span>' : '')
         : nomesHTML(nomes);
-      cartoes += '<div class="card' + (minha && !EDITANDO ? " sua" : "") + (EDITANDO ? " editando" : "") + '"><div class="funcao">' + rotulo + (dica ? '<small>' + esc(dica) + '</small>' : '') + '</div>' +
-                 '<div class="nomes">' + blocoNomes + '</div></div>';
+      lista.push({ minha, todos: nomes === "TODOS", funcao: nomePosicao(funcao),
+        html: '<div class="card' + (minha && !EDITANDO ? " sua" : "") + (EDITANDO ? " editando" : "") + '"><div class="funcao">' + rotulo + (dica ? '<small>' + esc(dica) + '</small>' : '') + '</div>' +
+              '<div class="nomes">' + blocoNomes + '</div></div>' });
     });
   });
+  /* obreiro: só os cartões dele; as tarefas de TODOS viram uma linha no quadro "Sua função"; seção sem cartão some */
+  let cartoes = "";
+  const deTodos = [];
+  secoes.forEach(([cab, lista]) => {
+    if(!veTudo) lista.forEach(x => { if(x.todos && !x.minha) deTodos.push(x.funcao); });
+    const mostrar = veTudo ? lista : lista.filter(x => x.minha);
+    if(mostrar.length) cartoes += cab + mostrar.map(x => x.html).join("");
+  });
+  if(!veTudo && !minhas.length){
+    cartoes = '<div class="minha fora"><b>Neste culto</b><span>Você não está na escala.</span><br>Se acha que deveria estar, fale com a liderança.</div>';
+  }
   if(minhas.length){
     html += '<div class="minha"><b>Sua função neste culto</b><span>' + minhas.map(esc).join(" · ") + '</span>' +
-            '<br>Chegue às ' + c.chegada + '. Os cartões em verde são os seus.</div>';
+            '<br>Chegue às ' + c.chegada + '.' + (veTudo ? ' Os cartões em verde são os seus.' : '') +
+            (!veTudo && deTodos.length ? '<small class="de-todos">Todos participam: ' + deTodos.map(esc).join(", ") + '.</small>' : '') + '</div>';
   }
   html += cartoes +
     '<div class="aviso">' + (c.avisos || AVISOS).map(esc).join("<br>") + '</div>' +

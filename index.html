@@ -201,6 +201,11 @@
   .obreiro.cor-verde{border-color:rgba(61,187,122,.5); border-left:5px solid var(--verde); background:linear-gradient(135deg, rgba(61,187,122,.1), var(--preto-card) 60%);}
   .obreiro .estado.pedido{color:var(--amarelo); font-weight:600;}
   .obreiro .estado.sem-whats{color:var(--vermelho); font-weight:600;}
+  .obreiro.cor-vermelho .estado.ativo{color:var(--texto-suave);}
+  .obreiro .btns button.btn-whats{font-weight:600;}
+  .obreiro.cor-verde .btns button.btn-whats{border-color:var(--verde); color:var(--verde);}
+  .obreiro.cor-amarelo .btns button.btn-whats{border-color:var(--amarelo); color:var(--amarelo); background:rgba(242,201,76,.1);}
+  .obreiro.cor-vermelho .btns button.btn-whats{border-color:var(--vermelho); color:var(--vermelho);}
   .resumo .box.cor-verde{border-top:4px solid var(--verde);}    .resumo .box.cor-verde b{color:var(--verde);}
   .resumo .box.cor-amarelo{border-top:4px solid var(--amarelo);} .resumo .box.cor-amarelo b{color:var(--amarelo);}
   .resumo .box.cor-vermelho{border-top:4px solid var(--vermelho);} .resumo .box.cor-vermelho b{color:var(--vermelho);}
@@ -809,8 +814,10 @@ async function carregarObreiros(){
     return;
   }
 
-  /* amarelo: pediu a senha (ou criou e espera liberar) · verde: já entra · vermelho: não mandou o WhatsApp (ou bloqueado) */
-  const corDe = o => (o.pedido || o.status === "pendente") ? "amarelo" : (o.status === "ativo" ? "verde" : "vermelho");
+  /* amarelo: pediu a senha (ou criou e espera liberar) · verde: já entra E o WhatsApp está no cadastro
+     · vermelho: não mandou o WhatsApp (mesmo liberado), sem conta ou bloqueado. O próprio admin fica verde. */
+  const corDe = o => (o.pedido || o.status === "pendente") ? "amarelo"
+                   : (o.status === "ativo" && (o.whatsapp || o.nome === PERFIL.nome)) ? "verde" : "vermelho";
   const conta = cor => OBREIROS.filter(o => corDe(o) === cor).length;
   const bloqueados = OBREIROS.filter(o => o.status === "bloqueado").length;
   document.getElementById("resumo-obreiros").innerHTML =
@@ -831,9 +838,11 @@ async function carregarObreiros(){
     const quandoPediu = o.pedido ? new Date(o.pedido.em).toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" }) : "";
     const numeroDiferente = o.pedido && o.pedido.whatsapp && o.whatsapp && nacional(o.pedido.whatsapp) !== nacional(o.whatsapp);
     const estado = (o.pedido ? '<span class="estado pedido">🔔 pediu a senha em ' + quandoPediu + '</span>' : '') +
-                   (o.ativou ? estados[o.status] : (o.pedido ? '' : '<span class="estado sem-whats">✗ ainda não enviou o WhatsApp</span>')) +
+                   (o.ativou ? estados[o.status] : (o.pedido ? '' : '<span class="estado">ainda sem conta</span>')) +
                    (o.whatsapp ? '<span class="estado">📲 ' + linkConversa(o.whatsapp) + '<a class="alterar" data-alterar="1">alterar</a></span>'
-                               : '<span class="estado">📲 sem número <a class="alterar" data-alterar="1">cadastrar</a></span>') +
+                               : (corDe(o) === "vermelho"
+                                   ? '<span class="estado sem-whats">✗ não enviou o WhatsApp <a class="alterar" data-alterar="1">cadastrar</a></span>'
+                                   : '<span class="estado">📲 sem número <a class="alterar" data-alterar="1">cadastrar</a></span>')) +
                    (numeroDiferente ? '<span class="estado" style="color:var(--vermelho)">⚠️ no pedido veio outro número: ' + linkConversa(o.pedido.whatsapp) + '</span>' : '');
     let acesso = "";
     if(o.status === "pendente")  acesso = '<button data-acao="liberar" style="border-color:var(--verde);color:var(--verde)">liberar</button><button data-acao="bloquear">bloquear</button>';
@@ -845,7 +854,7 @@ async function carregarObreiros(){
       '<div class="quem"><b>' + o.nome + '</b>' + selo + estado + '</div>' +
       '<div class="btns">' + acesso +
         (o.foto ? '<button data-acao="tirarfoto">tirar foto</button>' : '') +
-        (o.nome !== PERFIL.nome ? '<button data-acao="whats" style="border-color:var(--verde);color:var(--verde)">senha pelo WhatsApp</button>' : '') +
+        (o.nome !== PERFIL.nome ? '<button data-acao="whats" class="btn-whats">senha pelo WhatsApp</button>' : '') +
         '<button data-acao="papel">' + (o.papel === "lider" ? "tirar liderança" : "tornar líder") + '</button>' +
         '<button data-acao="remover" class="perigo">excluir</button>' +
       '</div>';

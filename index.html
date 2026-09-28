@@ -494,7 +494,7 @@ async function enviar(){
   btn.disabled = true;
   try{
     await gravarResposta(respostasSel, document.getElementById("obs").value.trim());
-    msg.textContent = "Resposta enviada! Obrigado, " + PERFIL.nome.split(" ")[0] + " 🙏";
+    msg.textContent = "Resposta enviada! Obrigado, " + chamarPor(PERFIL.nome) + " 🙏";
     msg.classList.add("ok");
   }catch(e){
     msg.textContent = "Erro ao enviar. Tente novamente.";
@@ -623,7 +623,7 @@ function limparMsgObreiros(){ document.getElementById("msg-obreiros").className 
 /* Mostra a senha temporária, com o recado pronto para o WhatsApp */
 function mostrarSenha(nome, senha){
   const cx = document.getElementById("codigo-novo");
-  const recado = "Paz, " + nome.split(" ")[0] + "! Seu acesso ao app está pronto. Entre em https://equipeefraim.com.br com seu nome e a senha inicial " +
+  const recado = "Paz, " + chamarPor(nome) + "! Seu acesso ao app está pronto. Entre em https://equipeefraim.com.br com seu nome e a senha inicial " +
                  senha + " . Na primeira vez o app pede para você criar a sua senha.";
   cx.innerHTML =
     '<div class="rotulo">Senha inicial de ' + nome + '</div>' +
@@ -698,7 +698,7 @@ function linkWhats(v, texto){
 /* Senha gerada + botão que abre o WhatsApp da pessoa com o recado pronto */
 function mostrarSenhaWhats(nome, senha, whats){
   const cx = document.getElementById("codigo-novo");
-  const recado = "Paz, " + nome.split(" ")[0] + "! 🙏 Seu acesso ao app da Equipe Efraim está liberado.\n\n" +
+  const recado = "Paz, " + chamarPor(nome) + "! 🙏 Seu acesso ao app da Equipe Efraim está liberado.\n\n" +
                  "Entre em https://equipeefraim.com.br\nNome: " + nome + "\nSenha: " + senha + "\n\n" +
                  "No primeiro acesso o app pede para você criar a sua senha.";
   cx.innerHTML =
@@ -720,7 +720,7 @@ function mostrarSenhaWhats(nome, senha, whats){
 /* Mostra o código gerado, com o recado pronto para o WhatsApp */
 function mostrarCodigo(nome, codigo, titulo){
   const cx = document.getElementById("codigo-novo");
-  const recado = "Paz, " + nome.split(" ")[0] + "! Seu acesso ao site foi liberado. Entre em https://equipeefraim.com.br , " +
+  const recado = "Paz, " + chamarPor(nome) + "! Seu acesso ao site foi liberado. Entre em https://equipeefraim.com.br , " +
                  "toque em PRIMEIRO ACESSO, escolha seu nome e crie sua senha nova.";
   cx.innerHTML =
     '<div class="rotulo">' + titulo + '</div>' +

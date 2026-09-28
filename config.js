@@ -225,6 +225,11 @@ function estouNaHome(){
 /* ======================= FOTO DE PERFIL =======================
    Bucket privado "fotos" no Supabase, arquivo <id do usuário>.jpg.
    A foto é reduzida no próprio celular (400x400, JPEG) antes de enviar. */
+/* como chamar a pessoa: primeiro nome; com título (Pr., Pra., Ap.) vai junto o nome */
+function chamarPor(nome){
+  const p = String(nome || "").trim().split(/\s+/);
+  return (p[0] && p[0].endsWith(".") && p[1]) ? p[0] + " " + p[1] : (p[0] || "");
+}
 function iniciais(nome){
   return (nome || "?").split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0]).join("").toUpperCase();
 }

@@ -107,6 +107,17 @@
   footer span{color:var(--laranja);}
 
   #painel-cadastro{display:none;}
+  /* ---- Tela depois do pedido: aguarde a senha ---- */
+  #painel-aguarde{text-align:center;}
+  #painel-aguarde .ag-ic{font-size:2.6rem; line-height:1;}
+  #painel-aguarde .ag-tit{font-family:'Playfair Display',serif; font-size:1.35rem; margin:10px 0 8px; color:var(--branco);}
+  #painel-aguarde .ag-txt{font-size:.86rem; color:var(--texto-suave); line-height:1.6; margin-bottom:10px;}
+  #painel-aguarde .ag-txt b{color:var(--branco);}
+  #painel-aguarde .ag-passos{
+    text-align:left; background:#0F0F12; border:1px solid var(--cinza-borda); border-radius:12px;
+    padding:12px 14px 12px 32px; margin:6px 0 4px; font-size:.8rem; color:var(--texto-suave); line-height:1.6;
+  }
+  #painel-aguarde .ag-passos b{color:var(--laranja-claro);}
   input[type=tel]{
     width:100%; padding:14px; border:1px solid var(--cinza-borda); border-radius:12px; background:#0F0F12;
     color:var(--branco); font-family:'Poppins',sans-serif; font-size:1rem;
@@ -137,27 +148,41 @@
     <select id="nome-entrar" required onchange="aoEscolherNome()"><option value="">Selecione seu nome...</option></select>
 
     <!-- Quem já tem senha -->
-    <div id="bloco-senha">
+    <div id="bloco-senha" style="display:none">
       <label for="senha-entrar">Senha</label>
-      <input type="password" id="senha-entrar" placeholder="Sua senha" autocomplete="current-password" required>
+      <input type="password" id="senha-entrar" placeholder="Sua senha" autocomplete="current-password">
       <label class="ver-senha"><input type="checkbox" onchange="verSenha(this,'senha-entrar')"> Mostrar senha</label>
     </div>
 
     <!-- Primeiro acesso ou esqueceu: pede a senha pelo WhatsApp -->
-    <div id="bloco-whats" style="display:none">
+    <div id="bloco-whats">
       <label for="whats-entrar">Seu WhatsApp (com DDD)</label>
       <input type="tel" id="whats-entrar" placeholder="(67) 99999-9999" inputmode="tel" autocomplete="tel" maxlength="19" oninput="mascaraWhats(this)">
       <div class="dica-whats">A liderança confere o seu pedido e te manda a senha por WhatsApp.</div>
     </div>
 
-    <button type="submit" class="principal" id="btn-entrar">ENTRAR</button>
+    <button type="submit" class="principal" id="btn-entrar">ENVIAR SOLICITAÇÃO</button>
     <div id="msg-entrar" class="msg"></div>
 
     <div class="rodape-caixa">
-      <span id="link-pedir">Primeira vez ou esqueceu a senha? <a onclick="modoLogin('whats')">Pedir senha pelo WhatsApp</a></span>
-      <span id="link-senha" style="display:none">Já recebeu a senha? <a onclick="modoLogin('senha')">Entrar com a senha</a></span>
+      <span id="link-pedir" style="display:none">Primeira vez ou esqueceu a senha? <a onclick="modoLogin('whats')">Pedir senha pelo WhatsApp</a></span>
+      <span id="link-senha">Já recebeu a senha? <a onclick="modoLogin('senha')">Entrar com a senha</a></span>
     </div>
   </form>
+
+  <!-- ================= DEPOIS DO PEDIDO: AGUARDE ================= -->
+  <div id="painel-aguarde" style="display:none">
+    <div class="ag-ic">⏳</div>
+    <div class="ag-tit">Pedido enviado!</div>
+    <p class="ag-txt"><span id="ag-ola"></span>Aguarde o líder enviar a sua senha pelo WhatsApp <b id="ag-num"></b>.</p>
+    <ol class="ag-passos">
+      <li>A senha chega numa mensagem da liderança.</li>
+      <li>Volte aqui e toque em <b>JÁ RECEBI A SENHA</b>.</li>
+      <li>Entre com seu nome e essa senha. O app pede para você criar a sua.</li>
+    </ol>
+    <button type="button" class="principal" onclick="jaRecebi()">JÁ RECEBI A SENHA</button>
+    <div class="rodape-caixa">Número errado ou demorou? <a onclick="novoPedido()">Fazer o pedido de novo</a></div>
+  </div>
 
 </div>
 
@@ -173,6 +198,7 @@
   ["nome-entrar"].forEach(id => {
     const sel = document.getElementById(id);
     nomes.forEach(n => sel.add(new Option(n, n)));
+    if(NOME_PRE) sel.value = NOME_PRE;
   });
   if(nomes.length === 0){
     mostrar("msg-entrar", "erro", "Não foi possível carregar a lista de nomes. Verifique sua conexão e recarregue a página.");
@@ -218,9 +244,13 @@ function limpar(id){ document.getElementById(id).className = "msg"; }
 /* ---------- Dois jeitos de usar a mesma tela ----------
    senha = quem já tem senha (ENTRAR)
    whats = primeira vez ou esqueceu (ENVIAR SOLICITAÇÃO): a liderança manda a senha pelo WhatsApp */
-let MODO = "senha";
-function modoLogin(m){
+let MODO = "whats", NOME_PRE = "";
+function modoLogin(m, manterMsg){
   MODO = m;
+  const aguarde = m === "aguarde";
+  document.getElementById("painel-entrar").style.display = aguarde ? "none" : "block";
+  document.getElementById("painel-aguarde").style.display = aguarde ? "block" : "none";
+  if(aguarde) return;
   const whats = m === "whats";
   document.getElementById("bloco-senha").style.display = whats ? "none" : "block";
   document.getElementById("bloco-whats").style.display = whats ? "block" : "none";
@@ -229,7 +259,42 @@ function modoLogin(m){
   document.getElementById("btn-entrar").textContent = whats ? "ENVIAR SOLICITAÇÃO" : "ENTRAR";
   document.getElementById("link-pedir").style.display = whats ? "none" : "inline";
   document.getElementById("link-senha").style.display = whats ? "inline" : "none";
-  limpar("msg-entrar");
+  if(!manterMsg) limpar("msg-entrar");
+}
+
+/* O pedido fica lembrado neste aparelho: ao voltar, a pessoa vê a tela de aguardar */
+const CHAVE_PEDIDO = "efraim-pedido-senha";
+function lerPedido(){
+  try{
+    const p = JSON.parse(localStorage.getItem(CHAVE_PEDIDO) || "null");
+    return (p && p.nome && Date.now() - p.em < 14 * 864e5) ? p : null;
+  }catch(e){ return null; }
+}
+function guardarPedido(p){ try{ localStorage.setItem(CHAVE_PEDIDO, JSON.stringify(p)); }catch(e){} }
+function limparPedido(){ try{ localStorage.removeItem(CHAVE_PEDIDO); }catch(e){} }
+function mostrarAguarde(p){
+  document.getElementById("ag-ola").textContent = "Paz, " + chamarPor(p.nome) + "! ";
+  document.getElementById("ag-num").textContent = p.num || "";
+  modoLogin("aguarde");
+}
+function preencherNome(nome){
+  NOME_PRE = nome || "";
+  const sel = document.getElementById("nome-entrar");
+  if(nome && [...sel.options].some(o => o.value === nome)) sel.value = nome;
+}
+/* chegou a senha: vai para o campo de senha com o nome já escolhido */
+function jaRecebi(){
+  const p = lerPedido();
+  modoLogin("senha");
+  if(p) preencherNome(p.nome);
+  setTimeout(() => document.getElementById("senha-entrar").focus(), 50);
+}
+/* pedido de novo (número errado ou demorou) */
+function novoPedido(){
+  const p = lerPedido();
+  limparPedido();
+  modoLogin("whats");
+  if(p){ preencherNome(p.nome); document.getElementById("whats-entrar").value = p.num || ""; }
 }
 /* Ao escolher o nome: quem ainda não tem conta já vê o campo do WhatsApp */
 async function aoEscolherNome(){
@@ -237,7 +302,11 @@ async function aoEscolherNome(){
   if(!nome) return;
   try{
     const { data } = await sb.rpc("situacao_acesso", { p_nome: nome });
-    modoLogin(data === "SEM_CONTA" ? "whats" : "senha");
+    if(data === "CONTA" && MODO === "whats"){
+      modoLogin("senha");
+      mostrar("msg-entrar", "aviso", "Você já tem senha. Digite a senha que recebeu da liderança (ou toque em Pedir senha pelo WhatsApp, se esqueceu).");
+    }
+    if(data === "SEM_CONTA" && MODO === "senha") modoLogin("whats");
   }catch(e){}
 }
 /* só números; se veio com o 55 do Brasil na frente (12 ou 13 dígitos), tira o 55 */
@@ -273,7 +342,9 @@ async function enviarSolicitacao(){
       'style="display:block; margin-top:10px; padding:12px; border-radius:12px; background:#25D366; color:#fff; text-decoration:none; font-weight:700;">📲 ENVIAR PEDIDO NO WHATSAPP</a>';
     return;
   }
-  mostrar("msg-entrar", "ok", "✅ Solicitação enviada! A liderança vai te mandar a senha no WhatsApp " + document.getElementById("whats-entrar").value + ". Depois é só voltar aqui e entrar.");
+  const pedido = { nome, num: document.getElementById("whats-entrar").value, em: Date.now() };
+  guardarPedido(pedido);
+  mostrarAguarde(pedido);
 }
 
 /* ---------- ENTRAR ---------- */
@@ -294,8 +365,18 @@ async function entrar(ev){
       "Nome ou senha incorretos. Ainda não tem senha ou esqueceu? Toque em Pedir senha pelo WhatsApp, logo abaixo.");
     return;
   }
+  limparPedido();
   location.replace(DESTINO);
 }
+
+/* ---------- Tela inicial ----------
+   aviso do guardião (conta pendente/bloqueada) = tela de senha com o aviso;
+   pedido já enviado neste aparelho = tela de aguardar; senão, pedido pelo WhatsApp */
+(function iniciarTela(){
+  if(AVISO === "pendente" || AVISO === "bloqueado"){ modoLogin("senha", true); return; }
+  const p = lerPedido();
+  if(p) mostrarAguarde(p); else modoLogin("whats", true);
+})();
 
 /* ---------- Logo: remove o fundo cinza (mantém cruz + brilho) ---------- */
 (function(){

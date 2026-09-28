@@ -102,6 +102,13 @@
     min-width:52px; text-align:center; font-weight:700; font-size:.95rem; line-height:1.15;
   }
   .leitura .dia small{display:block; font-weight:300; font-size:.62rem; color:var(--texto-suave); text-transform:uppercase; letter-spacing:1px;}
+  .leitura .av-leitor{
+    width:42px; height:42px; flex:none; border-radius:50%; overflow:hidden;
+    border:1.5px solid var(--laranja); background:rgba(240,131,74,.1); color:var(--laranja);
+    display:flex; align-items:center; justify-content:center; font-size:.74rem; font-weight:700;
+  }
+  .leitura .av-leitor img{width:100%; height:100%; object-fit:cover; display:block;}
+  .leitura.atual .av-leitor{border-color:var(--verde);}
   .leitura .meio{flex:1; min-width:0;}
   .leitura .meio b{display:block; font-size:.92rem; font-weight:600;}
   .leitura .meio span{font-size:.75rem; color:var(--texto-suave);}
@@ -367,9 +374,40 @@ function linhaLeitura(l, hoje){
   const classes = "leitura" + (l.data === hoje ? " atual" : "") + (l.nome === PERFIL.nome ? " sua" : "");
   return '<div class="' + classes + '">' +
     '<div class="dia">' + d.dia + '<small>' + d.mes + '</small></div>' +
+    avatarLeitor(l.nome) +
     '<div class="meio"><b>' + l.referencia + '</b><span>' + l.nome + '</span></div>' +
     (feita ? '<div class="ok">✓</div>' : '') +
     '</div>';
+}
+
+/* ---------- Foto de quem lê ---------- */
+let FOTOS_EQUIPE = {};   /* nome sem acento → link da foto (vale 1 h) */
+function chaveNome(n){ return String(n || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim(); }
+function avatarLeitor(nome){
+  const url = FOTOS_EQUIPE[chaveNome(nome)];
+  return '<div class="av-leitor" data-nome="' + String(nome || "").replace(/"/g, "&quot;") + '">' +
+         (url ? '<img alt="" src="' + url + '">' : iniciais(nome)) + '</div>';
+}
+async function carregarFotosEquipe(){
+  const pares = {};   /* nome → id da conta */
+  try{
+    const r = await sb.rpc("fotos_equipe");
+    if(!r.error && Array.isArray(r.data)) r.data.forEach(x => { pares[x.nome] = x.id; });
+  }catch(e){}
+  if(!Object.keys(pares).length){
+    /* sem a função no banco: a liderança lê todos os perfis; o obreiro, o próprio e quem já marcou leitura */
+    try{ const { data } = await sb.from("perfis").select("id,nome,foto_em"); (data || []).forEach(x => { if(x.foto_em) pares[x.nome] = x.id; }); }catch(e){}
+    FEITAS.forEach(f => { if(f.nome && f.user_id && !(f.nome in pares)) pares[f.nome] = f.user_id; });
+  }
+  let urls = {};
+  try{ urls = await urlsDeFotos([...new Set(Object.values(pares))]); }catch(e){}
+  const mapa = {};
+  Object.entries(pares).forEach(([nome, id]) => { if(urls[id]) mapa[chaveNome(nome)] = urls[id]; });
+  FOTOS_EQUIPE = mapa;
+  document.querySelectorAll(".av-leitor[data-nome]").forEach(el => {
+    const url = FOTOS_EQUIPE[chaveNome(el.dataset.nome)];
+    if(url && !el.querySelector("img")) el.innerHTML = '<img alt="" src="' + url + '">';
+  });
 }
 
 function montarProximas(){
@@ -583,6 +621,7 @@ function montarTudo(){
   try{
     await carregarPlano();
     montarTudo();
+    carregarFotosEquipe();
   }catch(e){
     document.getElementById("resto").style.display = "block";
     document.getElementById("hoje").innerHTML =

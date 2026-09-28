@@ -217,6 +217,10 @@
     color:var(--verde); letter-spacing:6px; margin:8px 0;
   }
   .codigo-caixa .aviso{font-size:.75rem; color:var(--texto-suave); line-height:1.5;}
+  .codigo-caixa .btn-zap{
+    display:block; margin:14px auto 0; max-width:320px; padding:14px; border-radius:12px; text-decoration:none;
+    background:#25D366; color:#fff; font:700 .9rem 'Poppins',sans-serif; letter-spacing:1px; box-shadow:0 6px 20px rgba(37,211,102,.3);
+  }
   .codigo-caixa button{
     margin-top:12px; background:transparent; border:1px solid var(--verde); color:var(--verde);
     border-radius:999px; padding:9px 20px; font-size:.75rem; cursor:pointer; font-family:'Poppins',sans-serif;
@@ -324,8 +328,6 @@
 
     <!-- ---- Aba 2: obreiros e acessos ---- -->
     <div id="painel-obreiros">
-      <div id="setup-status" class="msg erro" style="display:none; text-align:left; font-weight:400; line-height:1.6;"></div>
-
       <div class="card">
         <label>➕ Incluir obreiro</label>
         <div style="display:flex; gap:8px;">
@@ -337,11 +339,6 @@
         <div id="msg-obreiros" class="msg"></div>
       </div>
 
-      <div class="card" style="text-align:center;">
-        <label>🔑 Senha inicial 123456</label>
-        <button class="enviar" style="margin:6px 0 0; font-size:.82rem;" onclick="criarContasTodos()">CRIAR CONTAS / ZERAR SENHAS DE TODOS</button>
-        <div style="font-size:.72rem; color:var(--texto-suave); margin-top:8px; line-height:1.5;">Cria a conta de quem ainda não tem e coloca a senha 123456 para todos, menos você. No primeiro acesso cada um é obrigado a criar a própria senha.</div>
-      </div>
       <div id="pedidos-senha"></div>
 
       <div id="codigo-novo" class="codigo-caixa"></div>
@@ -363,7 +360,7 @@
 <script src="config.js"></script>
 <script>
 /* ================================================================
-   A configuração (Supabase, lista de nomes) fica em config.js.
+   A configuração (banco de dados, lista de nomes) fica em config.js.
    Esta página exige login — quem não estiver logado vai para login.html
    ================================================================ */
 
@@ -382,7 +379,7 @@ function avisar(texto){
   el.style.display = texto ? "block" : "none";
 }
 
-/* ---------- Banco (Supabase, já autenticado) ---------- */
+/* ---------- Banco de dados (já autenticado) ---------- */
 async function buscarDatas(){
   const { data, error } = await sb.from("datas").select("data").order("data");
   if(error) throw error;
@@ -640,6 +637,60 @@ function mostrarSenha(nome, senha){
   cx.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
+/* WhatsApp: (67) 99999-9999 na tela; 55 + DDD + número no link */
+function formatarWhats(v){
+  let n = String(v || "").replace(/\D/g, "");
+  if(n.length >= 12 && n.startsWith("55")) n = n.slice(2);
+  if(n.length < 10) return n;
+  return "(" + n.slice(0, 2) + ") " + n.slice(2, n.length - 4) + "-" + n.slice(-4);
+}
+function numeroWhats(v){
+  let n = String(v || "").replace(/\D/g, "");
+  if(n.length === 10 || n.length === 11) n = "55" + n;
+  return n;
+}
+/* Entra como a pessoa num cliente temporário (sem mexer na sua sessão) e troca a senha por 6 números aleatórios */
+async function senhaAleatoriaPara(nome, senhaAtual){
+  try{
+    const tmp = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, storageKey: "efraim-temp-" + Date.now() }
+    });
+    const { error: e1 } = await tmp.auth.signInWithPassword({ email: emailDe(nome), password: senhaAtual });
+    if(e1) return null;
+    let nova = "";
+    do{ nova = String(100000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 900000)); }while(nova === senhaAtual);
+    const { error: e2 } = await tmp.auth.updateUser({ password: nova });
+    try{ await tmp.auth.signOut({ scope: "local" }); }catch(e){}
+    return e2 ? null : nova;
+  }catch(e){ return null; }
+}
+function linkWhats(v, texto){
+  let n = String(v || "").replace(/\D/g, "");
+  if(n.length === 10 || n.length === 11) n = "55" + n;
+  return "https://wa.me/" + n + "?text=" + encodeURIComponent(texto);
+}
+/* Senha gerada + botão que abre o WhatsApp da pessoa com o recado pronto */
+function mostrarSenhaWhats(nome, senha, whats){
+  const cx = document.getElementById("codigo-novo");
+  const recado = "Paz, " + nome.split(" ")[0] + "! 🙏 Seu acesso ao app da Equipe Efraim está liberado.\n\n" +
+                 "Entre em https://equipeefraim.com.br\nNome: " + nome + "\nSenha: " + senha + "\n\n" +
+                 "No primeiro acesso o app pede para você criar a sua senha.";
+  cx.innerHTML =
+    '<div class="rotulo">Senha de ' + nome + '</div>' +
+    '<div class="valor">' + senha + '</div>' +
+    '<div class="aviso">Toque no botão verde: o WhatsApp abre na conversa de ' + formatarWhats(whats) + ' com a mensagem pronta. É só enviar.</div>' +
+    '<a class="btn-zap" href="' + linkWhats(whats, recado) + '" target="_blank" rel="noopener">📲 ENVIAR NO WHATSAPP</a>' +
+    '<button type="button" id="btn-copiar-codigo">copiar recado</button>';
+  cx.style.display = "block";
+  document.getElementById("btn-copiar-codigo").onclick = function(){
+    navigator.clipboard.writeText(recado).then(() => {
+      this.textContent = "copiado!";
+      setTimeout(() => this.textContent = "copiar recado", 1800);
+    });
+  };
+  cx.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
 /* Mostra o código gerado, com o recado pronto para o WhatsApp */
 function mostrarCodigo(nome, codigo, titulo){
   const cx = document.getElementById("codigo-novo");
@@ -664,17 +715,18 @@ function mostrarCodigo(nome, codigo, titulo){
 /* Pedidos de nova senha feitos na tela de login */
 async function carregarPedidos(){
   const cx = document.getElementById("pedidos-senha");
-  const { data, error } = await sb.from("pedidos_senha").select("nome,em").order("em");
+  let { data, error } = await sb.from("pedidos_senha").select("nome,em,whatsapp").order("em");
+  if(error){ ({ data, error } = await sb.from("pedidos_senha").select("nome,em").order("em")); }
   if(error || !data || data.length === 0){ cx.innerHTML = ""; return []; }
-  cx.innerHTML = '<div class="card"><label>🔑 Pedidos de nova senha</label></div>';
+  cx.innerHTML = '<div class="card"><label>📲 Pedidos de senha pelo WhatsApp (' + data.length + ')</label></div>';
   const card = cx.firstChild;
   data.forEach(p => {
     const quando = new Date(p.em).toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" });
     const div = document.createElement("div");
     div.className = "obreiro";
-    div.innerHTML = '<div class="quem"><b>' + p.nome + '</b><span class="estado pendente">pediu em ' + quando + '</span></div>' +
-      '<div class="btns"><button data-a="liberar">zerar senha</button><button data-a="ignorar">ignorar</button></div>';
-    div.querySelector('[data-a=liberar]').onclick = e => acaoObreiro("senha", { nome: p.nome }, e.target);
+    div.innerHTML = '<div class="quem"><b>' + p.nome + '</b><span class="estado pendente">📲 ' + (p.whatsapp ? formatarWhats(p.whatsapp) : "sem número") + ' · pediu em ' + quando + '</span></div>' +
+      '<div class="btns"><button data-a="liberar" style="border-color:var(--verde);color:var(--verde)">gerar senha e enviar</button><button data-a="ignorar">ignorar</button></div>';
+    div.querySelector('[data-a=liberar]').onclick = e => acaoObreiro("whats", { nome: p.nome, whatsappPedido: p.whatsapp }, e.target);
     div.querySelector('[data-a=ignorar]').onclick = async () => {
       await sb.from("pedidos_senha").delete().eq("nome", p.nome);
       carregarPedidos();
@@ -691,12 +743,16 @@ async function carregarObreiros(){
   try{
     const r = await chamarAdmin("listar");
     OBREIROS = r.lista;
-    conferirSetup(r.versao >= 3);
     /* situação de cada conta: pendente (aguardando liberação) · ativo · bloqueado */
     const { data: st } = await sb.from("perfis").select("id,nome,status,foto_em");
     const mapa = {}, ids = {};
     (st || []).forEach(p => { mapa[p.nome] = p.status; if(p.foto_em) ids[p.nome] = p.id; });
     const fotos = await urlsDeFotos(Object.values(ids));
+    /* WhatsApp guardado no cadastro (se já existir a coluna; senão segue sem) */
+    try{
+      const { data: wz, error: ew } = await sb.from("convites").select("nome,whatsapp");
+      if(!ew) (wz || []).forEach(c => { const o = OBREIROS.find(x => x.nome === c.nome); if(o && c.whatsapp) o.whatsapp = c.whatsapp; });
+    }catch(e){}
     OBREIROS.forEach(o => {
       o.status = o.ativou ? (mapa[o.nome] || "ativo") : null;
       o.foto = ids[o.nome] ? fotos[ids[o.nome]] : null;
@@ -705,7 +761,7 @@ async function carregarObreiros(){
     OBREIROS.sort((a, b) => (b.status === "pendente") - (a.status === "pendente"));
   }catch(e){
     cont.innerHTML = "<p style='color:var(--vermelho); font-size:.85rem;'>Não foi possível carregar (" +
-      e.message + "). Se a mensagem falar em função não encontrada, a função admin-efraim ainda não foi instalada no Supabase.</p>";
+      e.message + "). Tente de novo em instantes.</p>";
     return;
   }
 
@@ -729,7 +785,8 @@ async function carregarObreiros(){
       pendente:  '<span class="estado pendente">⏳ criou a senha · aguardando sua liberação</span>',
       bloqueado: '<span class="estado" style="color:var(--vermelho)">⛔ bloqueado</span>'
     };
-    const estado = o.ativou ? estados[o.status] : '<span class="estado">ainda sem conta · use "Criar contas"</span>';
+    const estado = (o.ativou ? estados[o.status] : '<span class="estado">ainda sem conta</span>') +
+                   (o.whatsapp ? '<span class="estado">📲 ' + formatarWhats(o.whatsapp) + '</span>' : '');
     let acesso = "";
     if(o.status === "pendente")  acesso = '<button data-acao="liberar" style="border-color:var(--verde);color:var(--verde)">liberar</button><button data-acao="bloquear">bloquear</button>';
     if(o.status === "ativo")     acesso = '<button data-acao="bloquear">bloquear</button>';
@@ -740,7 +797,7 @@ async function carregarObreiros(){
       '<div class="quem"><b>' + o.nome + '</b>' + selo + estado + '</div>' +
       '<div class="btns">' + acesso +
         (o.foto ? '<button data-acao="tirarfoto">tirar foto</button>' : '') +
-        (o.ativou ? '<button data-acao="senha">zerar senha</button>' : '') +
+        (o.nome !== PERFIL.nome ? '<button data-acao="whats" style="border-color:var(--verde);color:var(--verde)">senha pelo WhatsApp</button>' : '') +
         '<button data-acao="papel">' + (o.papel === "lider" ? "tirar liderança" : "tornar líder") + '</button>' +
         '<button data-acao="remover" class="perigo">excluir</button>' +
       '</div>';
@@ -760,12 +817,22 @@ async function acaoObreiro(acao, o, botao){
     liberar:   "Liberar o acesso de " + o.nome + "?\n\nEle passa a entrar no site com o nome e a senha que criou.",
     bloquear:  "Bloquear o acesso de " + o.nome + "?\n\nEle não consegue mais entrar, mas nada é apagado. Você pode desbloquear quando quiser.",
     senha:     "Zerar a senha de " + o.nome + " para 123456?\n\nEle entra com 123456 e o app obriga a criar uma senha nova. Nada é apagado.",
+    whats:     "Gerar uma senha nova para " + o.nome + " e mandar pelo WhatsApp?\n\nSe ele já tinha senha, a antiga deixa de valer. Nada é apagado.",
     redefinir: "Liberar o nome de " + o.nome + " para criar senha nova?\n\nA senha atual deixa de valer. As leituras e respostas dele são guardadas e voltam quando ele criar a senha nova.",
     remover:   "EXCLUIR " + o.nome + " da equipe?\n\nO nome sai da lista e o acesso e as respostas dele são apagados. Isso não tem volta.\n(Se for só temporário, use BLOQUEAR.)",
     papel:     o.papel === "lider"
                  ? "Tirar a liderança de " + o.nome + "?\n\nEle deixa de ver as respostas dos outros e de administrar acessos."
                  : "Tornar " + o.nome + " líder?\n\nEle passa a ver as respostas de todos e a administrar acessos, como você."
   };
+  /* senha pelo WhatsApp: confere o número antes de gerar */
+  let whatsDigitado = "";
+  if(acao === "whats"){
+    const sugestao = formatarWhats(o.whatsappPedido || o.whatsapp || "");
+    const r = prompt("WhatsApp de " + o.nome + " (com DDD):", sugestao);
+    if(r === null) return;
+    whatsDigitado = r.replace(/\D/g, "");
+    if(whatsDigitado.length < 10 || whatsDigitado.length > 13){ msgObreiros("erro", "Número inválido. Use DDD + número, por exemplo (67) 99999-9999."); return; }
+  }
   if(!confirm(perguntas[acao])) return;
 
   const original = botao.textContent;
@@ -785,14 +852,24 @@ async function acaoObreiro(acao, o, botao){
       if(error) throw new Error(error.message.includes("NAO_PODE_ALTERAR_PROPRIO") ? "NAO_PODE_ALTERAR_PROPRIO" : error.message);
       msgObreiros("ok", o.nome + (acao === "liberar" ? " está liberado para entrar no site." : " foi bloqueado."));
     }
+    if(acao === "whats"){
+      /* 1) o servidor cria a conta (se ainda não tem) e põe a senha inicial, com troca obrigatória no 1º acesso */
+      const r = await chamarAdmin("senha", { nome: o.nome });
+      let senha = r.senha || "123456";
+      /* 2) troca por uma senha só dela, de 6 números */
+      const nova = await senhaAleatoriaPara(o.nome, senha);
+      if(nova) senha = nova;
+      /* 3) guarda o WhatsApp no cadastro e tira o pedido da fila (se der; não impede o envio) */
+      try{ await sb.from("convites").update({ whatsapp: numeroWhats(whatsDigitado) }).eq("nome", o.nome); }catch(e){}
+      try{ await sb.from("pedidos_senha").delete().eq("nome", o.nome); }catch(e){}
+      mostrarSenhaWhats(o.nome, senha, whatsDigitado);
+      msgObreiros("ok", "Senha de " + o.nome + " pronta. Toque no botão verde para mandar no WhatsApp.");
+    }
     if(acao === "senha"){
       const r = await chamarAdmin("senha", { nome: o.nome });
-      /* função antiga no Supabase devolve uma senha temporária (efraim + 4 dígitos): também vale, é só mandar essa */
       const senha = r.senha || "123456";
       mostrarSenha(o.nome, senha);
-      msgObreiros(senha === "123456" ? "ok" : "aviso", senha === "123456"
-        ? "Senha de " + o.nome + " zerada para 123456."
-        : "Senha de " + o.nome + " zerada para " + senha + " (a função no Supabase ainda é a antiga, por isso não foi 123456). Mande ESSA senha para a pessoa.");
+      msgObreiros("ok", "Senha de " + o.nome + " zerada para " + senha + ".");
       await sb.from("pedidos_senha").delete().eq("nome", o.nome);
     }
     if(acao === "redefinir"){
@@ -818,32 +895,6 @@ async function acaoObreiro(acao, o, botao){
   }
 }
 
-/* O que ainda falta configurar no Supabase para a senha inicial funcionar */
-async function conferirSetup(funcaoOk){
-  const cx = document.getElementById("setup-status");
-  let bancoOk = false;
-  try{ const { error } = await sb.from("perfis").select("senha_provisoria").limit(1); bancoOk = !error; }catch(e){}
-  if(bancoOk && funcaoOk){ cx.style.display = "none"; return; }
-  cx.innerHTML = "<b>⚠️ Falta configurar no Supabase para a senha inicial 123456 funcionar:</b><br>" +
-    (bancoOk ? "✅ Banco preparado (SQL)" : "❌ <b>1.</b> SQL Editor → cole <b>senha-padrao-setup.sql</b> → RUN") + "<br>" +
-    (funcaoOk ? "✅ Função admin-efraim atualizada" : "❌ <b>2.</b> Edge Functions → admin-efraim → cole <b>edge-function-admin.ts</b> → Deploy") +
-    "<br>Enquanto isso, \"zerar senha\" e \"Criar contas\" não colocam a senha 123456.";
-  cx.style.display = "block";
-}
-
-async function criarContasTodos(){
-  limparMsgObreiros();
-  if(!confirm("Criar as contas que faltam e zerar a senha de TODOS (menos você) para 123456?\n\nQuem já tinha senha própria volta para 123456 e precisa criar outra no próximo acesso.")) return;
-  try{
-    const r = await chamarAdmin("criar_todos");
-    msgObreiros("ok", "Pronto: " + r.feitos.length + " conta(s) com a senha 123456." +
-      (r.erros.length ? " Não deu para " + r.erros.length + ": " + r.erros.join("; ") : ""));
-    await carregarObreiros();
-  }catch(e){
-    msgObreiros("erro", explicarErro(e.message));
-  }
-}
-
 async function adicionarObreiro(){
   limparMsgObreiros();
   const campo = document.getElementById("novo-nome");
@@ -853,8 +904,7 @@ async function adicionarObreiro(){
   try{
     const r = await chamarAdmin("adicionar", { nome });
     campo.value = "";
-    mostrarSenha(nome, r.senha || "123456");
-    msgObreiros("ok", nome + " foi incluído e já pode entrar com a senha 123456.");
+    msgObreiros("ok", nome + " foi incluído. Agora toque em \"senha pelo WhatsApp\" na linha dele para mandar o acesso.");
     await carregarObreiros();
   }catch(e){
     msgObreiros("erro", explicarErro(e.message));
@@ -869,10 +919,10 @@ function explicarErro(codigo){
     NAO_REBAIXE_A_SI:"Você não pode tirar a própria liderança.",
     NAO_PODE_ALTERAR_PROPRIO:"Você não pode bloquear o próprio acesso.",
     JA_EXISTE:      "Já existe alguém com esse nome na lista.",
-    SEM_CONTA:      "Essa pessoa ainda não tem conta. Use o botão Criar contas.",
+    SEM_CONTA:      "Essa pessoa ainda não tem conta. Use \"senha pelo WhatsApp\" na linha dela.",
     NAO_ZERE_A_SI:  "Para trocar a sua própria senha, use Perfil → Trocar minha senha.",
-    ACAO_DESCONHECIDA: "A função admin-efraim no Supabase está desatualizada: Edge Functions → admin-efraim → cole o arquivo edge-function-admin.ts → Deploy.",
-    FUNCAO_ANTIGA:  "A função admin-efraim no Supabase ainda é a versão antiga (gerou uma senha temporária, não 123456). Edge Functions → admin-efraim → cole edge-function-admin.ts → Deploy.",
+    ACAO_DESCONHECIDA: "Não deu certo agora. Tente de novo em instantes.",
+    NUMERO_INVALIDO:"Número de WhatsApp inválido. Use DDD + número.",
     SEM_SESSAO:     "Sua sessão expirou. Saia e entre de novo.",
     SESSAO_INVALIDA:"Sua sessão expirou. Saia e entre de novo."
   };

@@ -107,6 +107,12 @@
   footer span{color:var(--laranja);}
 
   #painel-cadastro{display:none;}
+  input[type=tel]{
+    width:100%; padding:14px; border:1px solid var(--cinza-borda); border-radius:12px; background:#0F0F12;
+    color:var(--branco); font-family:'Poppins',sans-serif; font-size:1rem;
+  }
+  input[type=tel]:focus{outline:none; border-color:var(--laranja);}
+  .dica-whats{font-size:.74rem; color:var(--texto-suave); margin-top:8px; line-height:1.5;}
 
   @media (max-width:520px){
     body{padding:24px 14px;}
@@ -128,20 +134,28 @@
   <!-- ================= ENTRAR ================= -->
   <form id="painel-entrar" onsubmit="entrar(event)">
     <label for="nome-entrar">Seu nome</label>
-    <select id="nome-entrar" required><option value="">Selecione seu nome...</option></select>
+    <select id="nome-entrar" required onchange="aoEscolherNome()"><option value="">Selecione seu nome...</option></select>
 
-    <label for="senha-entrar">Senha</label>
-    <input type="password" id="senha-entrar" placeholder="Sua senha" autocomplete="current-password" required>
+    <!-- Quem já tem senha -->
+    <div id="bloco-senha">
+      <label for="senha-entrar">Senha</label>
+      <input type="password" id="senha-entrar" placeholder="Sua senha" autocomplete="current-password" required>
+      <label class="ver-senha"><input type="checkbox" onchange="verSenha(this,'senha-entrar')"> Mostrar senha</label>
+    </div>
 
-    <label class="ver-senha"><input type="checkbox" onchange="verSenha(this,'senha-entrar')"> Mostrar senha</label>
+    <!-- Primeiro acesso ou esqueceu: pede a senha pelo WhatsApp -->
+    <div id="bloco-whats" style="display:none">
+      <label for="whats-entrar">Seu WhatsApp (com DDD)</label>
+      <input type="tel" id="whats-entrar" placeholder="(67) 99999-9999" inputmode="tel" autocomplete="tel" oninput="mascaraWhats(this)">
+      <div class="dica-whats">A liderança confere o seu pedido e te manda a senha por WhatsApp.</div>
+    </div>
 
     <button type="submit" class="principal" id="btn-entrar">ENTRAR</button>
     <div id="msg-entrar" class="msg"></div>
 
     <div class="rodape-caixa">
-      Primeira vez? Entre com a <b>senha inicial</b> que a liderança te passou.<br>
-      O app pede para você criar a sua na sequência.<br><br>
-      Esqueceu a senha? <a onclick="esqueciSenha()">Pedir nova senha</a>
+      <span id="link-pedir">Primeira vez ou esqueceu a senha? <a onclick="modoLogin('whats')">Pedir senha pelo WhatsApp</a></span>
+      <span id="link-senha" style="display:none">Já recebeu a senha? <a onclick="modoLogin('senha')">Entrar com a senha</a></span>
     </div>
   </form>
 
@@ -165,7 +179,7 @@
   }
 })();
 
-/* Se o site ainda não foi conectado ao Supabase, avisa e desliga os botões */
+/* Se o site ainda não foi conectado ao banco de dados, avisa e desliga os botões */
 if(!CONFIGURADO){
   mostrar("msg-entrar", "aviso",
     "Site ainda não conectado ao banco de dados. A liderança precisa concluir a configuração (config.js).");
@@ -201,26 +215,66 @@ function mostrar(id, tipo, texto){
 }
 function limpar(id){ document.getElementById(id).className = "msg"; }
 
-/* ---------- ESQUECI A SENHA ----------
-   Sem e-mail real, não há link de recuperação. O pedido vai para a liderança,
-   que zera a senha para a inicial no ADMIN; a pessoa entra e cria a senha nova. */
-async function esqueciSenha(){
+/* ---------- Dois jeitos de usar a mesma tela ----------
+   senha = quem já tem senha (ENTRAR)
+   whats = primeira vez ou esqueceu (ENVIAR SOLICITAÇÃO): a liderança manda a senha pelo WhatsApp */
+let MODO = "senha";
+function modoLogin(m){
+  MODO = m;
+  const whats = m === "whats";
+  document.getElementById("bloco-senha").style.display = whats ? "none" : "block";
+  document.getElementById("bloco-whats").style.display = whats ? "block" : "none";
+  document.getElementById("senha-entrar").required = !whats;
+  document.getElementById("whats-entrar").required = whats;
+  document.getElementById("btn-entrar").textContent = whats ? "ENVIAR SOLICITAÇÃO" : "ENTRAR";
+  document.getElementById("link-pedir").style.display = whats ? "none" : "inline";
+  document.getElementById("link-senha").style.display = whats ? "inline" : "none";
   limpar("msg-entrar");
+}
+/* Ao escolher o nome: quem ainda não tem conta já vê o campo do WhatsApp */
+async function aoEscolherNome(){
   const nome = document.getElementById("nome-entrar").value;
-  if(!nome){ mostrar("msg-entrar", "erro", "Escolha seu nome na lista acima e toque de novo em Pedir nova senha."); return; }
-  const { data, error } = await sb.rpc("pedir_nova_senha", { p_nome: nome });
-  if(error){ mostrar("msg-entrar", "erro", "Não foi possível enviar o pedido agora. Tente de novo em instantes."); return; }
-  if(data === "SEM_SENHA"){
-    mostrar("msg-entrar", "aviso", "Sua conta ainda não foi criada. Fale com a liderança.");
+  if(!nome) return;
+  try{
+    const { data } = await sb.rpc("situacao_acesso", { p_nome: nome });
+    modoLogin(data === "SEM_CONTA" ? "whats" : "senha");
+  }catch(e){}
+}
+function mascaraWhats(el){
+  let n = el.value.replace(/\D/g, "").slice(0, 11);
+  if(n.length > 6) el.value = "(" + n.slice(0, 2) + ") " + n.slice(2, n.length - 4) + "-" + n.slice(-4);
+  else if(n.length > 2) el.value = "(" + n.slice(0, 2) + ") " + n.slice(2);
+  else el.value = n;
+}
+
+async function enviarSolicitacao(){
+  const nome = document.getElementById("nome-entrar").value;
+  const num  = document.getElementById("whats-entrar").value.replace(/\D/g, "");
+  if(num.length < 10 || num.length > 11){ mostrar("msg-entrar", "erro", "Digite o WhatsApp com DDD, por exemplo (67) 99999-9999."); return; }
+  const btn = document.getElementById("btn-entrar");
+  btn.disabled = true;
+  let data = null, error = null;
+  try{ ({ data, error } = await sb.rpc("pedir_acesso", { p_nome: nome, p_whatsapp: num })); }catch(e){ error = e; }
+  btn.disabled = false;
+  if(data === "NUMERO_INVALIDO"){ mostrar("msg-entrar", "erro", "Confira o número do WhatsApp, com DDD."); return; }
+  if(error || data !== "OK"){
+    /* não deu para registrar no app: o obreiro manda o pedido direto para a liderança pelo WhatsApp */
+    const texto = "Paz! Sou " + nome + ", da Equipe Efraim. Quero acesso ao app. Meu WhatsApp: " + document.getElementById("whats-entrar").value;
+    const m = document.getElementById("msg-entrar");
+    m.className = "msg aviso";
+    m.innerHTML = "Toque abaixo para mandar seu pedido para a liderança pelo WhatsApp (escolha a conversa com o seu líder):" +
+      '<a href="https://wa.me/?text=' + encodeURIComponent(texto) + '" target="_blank" rel="noopener" ' +
+      'style="display:block; margin-top:10px; padding:12px; border-radius:12px; background:#25D366; color:#fff; text-decoration:none; font-weight:700;">📲 ENVIAR PEDIDO NO WHATSAPP</a>';
     return;
   }
-  mostrar("msg-entrar", "ok", "Pedido enviado à liderança. Eles vão zerar sua senha para a inicial e te avisar.");
+  mostrar("msg-entrar", "ok", "✅ Solicitação enviada! A liderança vai te mandar a senha no WhatsApp " + document.getElementById("whats-entrar").value + ". Depois é só voltar aqui e entrar.");
 }
 
 /* ---------- ENTRAR ---------- */
 async function entrar(ev){
   ev.preventDefault();
   limpar("msg-entrar");
+  if(MODO === "whats"){ await enviarSolicitacao(); return; }
   const nome  = document.getElementById("nome-entrar").value;
   const senha = document.getElementById("senha-entrar").value;
   const btn   = document.getElementById("btn-entrar");
@@ -231,7 +285,7 @@ async function entrar(ev){
 
   if(error){
     mostrar("msg-entrar", "erro",
-      "Nome ou senha incorretos. Na primeira vez, use a senha inicial que a liderança te passou.");
+      "Nome ou senha incorretos. Ainda não tem senha ou esqueceu? Toque em Pedir senha pelo WhatsApp, logo abaixo.");
     return;
   }
   location.replace(DESTINO);

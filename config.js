@@ -409,98 +409,107 @@ async function montarBoxCelulas(el, quantas = 3){
    pasta ALIANÇADOS. */
 const UNI_NOITE = "Camiseta de servo + colete + calça jeans ou preta + tênis/sapato fechado baixo";
 const UNI_MANHA = "Camiseta de servo + calça jeans ou preta + tênis/sapato fechado baixo";
-const G_ESQ = "Lateral esquerda · portas de entrada";
-const G_DIR = "Lateral direita · banheiro e mesa de apoio";
 
+/* Gerado pelo gera_escala.py (pasta preview-local): mesmas posições e pessoas do PDF e do Excel. */
 const ESCALAS = [
   { data:"2026-10-04", hora:"18h00", inicio:18, dia:"Domingo", curto:"DOM", culto:"Culto da Família", chegada:"17h00", uniforme:UNI_NOITE,
+    avisos:["Não aglomerar, principalmente perto da mesa de apoio.", "Distribuam-se por toda a lateral da arena, iniciando o posicionamento a partir da 1ª fileira de cadeiras.", "Horário de chegada: 1 hora antes do culto."],
     grupos:[
       ["Funções", [
-        ["Mesa de apoio / Máquinas e envelopes", "Hamilton e Miss Layne (casal)", "Conferir e carregar as máquinas, bobinas e envelopes. Recolher após o culto."],
-        ["Reservados", "Letícia e Laura", "Cadeiras da frente e dos levitas. Recolher após o culto."],
-        ["Bebedouros e corredor", "Jaqueline e Marco Maia", "Copos, secar a água, circulação para as salas restritas."],
-        ["Caixa da primícia", "Valéria", "Após o ofertório, entregar à liderança."],
+        ["Mesa de apoio / Máquinas e envelopes", "Hamilton e Miss Layne (casal)", "Conferir e carregar as máquinas, bobinas e envelopes nas cadeiras. Recolher após o culto."],
+        ["Bebedouro e corredor", "Jaqueline e Marco Maia", "Copos, secar a água, controlar a circulação para as salas restritas."],
+        ["Reservados", "Letícia e Laura", "Inserir nas cadeiras da frente e dos levitas. Recolher após o culto."],
+        ["Caixa da primícia", "Valéria", "Verificar a primícia e, após o ofertório, entregar à liderança."],
         ["Máquinas da primícia", "Hamilton"],
-        ["Máquina de ofertório para os pastores no altar", "Kátia"],
-        ["Ofertório", "TODOS", "Cada um atende o lado em que está. Ao terminar, ajuda o outro lado."],
-        ["Gazofilácio em frente ao altar", "Lado D: Felipe Bianchezzi · Lado E: Denilson", "Quem está no gazofilácio não passa máquina nem envelope."],
-        ["Gazofilácio no meio da igreja (pilar)", "Lado D: Igor · Lado E: José Eduardo"],
-        ["Banheiro feminino", "Dri Gamarra e Simone", "Orientar crianças e visitantes, repor insumos, recolher os lixos."],
+        ["Máquinas para ofertório dos pastores no altar", "Kátia"],
+        ["Ofertório (+)", "TODOS", "Cada obreiro atende o lado em que está. Ao terminar, ajuda o outro lado."],
+        ["Gazofilácios em frente do altar", "Lado D: Felipe Bianchezzi · Lado E: Denilson", "Quem está no gazofilácio não passa máquina nem envelope. Fica ao lado dele."],
+        ["Gazofilácios no meio da igreja (pilar)", "Lado D: Igor · Lado E: José Eduardo"],
+        ["Banheiro feminino", "Dri Gamarra e Simone", "Orientar crianças e visitantes, repor insumos, recolher os lixos após o culto."],
         ["Banheiro masculino", "Marco Maia e Jesus"],
         ["Organização do templo", "TODOS", "Alinhar cadeiras, recolher lixos e envelopes, cortinas, ar, portas e luzes."],
         ["Organização da sala dos obreiros", "Liderança"],
         ["Oração final", "TODOS"]
       ]],
-      [G_ESQ, [
-        ["Porta da frente / meio", "Antônio e Laura (casal)"],
-        ["Porta da frente / primeira", "Jugleyde Pompeo, Martina Mendes e Milene"],
-        ["Porta do fundo", "Alessandra, Daiane Colman e Renata"],
-        ["Fundos", "Kátia e Jhuli"]
+      ["Lateral esquerda · lado das portas de entrada", [
+        ["Porta da frente", "Jugleyde Pompeo e Martina Mendes"],
+        ["Porta do meio", "Antônio e Laura (casal), Milene"],
+        ["Porta do fundo (cantina)", "Alessandra, Daiane Colman e Renata"]
       ]],
-      [G_DIR, [
-        ["Mesa de apoio / banheiro", "Clebson, José Luis e Marina Corrêa (casal), Jaqueline e Marco Maia"],
+      ["Lateral direita · lado do banheiro e mesa de apoio", [
+        ["Mesa de apoio / banheiro", "Clebson, José Luis e Marina Corrêa (casal)"],
         ["Em frente ao altar", "Jackson e Thays (casal)"],
-        ["Meio para o fundo", "Reinaldo e Cristiane (casal), Valéria"]
+        ["Meio para o fundo", "Reinaldo e Cristiane (casal)"]
+      ]],
+      ["Fundo da igreja", [
+        ["Lado direito", "Valéria"],
+        ["Meio", "Kátia"],
+        ["Lado esquerdo", "Jhuli"]
       ]]
     ]},
   { data:"2026-10-07", hora:"19h30", inicio:19.5, dia:"Quarta-feira", curto:"QUA", culto:"Quarta Profética", chegada:"18h30", uniforme:UNI_NOITE,
+    avisos:["Não se aglomerar perto da mesa de apoio: é corredor de acesso aos banheiros e ao gabinete.", "Distribuam-se por toda a lateral e fundo da igreja. Evitar conversas paralelas.", "Às 19h15 todos os obreiros devem estar orando no altar até o início do culto."],
     grupos:[
       ["Funções", [
-        ["Acompanhar o pregador da noite", "Reinaldo e Cristiane (casal)", "Do gabinete ao altar no início e do altar à saída no final."],
-        ["Púlpito", "Igor e Jesus", "Colocar e retirar ao sinal do backstage."],
-        ["Mesa de apoio / Máquinas e envelopes", "José Luis e Marina Corrêa (casal)", "Conferir e carregar as máquinas, bobinas e envelopes. Recolher após o culto."],
-        ["Reservados", "Letícia e Laura", "Cadeiras da frente e dos levitas. Recolher após o culto."],
-        ["Bebedouros e corredor", "José Eduardo e Simone", "Copos, secar a água, circulação para as salas restritas."],
-        ["Nave da igreja: microfone e mão no coração", "Hamilton e Miss Layne (casal), Jackson e Thays (casal)", "Obreiras com as mulheres, obreiros com os homens."],
-        ["Organizar as pessoas embaixo do altar em fileiras e baldes", "TODOS"],
-        ["Ofertório", "TODOS", "Cada um atende o lado em que está. Ao terminar, ajuda o outro lado."],
+        ["Acompanhar o pregador da noite", "Reinaldo e Cristiane (casal)", "Do gabinete ao altar no início e do altar à saída no final do culto."],
+        ["Mesa de apoio / Máquinas e envelopes", "José Luis e Marina Corrêa (casal)", "Conferir e carregar as máquinas, bobinas e envelopes nas cadeiras. Recolher após o culto."],
+        ["Reservados", "Letícia e Laura", "Inserir nas cadeiras da frente e dos levitas. Recolher após o culto."],
+        ["Bebedouro e corredor", "José Eduardo e Simone", "Copos, secar a água, controlar a circulação para as salas restritas."],
+        ["Nave da igreja: microfone e mão no coração", "Hamilton e Miss Layne (casal), Jackson e Thays (casal)", "Direcionar as pessoas e se posicionar com o microfone. Obreiras com as mulheres, obreiros com os homens."],
+        ["Organizar as pessoas embaixo em fileiras e baldes", "TODOS"],
+        ["Ofertório", "TODOS", "Cada obreiro atende o lado em que está. Ao terminar, ajuda o outro lado."],
         ["Máquina de ofertório para os pastores no altar", "Kátia"],
-        ["Caixa da primícia", "Jugleyde Pompeo", "Após o ofertório, entregar à liderança."],
-        ["Gazofilácio em frente ao altar", "Lado D: Denilson · Lado E: Felipe Bianchezzi", "Quem está no gazofilácio não passa máquina nem envelope."],
-        ["Gazofilácio no meio da igreja (pilar)", "Lado D: Marco Maia · Lado E: Igor"],
-        ["Banheiro feminino", "Daiane Colman e Renata", "Orientar crianças e visitantes, repor insumos, recolher os lixos."],
+        ["Gazofilácios em frente do altar", "Lado D: Denilson · Lado E: Felipe Bianchezzi", "Quem está no gazofilácio não passa máquina nem envelope. Fica ao lado dele."],
+        ["Gazofilácios no meio da igreja (pilar)", "Lado D: Marco Maia · Lado E: Igor"],
+        ["Banheiro feminino", "Daiane Colman, Renata e Jugleyde Pompeo", "Orientar crianças e visitantes, repor insumos, recolher os lixos após o culto."],
         ["Banheiro masculino", "Jesus e Felipe Bianchezzi"],
-        ["Apelo", "TODOS", "Acompanhar e, se preciso, anotar nomes. Homem acompanha homem, mulher acompanha mulher."],
         ["Organização do templo", "TODOS", "Alinhar cadeiras, recolher lixos e envelopes, cortinas, ar, portas e luzes."],
-        ["Oração final", "TODOS"]
+        ["Oração final", "Liderança"]
       ]],
-      [G_ESQ, [
+      ["Lateral esquerda · lado das portas de entrada", [
         ["Porta da frente / meio", "Antônio e Laura (casal)"],
         ["Porta do fundo", "Alessandra, Martina Mendes e Milene"],
         ["Meio para o fundo", "Dri Gamarra e Jhuli"]
       ]],
-      [G_DIR, [
+      ["Lateral direita · lado do banheiro e mesa de apoio", [
         ["Mesa de apoio / banheiro", "Clebson e Letícia (casal)"],
         ["Em frente ao altar", "Valéria e Jaqueline"],
         ["Meio para o fundo", "Reinaldo e Cristiane (casal)"]
       ]]
     ]},
   { data:"2026-10-11", hora:"9h00", inicio:9, dia:"Domingo", curto:"DOM", culto:"Culto da Família (manhã)", chegada:"8h00", uniforme:UNI_MANHA,
+    avisos:["Não aglomerar, principalmente perto da mesa de apoio.", "Distribuam-se por toda a lateral da arena, iniciando o posicionamento a partir da 1ª fileira de cadeiras.", "Horário de chegada: 1 hora antes do culto."],
     grupos:[
       ["Funções", [
-        ["Mesa de apoio / Máquinas e envelopes", "Clebson e Letícia (casal)", "Conferir e carregar as máquinas, bobinas e envelopes. Recolher após o culto."],
-        ["Reservados", "Laura", "Cadeiras da frente e dos levitas. Recolher após o culto."],
-        ["Bebedouros e corredor", "Jackson e Thays (casal)", "Copos, secar a água, circulação para as salas restritas."],
-        ["Caixa da primícia", "Miss Layne", "Após o ofertório, entregar à liderança."],
+        ["Mesa de apoio / Máquinas e envelopes", "Clebson e Letícia (casal)", "Conferir e carregar as máquinas, bobinas e envelopes nas cadeiras. Recolher após o culto."],
+        ["Bebedouro e corredor", "Jackson e Thays (casal)", "Copos, secar a água, controlar a circulação para as salas restritas."],
+        ["Reservados", "Laura", "Inserir nas cadeiras da frente e dos levitas. Recolher após o culto."],
+        ["Caixa da primícia", "Miss Layne", "Verificar a primícia e, após o ofertório, entregar à liderança."],
         ["Máquinas da primícia", "Hamilton"],
-        ["Máquina de ofertório para os pastores no altar", "Kátia"],
-        ["Ofertório", "TODOS", "No culto de Santa Ceia há oferta missionária no final."],
-        ["Gazofilácio em frente ao altar", "Lado D: Jesus · Lado E: José Eduardo", "Quem está no gazofilácio não passa máquina nem envelope."],
-        ["Gazofilácio no meio da igreja (pilar)", "Lado D: Igor · Lado E: Denilson"],
-        ["Banheiro feminino", "Dri Gamarra e Jhuli", "Orientar crianças e visitantes, repor insumos, recolher os lixos."],
+        ["Máquinas para ofertório dos pastores no altar", "Kátia"],
+        ["Ofertório (+)", "TODOS", "No culto de Santa Ceia há oferta missionária no final."],
+        ["Gazofilácios em frente do altar", "Lado D: Jesus · Lado E: José Eduardo", "Quem está no gazofilácio não passa máquina nem envelope. Fica ao lado dele."],
+        ["Gazofilácios no meio da igreja (pilar)", "Lado D: Igor · Lado E: Denilson"],
+        ["Banheiro feminino", "Dri Gamarra e Jhuli", "Orientar crianças e visitantes, repor insumos, recolher os lixos após o culto."],
         ["Banheiro masculino", "Felipe Bianchezzi e Marco Maia"],
         ["Organização do templo", "TODOS", "Alinhar cadeiras, recolher lixos e envelopes, cortinas, ar, portas e luzes."],
         ["Organização da sala dos obreiros", "Liderança"],
         ["Oração final", "TODOS"]
       ]],
-      [G_ESQ, [
-        ["Frente", "Antônio e Laura (casal), Martina Mendes"],
-        ["Meio para o fundo", "Alessandra, Simone e Milene"]
+      ["Lateral esquerda · lado das portas de entrada", [
+        ["Porta da frente", "Antônio e Laura (casal)"],
+        ["Porta do meio", "Martina Mendes e Simone"],
+        ["Porta do fundo (cantina)", "Alessandra e Milene"]
       ]],
-      [G_DIR, [
-        ["Frente", "José Luis e Marina Corrêa (casal), Jugleyde Pompeo e Jaqueline"],
-        ["Meio para o fundo", "Reinaldo e Cristiane (casal), Daiane Colman, Valéria e Renata"],
-        ["Cortinas", "Liderança", "Abrir as cortinas conforme a demanda."]
+      ["Lateral direita · lado do banheiro e mesa de apoio", [
+        ["Mesa de apoio / banheiro", "José Luis e Marina Corrêa (casal)"],
+        ["Em frente ao altar", "Jugleyde Pompeo e Jaqueline"],
+        ["Meio para o fundo", "Reinaldo e Cristiane (casal)"]
+      ]],
+      ["Fundo da igreja", [
+        ["Lado direito", "Valéria"],
+        ["Meio", "Daiane Colman"],
+        ["Lado esquerdo", "Renata"]
       ]]
     ]}
 ];

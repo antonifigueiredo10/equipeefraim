@@ -295,7 +295,7 @@ function montar(i){
             '<br>Chegue às ' + c.chegada + '. Os cartões em verde são os seus.</div>';
   }
   html += cartoes +
-    '<div class="aviso">' + AVISOS.map(esc).join("<br>") + '</div>' +
+    '<div class="aviso">' + (c.avisos || AVISOS).map(esc).join("<br>") + '</div>' +
     '<div class="lideranca"><b>' + esc(LIDERANCA) + '</b></div>';
   document.getElementById("conteudo").innerHTML = html;
 }

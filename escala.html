@@ -113,6 +113,11 @@
     display:block; margin:12px auto 0; padding:9px 18px; border-radius:999px; cursor:pointer;
     border:1px dashed var(--laranja); background:transparent; color:var(--laranja); font:600 .76rem 'Poppins',sans-serif;
   }
+  .acoes-escala{display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:12px;}
+  .acoes-escala .btn-editar-nomes{margin:0;}
+  .btn-editar-nomes.auto{border-style:solid; background:rgba(240,131,74,.12);}
+  .barra-edicao .be-auto{margin-top:6px; color:var(--verde); font-weight:600;}
+  .barra-edicao .be-auto button{flex:none; width:auto; margin-left:6px; padding:5px 10px; font-size:.68rem; border:1px solid var(--verde); background:transparent; color:var(--verde); border-radius:999px;}
   .barra-edicao{
     position:sticky; top:60px; z-index:20; margin-top:12px; padding:10px 12px; border-radius:14px;
     background:#1D1D22; border:1px solid var(--laranja); box-shadow:0 8px 26px rgba(0,0,0,.5);
@@ -200,7 +205,7 @@ const AVISOS = [
    pessoas:  "data|seção|posição" -> quem serve (vale só naquele culto) */
 const CONFIG_ESCALA = { data: "2000-01-01", livro: "__config_escala__" };
 let NOMES_POSICOES = {}, NOMES_PESSOAS = {}, PADRAO_PESSOAS = {};
-let EDITANDO = false, CULTO_ATUAL = 0, PENDENTE = {}, PENDENTE_P = {}, SALVO_AGORA = false;
+let EDITANDO = false, CULTO_ATUAL = 0, PENDENTE = {}, PENDENTE_P = {}, SALVO_AGORA = false, AUTO_INFO = "";
 async function carregarNomesPosicoes(){
   try{
     const { data } = await sb.from("devocional").select("referencia")
@@ -212,11 +217,20 @@ async function carregarNomesPosicoes(){
   }catch(e){ NOMES_POSICOES = {}; NOMES_PESSOAS = {}; }
 }
 function nomePosicao(n){ return NOMES_POSICOES[n] || n; }
-/* Nome das posições: só o administrador (Antonio). A liderança troca só quem serve. */
+/* Quem serve e escala automática: só Antonio e Letícia. Nome das posições: só o Antonio.
+   (O banco confere de novo em salvar_ajustes_escala.) */
+const EDITA_NOMES = ["antonio", "leticia"];
 const EDITA_POSICOES = ["antonio"];
+function podeEditarNomes(){ return !!(PERFIL && PERFIL.nome && EDITA_NOMES.includes(normal(PERFIL.nome))); }
 function podeEditarPosicoes(){ return !!(PERFIL && PERFIL.nome && EDITA_POSICOES.includes(normal(PERFIL.nome))); }
 function chavePessoas(c, titulo, funcao){ return c.data + "|" + titulo + "|" + funcao; }
 async function salvarAjustes(posicoes, pessoas){
+  /* caminho normal: a função do banco confere quem pode e protege os nomes de posição */
+  const r = await sb.rpc("salvar_ajustes_escala", { p_posicoes: posicoes, p_pessoas: pessoas });
+  if(!r.error) return;
+  const faltaFuncao = r.error.code === "PGRST202" || /could not find the function/i.test(r.error.message || "");
+  if(!faltaFuncao) throw r.error;
+  /* reserva enquanto a função não existir: grava direto (só a liderança consegue) */
   const { error } = await sb.from("devocional").upsert({
     data: CONFIG_ESCALA.data, livro: CONFIG_ESCALA.livro, capitulo: 0,
     referencia: JSON.stringify({ v: 2, posicoes, pessoas }), nome: "__config__", testamento: "NOVO"
@@ -228,8 +242,8 @@ function guardarDigitado(){
   document.querySelectorAll("#conteudo input.ed").forEach(inp => { PENDENTE[inp.dataset.orig] = inp.value; });
   document.querySelectorAll("#conteudo textarea.ed-p").forEach(t => { PENDENTE_P[t.dataset.chave] = t.value; });
 }
-function editarNomes(){ EDITANDO = true; PENDENTE = {}; PENDENTE_P = {}; SALVO_AGORA = false; montar(CULTO_ATUAL); }
-function cancelarEdicao(){ EDITANDO = false; PENDENTE = {}; PENDENTE_P = {}; montar(CULTO_ATUAL); }
+function editarNomes(){ EDITANDO = true; PENDENTE = {}; PENDENTE_P = {}; SALVO_AGORA = false; AUTO_INFO = ""; montar(CULTO_ATUAL); }
+function cancelarEdicao(){ EDITANDO = false; PENDENTE = {}; PENDENTE_P = {}; AUTO_INFO = ""; montar(CULTO_ATUAL); }
 async function salvarEdicao(btn){
   guardarDigitado();
   const mapa = Object.assign({}, NOMES_POSICOES);
@@ -245,15 +259,130 @@ async function salvarEdicao(btn){
   btn.disabled = true; btn.textContent = "salvando...";
   try{
     await salvarAjustes(mapa, pessoas);
-    NOMES_POSICOES = mapa; NOMES_PESSOAS = pessoas; EDITANDO = false; PENDENTE = {}; PENDENTE_P = {}; SALVO_AGORA = true;
+    NOMES_POSICOES = mapa; NOMES_PESSOAS = pessoas; EDITANDO = false; PENDENTE = {}; PENDENTE_P = {}; SALVO_AGORA = true; AUTO_INFO = "";
     montar(CULTO_ATUAL);
   }catch(err){
     btn.disabled = false; btn.textContent = "SALVAR";
     const m = document.querySelector(".barra-edicao .be-msg");
-    if(m) m.textContent = "Não deu para salvar agora. Confira a internet e tente de novo.";
+    if(m) m.textContent = /SEM_PERMISSAO|row-level|permission/i.test((err && err.message) || "")
+      ? "Seu usuário ainda não tem permissão para salvar a escala. Fale com o Antonio."
+      : "Não deu para salvar agora. Confira a internet e tente de novo.";
   }
 }
 function escAttr(s){ return esc(s).replace(/"/g, "&quot;"); }
+
+/* ======================= ESCALA AUTOMÁTICA =======================
+   Monta quem serve em cada posição do culto aberto:
+   - tira quem respondeu NÃO naquele dia (quem não respondeu entra);
+   - casais juntos; gazofilácios e banheiro masculino só homens; banheiro feminino só mulheres;
+   - reservados com Letícia e Laura; acompanhar o pregador e nave com casais;
+   - ninguém fica sem posição; mesmo número de pessoas por posição que a escala de modelo.
+   Não salva sozinha: preenche os campos para conferir e tocar em SALVAR. */
+const EQUIPE_ESCALA = [   /* [nome, sexo, cônjuge] */
+  ["Clebson","M","Letícia"], ["Letícia","F","Clebson"], ["Antônio","M","Laura"], ["Laura","F","Antônio"],
+  ["José Luis","M","Marina Corrêa"], ["Marina Corrêa","F","José Luis"], ["Reinaldo","M","Cristiane"], ["Cristiane","F","Reinaldo"],
+  ["Hamilton","M","Miss Layne"], ["Miss Layne","F","Hamilton"], ["Jackson","M","Thays"], ["Thays","F","Jackson"],
+  ["Igor","M"], ["Denilson","M"], ["Felipe Bianchezzi","M"], ["Marco Maia","M"], ["José Eduardo","M"], ["Jesus","M"],
+  ["Alessandra","F"], ["Kátia","F"], ["Jaqueline","F"], ["Dri Gamarra","F"], ["Jugleyde Pompeo","F"], ["Martina Mendes","F"],
+  ["Daiane Colman","F"], ["Simone","F"], ["Valéria","F"], ["Renata","F"], ["Milene","F"], ["Jhuli","F"]
+];
+function vagasDe(padrao){
+  if(padrao === "TODOS" || padrao === "Liderança") return 0;
+  if(/Lado D:/.test(padrao)) return 2;
+  return padrao.replace(/\(casal\)/g, "").split(/,| e /).map(x => x.trim()).filter(Boolean).length;
+}
+function regraDe(funcao){
+  const f = normal(funcao);
+  if(f.includes("gazofil")) return { sexo: "M", lados: true };
+  if(f.includes("banheiro masculino")) return { sexo: "M" };
+  if(f.includes("banheiro feminino")) return { sexo: "F" };
+  if(f.includes("reservados")) return { preferir: ["Letícia", "Laura"] };
+  if(f.includes("acompanhar o pregador") || f.includes("nave da igreja")) return { casal: true };
+  return {};
+}
+function embaralhar(a){ a = a.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function formatarPessoas(ps, regra){
+  if(regra.lados) return "Lado D: " + (ps[0] ? ps[0][0] : "") + " · Lado E: " + (ps[1] ? ps[1][0] : "");
+  const usados = new Set(), partes = [];
+  ps.forEach(p => {
+    if(usados.has(p[0])) return;
+    const par = p[2] && ps.find(y => y[0] === p[2]);
+    if(par){ partes.push(p[0] + " e " + par[0] + " (casal)"); usados.add(par[0]); } else partes.push(p[0]);
+    usados.add(p[0]);
+  });
+  if(partes.length <= 1) return partes[0] || "";
+  if(partes.some(x => x.includes("(casal)"))) return partes.join(", ");
+  return partes.slice(0, -1).join(", ") + " e " + partes[partes.length - 1];
+}
+async function lerDisponibilidade(iso){
+  let linhas = null;
+  try{
+    const r = await sb.rpc("disponibilidade_escala", { p_datas: [iso] });
+    if(!r.error && Array.isArray(r.data)) linhas = r.data;
+  }catch(e){}
+  if(linhas === null){
+    try{ const r = await sb.from("respostas").select("nome,data,resposta").eq("data", iso); if(!r.error && Array.isArray(r.data)) linhas = r.data; }catch(e){}
+  }
+  return linhas;   /* null = não deu para ler */
+}
+function montarPropostaAutomatica(c, disponiveis){
+  const cont = {}; disponiveis.forEach(p => { cont[p[0]] = 0; });
+  const vagas = [];
+  c.grupos.forEach(([titulo, itens]) => itens.forEach(([funcao, padrao]) => {
+    const n = vagasDe(padrao);
+    if(n) vagas.push({ ch: chavePessoas(c, titulo, funcao), titulo, funcao, n, regra: regraDe(funcao), ordem: vagas.length, pessoas: [] });
+  }));
+  const restrita = v => (v.regra.sexo || v.regra.preferir || v.regra.casal) ? 0 : 1;
+  const fila = vagas.slice().sort((a, b) => (restrita(a) - restrita(b)) || (a.ordem - b.ordem));
+  const achar = nome => disponiveis.find(x => x[0] === nome);
+  fila.forEach(v => {
+    const esc = v.pessoas;
+    (v.regra.preferir || []).forEach(nm => { const p = achar(nm); if(p && esc.length < v.n && !esc.includes(p)) esc.push(p); });
+    while(esc.length < v.n){
+      const cand = embaralhar(disponiveis.filter(p => !esc.includes(p) && (!v.regra.sexo || p[1] === v.regra.sexo)))
+                     .sort((a, b) => cont[a[0]] - cont[b[0]]);
+      if(!cand.length) break;
+      let p = cand[0];
+      const livre = x => cont[x[0]] <= cont[p[0]];   /* não repete ninguém enquanto houver gente com menos posições */
+      if(v.regra.casal && esc.length + 1 < v.n){
+        const c2 = cand.find(x => x[2] && livre(x) && achar(x[2]) && !esc.includes(achar(x[2])) && livre(achar(x[2])));
+        if(c2) p = c2;
+      }
+      esc.push(p);
+      if(!v.regra.sexo && p[2] && esc.length < v.n){ const par = achar(p[2]); if(par && !esc.includes(par) && cont[par[0]] <= cont[p[0]]) esc.push(par); }
+    }
+    esc.forEach(p => { cont[p[0]]++; });
+  });
+  /* ninguém sem posição: quem sobrou vai para as laterais / fundo com menos gente */
+  disponiveis.filter(p => !cont[p[0]]).forEach(p => {
+    const alvo = vagas.filter(v => !v.regra.sexo && !v.regra.lados && v.titulo !== "Funções")
+                      .sort((a, b) => a.pessoas.length - b.pessoas.length)[0];
+    if(alvo){ alvo.pessoas.push(p); cont[p[0]]++; }
+  });
+  const res = {};
+  vagas.forEach(v => { res[v.ch] = formatarPessoas(v.pessoas, v.regra); });
+  return res;
+}
+async function montarEscalaAutomatica(btn){
+  if(!podeEditarNomes()) return;
+  const c = ESCALAS[CULTO_ATUAL];
+  if(btn){ btn.disabled = true; btn.textContent = "montando..."; }
+  const linhas = await lerDisponibilidade(c.data);
+  const nao = new Set((linhas || []).filter(l => String(l.resposta).toUpperCase().startsWith("N")).map(l => normal(l.nome)));
+  const responderam = new Set((linhas || []).map(l => normal(l.nome)));
+  const disponiveis = EQUIPE_ESCALA.filter(p => !nao.has(normal(p[0])));
+  const fora = EQUIPE_ESCALA.filter(p => nao.has(normal(p[0]))).map(p => p[0]);
+  const semResposta = EQUIPE_ESCALA.filter(p => !responderam.has(normal(p[0]))).length;
+  const proposta = montarPropostaAutomatica(c, disponiveis);
+  /* entra no modo edição com a proposta nos campos (sem salvar ainda) */
+  document.querySelectorAll("#conteudo textarea.ed-p").forEach(t => t.remove());
+  EDITANDO = true; SALVO_AGORA = false; PENDENTE_P = proposta;
+  AUTO_INFO = "⚡ Montada com " + disponiveis.length + " obreiros" +
+    (linhas === null ? " (não deu para ler quem respondeu NÃO)" :
+      (fora.length ? ". Fora por não poder: " + fora.join(", ") : "") + (semResposta ? ". Sem resposta (incluídos): " + semResposta : "")) +
+    ". Confira e toque em SALVAR.";
+  montar(CULTO_ATUAL);
+}
 
 /* ---------- utilidades ---------- */
 const MESES = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
@@ -291,11 +420,15 @@ function montar(i){
     html += '<div class="barra-edicao">✏️ <b>' + (edPos ? 'Editando a escala.</b> No campo laranja, o nome da posição (vale em todos os cultos). No campo verde, '
                                                        : 'Editando quem serve.</b> No campo verde, ') +
             '<b>quem serve</b> em cada posição (vale só neste culto). Para casal, escreva (casal). Campo vazio volta ao original.' +
+            (AUTO_INFO ? '<div class="be-auto">' + esc(AUTO_INFO) + '<button type="button" onclick="montarEscalaAutomatica(this)">⚡ montar de novo</button></div>' : '') +
             '<div class="be-btns"><button type="button" class="be-cancelar" onclick="cancelarEdicao()">CANCELAR</button>' +
             '<button type="button" class="be-salvar" onclick="salvarEdicao(this)">SALVAR</button></div><div class="be-msg"></div></div>';
-  }else if(typeof EH_LIDER === "function" && EH_LIDER()){
+  }else if(podeEditarNomes()){
     if(SALVO_AGORA){ html += '<div class="salvo-ok">✅ Escala salva. A equipe já vê as mudanças.</div>'; SALVO_AGORA = false; }
-    html += '<button type="button" class="btn-editar-nomes" onclick="editarNomes()">✏️ ' + (podeEditarPosicoes() ? 'Editar escala (posições e nomes)' : 'Editar nomes dos obreiros') + '</button>';
+    html += '<div class="acoes-escala">' +
+      '<button type="button" class="btn-editar-nomes" onclick="editarNomes()">✏️ ' + (podeEditarPosicoes() ? 'Editar escala (posições e nomes)' : 'Editar nomes dos obreiros') + '</button>' +
+      '<button type="button" class="btn-editar-nomes auto" onclick="montarEscalaAutomatica(this)">⚡ Montar escala automática</button>' +
+      '</div>';
   }
   let cartoes = "";
   /* no modo edição, o campo mostra o que já foi digitado (ou o nome atual) */

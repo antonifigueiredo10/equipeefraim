@@ -52,7 +52,7 @@ async function exigirLogin(){
   SESSAO = session;
 
   const { data, error } = await sb.from("perfis")
-    .select("nome,papel,status,foto_em").eq("id", session.user.id).single();
+    .select("*").eq("id", session.user.id).single();
 
   if(error || !data){ await sb.auth.signOut(); location.replace("login.html"); return null; }
 
@@ -60,6 +60,12 @@ async function exigirLogin(){
   if(data.status && data.status !== "ativo"){
     await sb.auth.signOut();
     location.replace("login.html?aviso=" + data.status);
+    return null;
+  }
+
+  /* Ainda com a senha inicial (123456)? Antes de qualquer tela, cria a própria senha */
+  if(data.senha_provisoria && !/senha\.html$/.test(location.pathname)){
+    location.replace("senha.html");
     return null;
   }
 
@@ -194,6 +200,7 @@ async function trocarMinhaSenha(){
   if(s2 === null) return;
   if(s1 !== s2){ alert("As duas senhas não são iguais. Tente de novo."); return; }
   const { error } = await sb.auth.updateUser({ password: s1 });
+  if(!error){ try{ await sb.rpc("senha_definida"); }catch(e){} }
   alert(error ? "Não deu certo agora. Saia, entre de novo e tente outra vez." : "Senha trocada! Use a nova na próxima vez que entrar.");
 }
 

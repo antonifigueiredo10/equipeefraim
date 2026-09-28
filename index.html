@@ -28,6 +28,7 @@
     --texto-suave:#B8B2AA;
     --verde:#3DBB7A;
     --vermelho:#E05555;
+    --amarelo:#F2C94C;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
@@ -194,8 +195,15 @@
   .obreiro .estado{display:block; font-size:.72rem; margin-top:3px; color:var(--texto-suave);}
   .obreiro .estado.pendente{color:var(--laranja-claro);}
   .obreiro .estado.ativo{color:var(--verde);}
-  .obreiro.com-pedido{border-color:var(--laranja); background:linear-gradient(135deg, rgba(240,131,74,.16), var(--preto-card) 60%);}
-  .obreiro .estado.pedido{color:var(--laranja-claro); font-weight:600;}
+  /* cor do cartão: vermelho = não enviou o WhatsApp · amarelo = aguardando a senha · verde = com acesso */
+  .obreiro.cor-vermelho{border-color:rgba(224,85,85,.55); border-left:5px solid var(--vermelho); background:linear-gradient(135deg, rgba(224,85,85,.14), var(--preto-card) 60%);}
+  .obreiro.cor-amarelo{border-color:rgba(242,201,76,.6); border-left:5px solid var(--amarelo); background:linear-gradient(135deg, rgba(242,201,76,.16), var(--preto-card) 60%);}
+  .obreiro.cor-verde{border-color:rgba(61,187,122,.5); border-left:5px solid var(--verde); background:linear-gradient(135deg, rgba(61,187,122,.1), var(--preto-card) 60%);}
+  .obreiro .estado.pedido{color:var(--amarelo); font-weight:600;}
+  .obreiro .estado.sem-whats{color:var(--vermelho); font-weight:600;}
+  .resumo .box.cor-verde{border-top:4px solid var(--verde);}    .resumo .box.cor-verde b{color:var(--verde);}
+  .resumo .box.cor-amarelo{border-top:4px solid var(--amarelo);} .resumo .box.cor-amarelo b{color:var(--amarelo);}
+  .resumo .box.cor-vermelho{border-top:4px solid var(--vermelho);} .resumo .box.cor-vermelho b{color:var(--vermelho);}
   .obreiro .estado a.alterar{color:var(--texto-suave); font-size:.68rem; margin-left:6px; text-decoration:underline; cursor:pointer;}
   .selo{
     font-size:.6rem; text-transform:uppercase; letter-spacing:1.5px; padding:2px 9px;
@@ -801,20 +809,19 @@ async function carregarObreiros(){
     return;
   }
 
-  const liberados  = OBREIROS.filter(o => o.status === "ativo").length;
-  const aguardando = OBREIROS.filter(o => o.status === "pendente").length;
+  /* amarelo: pediu a senha (ou criou e espera liberar) · verde: já entra · vermelho: não mandou o WhatsApp (ou bloqueado) */
+  const corDe = o => (o.pedido || o.status === "pendente") ? "amarelo" : (o.status === "ativo" ? "verde" : "vermelho");
+  const conta = cor => OBREIROS.filter(o => corDe(o) === cor).length;
   const bloqueados = OBREIROS.filter(o => o.status === "bloqueado").length;
-  const semSenha   = OBREIROS.filter(o => !o.ativou).length;
   document.getElementById("resumo-obreiros").innerHTML =
-    '<div class="box"><b>' + liberados + '/' + OBREIROS.length + '</b><span>liberados</span></div>' +
-    '<div class="box"><b>' + aguardando + '</b><span>aguardando liberação</span></div>' +
-    '<div class="box"><b>' + bloqueados + '</b><span>bloqueados</span></div>' +
-    '<div class="box"><b>' + semSenha + '</b><span>sem senha ainda</span></div>';
+    '<div class="box cor-verde"><b>' + conta("verde") + '/' + OBREIROS.length + '</b><span>com acesso</span></div>' +
+    '<div class="box cor-amarelo"><b>' + conta("amarelo") + '</b><span>aguardando a senha</span></div>' +
+    '<div class="box cor-vermelho"><b>' + conta("vermelho") + '</b><span>não enviaram o WhatsApp' + (bloqueados ? ' · ' + bloqueados + ' bloqueado' + (bloqueados > 1 ? 's' : '') : '') + '</span></div>';
 
   cont.innerHTML = "";
   OBREIROS.forEach(o => {
     const div = document.createElement("div");
-    div.className = "obreiro" + (o.pedido ? " com-pedido" : "");
+    div.className = "obreiro cor-" + corDe(o);
     const selo = o.papel === "lider" ? '<span class="selo">liderança</span>' : '';
     const estados = {
       ativo:     '<span class="estado ativo">✓ liberado</span>',
@@ -824,7 +831,7 @@ async function carregarObreiros(){
     const quandoPediu = o.pedido ? new Date(o.pedido.em).toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit" }) : "";
     const numeroDiferente = o.pedido && o.pedido.whatsapp && o.whatsapp && nacional(o.pedido.whatsapp) !== nacional(o.whatsapp);
     const estado = (o.pedido ? '<span class="estado pedido">🔔 pediu a senha em ' + quandoPediu + '</span>' : '') +
-                   (o.ativou ? estados[o.status] : '<span class="estado">ainda sem conta</span>') +
+                   (o.ativou ? estados[o.status] : (o.pedido ? '' : '<span class="estado sem-whats">✗ ainda não enviou o WhatsApp</span>')) +
                    (o.whatsapp ? '<span class="estado">📲 ' + linkConversa(o.whatsapp) + '<a class="alterar" data-alterar="1">alterar</a></span>'
                                : '<span class="estado">📲 sem número <a class="alterar" data-alterar="1">cadastrar</a></span>') +
                    (numeroDiferente ? '<span class="estado" style="color:var(--vermelho)">⚠️ no pedido veio outro número: ' + linkConversa(o.pedido.whatsapp) + '</span>' : '');

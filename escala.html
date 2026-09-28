@@ -108,6 +108,35 @@
     color:var(--laranja); text-decoration:none; font-weight:600; font-size:.85rem; letter-spacing:1px;
   }
   .voltar:hover{background:rgba(240,131,74,.1);}
+  /* ---- Edição dos nomes das posições (só liderança) ---- */
+  .btn-editar-nomes{
+    display:block; margin:12px auto 0; padding:9px 18px; border-radius:999px; cursor:pointer;
+    border:1px dashed var(--laranja); background:transparent; color:var(--laranja); font:600 .76rem 'Poppins',sans-serif;
+  }
+  .barra-edicao{
+    position:sticky; top:60px; z-index:20; margin-top:12px; padding:10px 12px; border-radius:14px;
+    background:#1D1D22; border:1px solid var(--laranja); box-shadow:0 8px 26px rgba(0,0,0,.5);
+    font-size:.72rem; color:var(--texto-suave); line-height:1.45;
+  }
+  .barra-edicao b{color:var(--laranja-claro);}
+  .barra-edicao .be-btns{display:flex; gap:8px; margin-top:8px;}
+  .barra-edicao button{flex:1; padding:10px; border-radius:10px; cursor:pointer; font:700 .76rem 'Poppins',sans-serif; letter-spacing:.5px;}
+  .barra-edicao .be-salvar{border:none; color:#fff; background:linear-gradient(135deg, var(--laranja), var(--laranja-escuro));}
+  .barra-edicao .be-cancelar{border:1px solid var(--cinza-borda); background:transparent; color:var(--texto-suave);}
+  .barra-edicao button:disabled{opacity:.6;}
+  .barra-edicao .be-msg{margin-top:6px; color:var(--vermelho);}
+  input.ed{
+    width:100%; padding:8px 10px; border:1px solid var(--laranja); border-radius:10px; background:#0F0F12;
+    color:var(--branco); font:600 .8rem 'Poppins',sans-serif; text-transform:none; letter-spacing:0;
+  }
+  input.ed:focus{outline:none; box-shadow:0 0 0 2px rgba(240,131,74,.35);}
+  .secao input.ed{text-align:center; font-family:'Playfair Display',serif; font-size:.95rem; color:var(--laranja-claro);}
+  .card .funcao .orig{display:block; font-size:.62rem; color:var(--texto-suave); text-transform:none; letter-spacing:0; font-weight:300; margin-top:3px;}
+  .salvo-ok{
+    margin-top:12px; padding:10px 12px; border-radius:12px; text-align:center; font-size:.78rem; font-weight:600;
+    background:rgba(61,187,122,.12); border:1px solid rgba(61,187,122,.4); color:var(--verde);
+  }
+
   footer{text-align:center; padding:26px 20px 36px; color:var(--texto-suave); font-size:.7rem; letter-spacing:2px; text-transform:uppercase; font-weight:300;}
   footer span{color:var(--laranja);}
 
@@ -155,6 +184,56 @@ const AVISOS = [
   "Não permitir que crianças fiquem correndo, orientando sempre os pais quando ocorrer.",
   "Horário de chegada: 1 hora antes do culto."
 ];
+/* ---------- Nomes das posições trocados pela liderança ----------
+   Ficam numa linha reservada da tabela do devocional (data 2000-01-01, livro "__config_escala__").
+   O plano devocional ignora essa linha, porque só mostra leituras a partir de INICIO_PLANO.
+   Assim a liderança muda os nomes pelo app, sem nenhuma mudança no banco.
+   A chave é o nome original da posição: vale em todos os cultos em que ela aparece. */
+const CONFIG_ESCALA = { data: "2000-01-01", livro: "__config_escala__" };
+let NOMES_POSICOES = {};
+let EDITANDO = false, CULTO_ATUAL = 0, PENDENTE = {}, SALVO_AGORA = false;
+async function carregarNomesPosicoes(){
+  try{
+    const { data } = await sb.from("devocional").select("referencia")
+      .eq("data", CONFIG_ESCALA.data).eq("livro", CONFIG_ESCALA.livro).maybeSingle();
+    const m = data && data.referencia ? JSON.parse(data.referencia) : {};
+    NOMES_POSICOES = (m && typeof m === "object" && !Array.isArray(m)) ? m : {};
+  }catch(e){ NOMES_POSICOES = {}; }
+}
+function nomePosicao(n){ return NOMES_POSICOES[n] || n; }
+async function salvarNomesPosicoes(mapa){
+  const { error } = await sb.from("devocional").upsert({
+    data: CONFIG_ESCALA.data, livro: CONFIG_ESCALA.livro, capitulo: 0,
+    referencia: JSON.stringify(mapa), nome: "__config__", testamento: "NOVO"
+  }, { onConflict: "data" });
+  if(error) throw error;
+}
+/* guarda o que foi digitado antes de trocar de culto ou salvar */
+function guardarDigitado(){
+  document.querySelectorAll("#conteudo input.ed").forEach(inp => { PENDENTE[inp.dataset.orig] = inp.value; });
+}
+function editarNomes(){ EDITANDO = true; PENDENTE = {}; SALVO_AGORA = false; montar(CULTO_ATUAL); }
+function cancelarEdicao(){ EDITANDO = false; PENDENTE = {}; montar(CULTO_ATUAL); }
+async function salvarEdicao(btn){
+  guardarDigitado();
+  const mapa = Object.assign({}, NOMES_POSICOES);
+  Object.keys(PENDENTE).forEach(orig => {
+    const novo = String(PENDENTE[orig] || "").trim();
+    if(!novo || novo === orig) delete mapa[orig]; else mapa[orig] = novo;
+  });
+  btn.disabled = true; btn.textContent = "salvando...";
+  try{
+    await salvarNomesPosicoes(mapa);
+    NOMES_POSICOES = mapa; EDITANDO = false; PENDENTE = {}; SALVO_AGORA = true;
+    montar(CULTO_ATUAL);
+  }catch(err){
+    btn.disabled = false; btn.textContent = "SALVAR";
+    const m = document.querySelector(".barra-edicao .be-msg");
+    if(m) m.textContent = "Não deu para salvar agora. Confira a internet e tente de novo.";
+  }
+}
+function escAttr(s){ return esc(s).replace(/"/g, "&quot;"); }
+
 /* ---------- utilidades ---------- */
 const MESES = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
 function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
@@ -176,6 +255,8 @@ function ehMinha(n){
 }
 
 function montar(i){
+  if(EDITANDO) guardarDigitado();
+  CULTO_ATUAL = i;
   const c = ESCALAS[i];
   document.querySelectorAll("#cultos button").forEach((b, j) => b.classList.toggle("ativo", j === i));
   const minhas = [];
@@ -184,13 +265,28 @@ function montar(i){
       '<div class="chip"><b>⏰ Chegada</b>' + c.chegada + ' (1 hora antes)</div>' +
       '<div class="chip"><b>👕 Uniforme</b>' + esc(c.uniforme) + '</div>' +
     '</div>';
+  if(EDITANDO){
+    html += '<div class="barra-edicao">✏️ <b>Editando os nomes das posições.</b> O nome novo vale em todos os cultos em que a posição aparece. ' +
+            'Deixe o campo vazio para voltar ao nome original.' +
+            '<div class="be-btns"><button type="button" class="be-cancelar" onclick="cancelarEdicao()">CANCELAR</button>' +
+            '<button type="button" class="be-salvar" onclick="salvarEdicao(this)">SALVAR</button></div><div class="be-msg"></div></div>';
+  }else if(typeof EH_LIDER === "function" && EH_LIDER()){
+    if(SALVO_AGORA){ html += '<div class="salvo-ok">✅ Nomes das posições salvos. A equipe já vê os nomes novos.</div>'; SALVO_AGORA = false; }
+    html += '<button type="button" class="btn-editar-nomes" onclick="editarNomes()">✏️ Editar nomes das posições</button>';
+  }
   let cartoes = "";
+  /* no modo edição, o campo mostra o que já foi digitado (ou o nome atual) */
+  const valorEd = orig => (orig in PENDENTE) ? PENDENTE[orig] : nomePosicao(orig);
+  const campo = orig => '<input class="ed" type="text" maxlength="80" data-orig="' + escAttr(orig) + '" value="' + escAttr(valorEd(orig)) + '">';
   c.grupos.forEach(([titulo, itens]) => {
-    cartoes += '<div class="secao">' + esc(titulo) + '<div class="faixa"></div></div>';
+    cartoes += '<div class="secao">' + (EDITANDO ? campo(titulo) : esc(nomePosicao(titulo))) + '<div class="faixa"></div></div>';
     itens.forEach(([funcao, nomes, dica]) => {
       const minha = ehMinha(nomes);
-      if(minha) minhas.push(funcao);
-      cartoes += '<div class="card' + (minha ? " sua" : "") + '"><div class="funcao">' + esc(funcao) + (dica ? '<small>' + esc(dica) + '</small>' : '') + '</div>' +
+      if(minha) minhas.push(nomePosicao(funcao));
+      const rotulo = EDITANDO
+        ? campo(funcao) + (nomePosicao(funcao) !== funcao ? '<span class="orig">original: ' + esc(funcao) + '</span>' : '')
+        : esc(nomePosicao(funcao));
+      cartoes += '<div class="card' + (minha ? " sua" : "") + '"><div class="funcao">' + rotulo + (dica ? '<small>' + esc(dica) + '</small>' : '') + '</div>' +
                  '<div class="nomes">' + nomesHTML(nomes) + '</div></div>';
     });
   });
@@ -227,6 +323,7 @@ function montarSeletor(){
     document.getElementById("conteudo").innerHTML = "<p style='text-align:center; color:var(--texto-suave); font-size:.85rem; padding:30px 10px;'>Atualize a página para carregar a escala.</p>";
     return;
   }
+  await carregarNomesPosicoes();
   montarSeletor();
 })();
 </script>

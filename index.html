@@ -182,33 +182,6 @@
   .abas-painel button.ativa{background:var(--laranja); color:#fff; box-shadow:0 4px 14px rgba(240,131,74,.3);}
   #painel-obreiros{display:none;}
 
-  /* ========== APROVAÇÃO DE ACESSO (topo da página da liderança) ========== */
-  .pend-box{
-    background:linear-gradient(160deg, rgba(240,131,74,.16), var(--preto-card) 60%); border:1px solid rgba(240,131,74,.55);
-    border-radius:16px; padding:14px 16px; margin-bottom:18px;
-  }
-  .pend-tit{font-size:.74rem; font-weight:700; color:var(--laranja); letter-spacing:2px; text-transform:uppercase;}
-  .pend-tit span{background:var(--laranja); color:#fff; border-radius:999px; padding:1px 8px; margin-left:6px; letter-spacing:0;}
-  .pend-item{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid var(--cinza-borda);}
-  .pend-item:last-child{border-bottom:none;}
-  .pend-item b{font-size:.92rem;}
-  .pend-item small{display:block; font-size:.7rem; color:var(--texto-suave); margin-top:2px;}
-  .pend-item .btns{display:flex; gap:6px; flex:none;}
-  .pend-item button{padding:8px 12px; border-radius:999px; border:1px solid var(--cinza-borda); background:transparent; color:var(--texto-suave); font:700 .68rem 'Poppins',sans-serif; cursor:pointer;}
-  .pend-item button:disabled{opacity:.5;}
-  .pend-item button.ok{border-color:var(--verde); color:var(--verde);}
-  .pend-item button.nao{border-color:var(--vermelho); color:var(--vermelho);}
-  .pend-nota{font-size:.7rem; color:var(--texto-suave); margin-top:10px; line-height:1.5;}
-
-  .oh-busca{
-    width:100%; padding:10px 12px; border:1px solid var(--cinza-borda); border-radius:10px; background:#0F0F12;
-    color:var(--branco); font-family:'Poppins',sans-serif; font-size:.9rem; margin:10px 0 2px;
-  }
-  .oh-busca:focus{outline:none; border-color:var(--laranja);}
-  #obreiros-home .codigo-caixa{margin:10px 0 4px;}
-  #obreiros-home .msg{margin-top:8px; padding:10px; font-size:.8rem;}
-  #obreiros-home .pend-item small.cod{font-family:ui-monospace,'Courier New',monospace; letter-spacing:2px; color:var(--laranja-claro);}
-
   /* ========== LISTA DE OBREIROS ========== */
   .obreiro{
     display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
@@ -288,28 +261,12 @@
     <a href="escala.html" style="display:inline-block; padding:12px 24px; background:linear-gradient(135deg, var(--laranja), var(--laranja-escuro)); color:#fff; border-radius:999px; text-decoration:none; font-weight:700; font-size:.85rem; letter-spacing:1px; box-shadow:0 6px 24px rgba(240,131,74,.35);">📋 ESCALA DA SEMANA</a>
     <a href="devocional.html" style="display:inline-block; padding:12px 24px; background:transparent; border:1px solid var(--laranja); color:var(--laranja); border-radius:999px; text-decoration:none; font-weight:700; font-size:.85rem; letter-spacing:1px;">📖 PLANO DEVOCIONAL</a>
     <a href="celulas.html" style="display:inline-block; padding:12px 24px; background:transparent; border:1px solid var(--laranja); color:var(--laranja); border-radius:999px; text-decoration:none; font-weight:700; font-size:.85rem; letter-spacing:1px;">📍 CÉLULAS</a>
+    <button type="button" id="btn-admin" onclick="abrirAdmin()" style="display:none; padding:12px 24px; background:#1D1D22; border:1px solid var(--branco); color:var(--branco); border-radius:999px; font:700 .85rem 'Poppins',sans-serif; letter-spacing:1px; cursor:pointer;">🔒 ADMIN<span id="admin-n" style="display:none; background:var(--laranja); color:#fff; border-radius:999px; padding:1px 8px; margin-left:8px; font-size:.75rem;"></span></button>
   </div>
   <div class="demo" id="aviso-demo"></div>
 </div>
 
 <main>
-  <!-- ============ APROVAÇÃO DE ACESSO (só a liderança vê; some quando não há ninguém esperando) ============ -->
-  <div id="pendentes" class="pend-box" style="display:none">
-    <div class="pend-tit">⏳ Aguardando sua aprovação<span id="pend-n"></span></div>
-    <div id="pend-lista"></div>
-    <div class="pend-nota">Quem cria a senha só entra depois que você libera. A lista completa, com bloqueio e exclusão, fica em PAINEL → OBREIROS.</div>
-  </div>
-
-  <!-- ============ OBREIROS (só a liderança): resetar senha sem entrar no painel ============ -->
-  <div id="obreiros-home" class="pend-box" style="display:none">
-    <div class="pend-tit">👥 Obreiros<span id="oh-n"></span></div>
-    <input type="text" id="oh-busca" class="oh-busca" placeholder="Buscar pelo nome..." oninput="montarObreirosHome()">
-    <div id="oh-resultado" class="codigo-caixa"></div>
-    <div id="oh-msg" class="msg"></div>
-    <div id="oh-lista"></div>
-    <div class="pend-nota">Resetar senha gera uma senha temporária para mandar no privado; nada é apagado. Incluir, excluir, bloquear e liderança ficam em PAINEL → OBREIROS.</div>
-  </div>
-
   <div id="box-celulas"></div>
 
   <!-- ============ FORMULÁRIO ============ -->
@@ -648,18 +605,16 @@ function trocarAbaPainel(qual){
   if(!escala && OBREIROS.length === 0) carregarObreiros();
 }
 
-function painelAberto(){ const p = document.getElementById("painel"); return p && p.style.display === "block"; }
 function msgObreiros(tipo, texto){
-  const el = document.getElementById(painelAberto() ? "msg-obreiros" : "oh-msg");
-  if(!el) return;
+  const el = document.getElementById("msg-obreiros");
   el.className = "msg " + tipo;
   el.textContent = texto;
 }
-function limparMsgObreiros(){ ["msg-obreiros", "oh-msg"].forEach(id => { const el = document.getElementById(id); if(el) el.className = "msg"; }); }
+function limparMsgObreiros(){ document.getElementById("msg-obreiros").className = "msg"; }
 
 /* Mostra a senha temporária, com o recado pronto para o WhatsApp */
 function mostrarSenha(nome, senha){
-  const cx = document.getElementById(painelAberto() ? "codigo-novo" : "oh-resultado");
+  const cx = document.getElementById("codigo-novo");
   const recado = "Paz, " + nome.split(" ")[0] + "! Sua senha do site foi resetada. Entre em https://equipeefraim.com.br com seu nome e a senha temporária " +
                  senha + " . Depois troque em Perfil → Trocar minha senha.";
   cx.innerHTML =
@@ -883,71 +838,19 @@ function explicarErro(codigo){
   return textos[codigo] || ("Não deu certo (" + codigo + "). Tente de novo.");
 }
 
-/* ---------- Obreiros na página inicial da liderança (busca + resetar senha) ---------- */
-function semAcento(s){ return String(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
-async function montarObreirosHome(){
-  const box = document.getElementById("obreiros-home");
-  if(!EH_LIDER() || !box) return;
-  if(!OBREIROS.length){ try{ await carregarObreiros(); }catch(e){} }
-  if(!OBREIROS.length){ box.style.display = "none"; return; }
-  const f = semAcento(document.getElementById("oh-busca").value.trim());
-  const lista = OBREIROS.slice().sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"))
-                        .filter(o => !f || semAcento(o.nome).includes(f));
-  document.getElementById("oh-n").textContent = OBREIROS.length;
-  document.getElementById("oh-lista").innerHTML = lista.map(o => {
-    const est = !o.ativou ? 'ainda não criou a senha · código <small class="cod">' + (o.codigo || "") + '</small>'
-              : o.status === "pendente" ? "criou a senha · aguardando sua liberação"
-              : o.status === "bloqueado" ? "bloqueado" : "liberado";
-    return '<div class="pend-item" data-nome="' + o.nome.replace(/"/g, "&quot;") + '"><div><b>' + o.nome +
-      (o.papel === "lider" ? ' <span class="selo">liderança</span>' : '') + '</b><small>' + est + '</small></div>' +
-      '<div class="btns">' + (o.ativou ? '<button type="button" class="ok">resetar senha</button>' : '') + '</div></div>';
-  }).join("") || "<p class='pend-nota'>Ninguém com esse nome.</p>";
-  box.querySelectorAll("button.ok").forEach(b => b.onclick = async () => {
-    const o = OBREIROS.find(x => x.nome === b.closest(".pend-item").dataset.nome);
-    await acaoObreiro("senha", o, b);
-    montarObreirosHome();
-    document.getElementById("oh-resultado").scrollIntoView({ behavior:"smooth", block:"center" });
-  });
-  box.style.display = "block";
-  if(location.hash === "#obreiros") setTimeout(() => box.scrollIntoView({ behavior:"smooth", block:"start" }), 200);
+/* ---------- ADMIN: o painel, direto na aba OBREIROS (aprovar, resetar senha...) ---------- */
+function abrirAdmin(){
+  abrirPainel();
+  trocarAbaPainel("obreiros");
+  document.getElementById("painel").scrollIntoView({ behavior:"smooth", block:"start" });
 }
-
-/* ---------- Aprovação de acesso: quem criou a senha e espera a liberação ---------- */
-async function montarPendentes(){
-  const box = document.getElementById("pendentes");
-  if(!EH_LIDER() || !box) return;
-  let lista = [];
+/* Quantos criaram a senha e esperam a liberação: vira o número no botão ADMIN */
+async function contarAguardando(){
   try{
-    const { data, error } = await sb.from("perfis").select("id,nome,status,criado_em").eq("status", "pendente").order("criado_em");
-    if(error) throw error;
-    lista = data || [];
-  }catch(e){ box.style.display = "none"; return; }
-  if(!lista.length){ box.style.display = "none"; return; }
-  document.getElementById("pend-n").textContent = lista.length;
-  document.getElementById("pend-lista").innerHTML = lista.map(p => {
-    const d = p.criado_em ? new Date(p.criado_em) : null;
-    const q = d ? d.toLocaleDateString("pt-BR", { day:"2-digit", month:"2-digit" }) + " às " + d.toLocaleTimeString("pt-BR", { hour:"2-digit", minute:"2-digit" }) : "";
-    return '<div class="pend-item" data-nome="' + p.nome.replace(/"/g, "&quot;") + '"><div><b>' + p.nome + '</b><small>criou a senha' + (q ? " em " + q : "") + '</small></div>' +
-      '<div class="btns"><button type="button" class="ok" onclick="decidirAcesso(this, \'ativo\')">Liberar</button>' +
-      '<button type="button" class="nao" onclick="decidirAcesso(this, \'bloqueado\')">Recusar</button></div></div>';
-  }).join("");
-  box.style.display = "block";
-  if(location.hash === "#aprovar") setTimeout(() => box.scrollIntoView({ behavior:"smooth", block:"start" }), 200);
-}
-async function decidirAcesso(btn, status){
-  const item = btn.closest(".pend-item"), nome = item.dataset.nome;
-  item.querySelectorAll("button").forEach(b => b.disabled = true);
-  try{
-    const { error } = await sb.rpc("definir_acesso", { p_nome: nome, p_status: status });
-    if(error) throw error;
-    item.querySelector("small").textContent = status === "ativo" ? "liberado ✓ já pode entrar" : "recusado (bloqueado)";
-    item.querySelector(".btns").innerHTML = "";
-    const n = document.getElementById("pend-n"); n.textContent = Math.max(0, (+n.textContent || 1) - 1);
-    if(typeof carregarObreiros === "function" && document.getElementById("painel").style.display === "block") carregarObreiros();
-  }catch(e){
-    item.querySelector("small").textContent = "Não deu certo agora. Tente de novo.";
-    item.querySelectorAll("button").forEach(b => b.disabled = false);
-  }
+    const { count } = await sb.from("perfis").select("id", { count:"exact", head:true }).eq("status", "pendente");
+    const n = document.getElementById("admin-n");
+    n.textContent = count || ""; n.style.display = count ? "inline-block" : "none";
+  }catch(e){}
 }
 
 /* ---------- Início: exige login antes de mostrar qualquer coisa ---------- */
@@ -957,11 +860,14 @@ async function decidirAcesso(btn, status){
   /* Obreiro usa só o devocional; escala e disponibilidade ficam com a liderança */
   if(!EH_LIDER()){ location.replace("devocional.html"); return; }
   montarBarraUsuario();
-  montarPendentes();
-  montarObreirosHome();
   montarBoxCelulas(document.getElementById("box-celulas"));
   document.getElementById("nome-logado").textContent = perfil.nome;
-  if(EH_LIDER()) document.getElementById("link-admin").style.display = "block";
+  if(EH_LIDER()){
+    document.getElementById("link-admin").style.display = "block";
+    document.getElementById("btn-admin").style.display = "inline-block";
+    contarAguardando();
+    if(["#admin", "#aprovar", "#obreiros"].includes(location.hash)) setTimeout(abrirAdmin, 300);
+  }
   await carregarNomes();
   await carregarTudo();
 })();

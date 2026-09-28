@@ -170,8 +170,7 @@ function abrirPerfil(){
       '<a class="fp-op" href="celulas.html"><span>' + iconeCor("celulas") + '</span>Mapa de células</a>' +
       '<a class="fp-op" href="manual.html"><span>' + iconeCor("devocional") + '</span>Como usar o app</a>' +
       '<button type="button" class="fp-op" data-a="senha"><span>' + iconeCor("escala") + '</span>Trocar minha senha</button>' +
-      (EH_LIDER() ? '<a class="fp-op" href="index.html#aprovar"><span>' + iconeCor("todos") + '</span><i class="fp-apr">Aprovar acessos</i></a>' +
-                    '<a class="fp-op" href="index.html#obreiros"><span>' + iconeCor("escala") + '</span>Obreiros e senhas</a>' : '') +
+      (EH_LIDER() ? '<a class="fp-op" href="index.html#admin"><span>' + iconeCor("todos") + '</span><i class="fp-apr">Admin: obreiros, aprovações e senhas</i></a>' : '') +
       '<button type="button" class="fp-sair" data-a="sair">Sair do app</button>' +
     '</div>';
   cx.onclick = e => {
@@ -203,7 +202,7 @@ async function contarPendentes(el){
   if(!el) return;
   try{
     const { count } = await sb.from("perfis").select("id", { count:"exact", head:true }).eq("status", "pendente");
-    el.textContent = count ? "Aprovar acessos · " + count + " aguardando" : "Aprovar acessos · ninguém esperando";
+    el.textContent = count ? "Admin · " + count + " aguardando aprovação" : "Admin: obreiros, aprovações e senhas";
   }catch(e){}
 }
 

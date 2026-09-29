@@ -220,12 +220,12 @@ async function carregarNomesPosicoes(){
   }catch(e){ NOMES_POSICOES = {}; NOMES_PESSOAS = {}; }
 }
 function nomePosicao(n){ return NOMES_POSICOES[n] || n; }
-/* Quem serve e escala automática: só Antonio e Letícia. Nome das posições: só o Antonio.
-   (O banco confere de novo em salvar_ajustes_escala.) */
-const EDITA_NOMES = ["antonio", "leticia"];
-const EDITA_POSICOES = ["antonio"];
-function podeEditarNomes(){ return !!(PERFIL && PERFIL.nome && EDITA_NOMES.includes(normal(PERFIL.nome))); }
-function podeEditarPosicoes(){ return !!(PERFIL && PERFIL.nome && EDITA_POSICOES.includes(normal(PERFIL.nome))); }
+/* Quem serve e escala automática: toda a liderança. Nome das posições: só o administrador (Antonio).
+   (O banco confere de novo em salvar_ajustes_escala.) A Letícia segue liberada pelo nome até virar líder no banco. */
+function podeEditarNomes(){
+  return !!(PERFIL && PERFIL.nome && ((typeof EH_LIDER === "function" && EH_LIDER()) || ["antonio", "leticia"].includes(normal(PERFIL.nome))));
+}
+function podeEditarPosicoes(){ return !!(PERFIL && PERFIL.nome && typeof EH_ADMIN === "function" && EH_ADMIN()); }
 function chavePessoas(c, titulo, funcao){ return c.data + "|" + titulo + "|" + funcao; }
 async function salvarAjustes(posicoes, pessoas){
   /* caminho normal: a função do banco confere quem pode e protege os nomes de posição */

@@ -512,6 +512,7 @@ const ESCALAS = [
     avisos:["Não aglomerar, principalmente perto da mesa de apoio.", "Distribuam-se por toda a lateral da arena, iniciando o posicionamento a partir da 1ª fileira de cadeiras.", "Horário de chegada: 1 hora antes do culto."],
     grupos:[
       ["Funções", [
+        ["Backstage", "Patrícia"],
         ["Mesa de apoio / Máquinas e envelopes", "Hamilton e Miss Layne (casal)", "Conferir e carregar as máquinas, bobinas e envelopes nas cadeiras. Recolher após o culto."],
         ["Bebedouro e corredor", "Jaqueline e Marco Maia", "Copos, secar a água, controlar a circulação para as salas restritas."],
         ["Reservados", "Letícia e Laura", "Inserir nas cadeiras da frente e dos levitas. Recolher após o culto."],
@@ -546,6 +547,7 @@ const ESCALAS = [
     avisos:["Não se aglomerar perto da mesa de apoio: é corredor de acesso aos banheiros e ao gabinete.", "Distribuam-se por toda a lateral e fundo da igreja. Evitar conversas paralelas.", "Às 19h15 todos os obreiros devem estar orando no altar até o início do culto."],
     grupos:[
       ["Funções", [
+        ["Backstage", "Patrícia"],
         ["Acompanhar o pregador da noite", "Reinaldo e Cristiane (casal)", "Do gabinete ao altar no início e do altar à saída no final do culto."],
         ["Mesa de apoio / Máquinas e envelopes", "José Luis e Marina Corrêa (casal)", "Conferir e carregar as máquinas, bobinas e envelopes nas cadeiras. Recolher após o culto."],
         ["Reservados", "Letícia e Laura", "Inserir nas cadeiras da frente e dos levitas. Recolher após o culto."],
@@ -575,6 +577,7 @@ const ESCALAS = [
     avisos:["Não aglomerar, principalmente perto da mesa de apoio.", "Distribuam-se por toda a lateral da arena, iniciando o posicionamento a partir da 1ª fileira de cadeiras.", "Horário de chegada: 1 hora antes do culto."],
     grupos:[
       ["Funções", [
+        ["Backstage", "Patrícia"],
         ["Mesa de apoio / Máquinas e envelopes", "Clebson e Letícia (casal)", "Conferir e carregar as máquinas, bobinas e envelopes nas cadeiras. Recolher após o culto."],
         ["Bebedouro e corredor", "Jackson e Thays (casal)", "Copos, secar a água, controlar a circulação para as salas restritas."],
         ["Reservados", "Laura", "Inserir nas cadeiras da frente e dos levitas. Recolher após o culto."],

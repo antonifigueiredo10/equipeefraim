@@ -287,7 +287,7 @@ const EQUIPE_ESCALA = [   /* [nome, sexo, cônjuge] */
   ["Hamilton","M","Miss Layne"], ["Miss Layne","F","Hamilton"], ["Jackson","M","Thays"], ["Thays","F","Jackson"],
   ["Igor","M"], ["Denilson","M"], ["Felipe Bianchezzi","M"], ["Marco Maia","M"], ["José Eduardo","M"], ["Jesus","M"],
   ["Alessandra","F"], ["Kátia","F"], ["Jaqueline","F"], ["Dri Gamarra","F"], ["Jugleyde Pompeo","F"], ["Martina Mendes","F"],
-  ["Daiane Colman","F"], ["Simone","F"], ["Valéria","F"], ["Renata","F"], ["Milene","F"], ["Jhuli","F"]
+  ["Daiane Colman","F"], ["Simone","F"], ["Valéria","F"], ["Renata","F"], ["Milene","F"], ["Jhuli","F"], ["Patrícia","F"]
 ];
 function vagasDe(padrao){
   if(padrao === "TODOS" || padrao === "Liderança") return 0;
@@ -302,6 +302,7 @@ function regraDe(funcao){
   if(f.includes("banheiro masculino")) return { sexo: "M" };
   if(f.includes("banheiro feminino")) return { sexo: "F" };
   if(f.includes("reservados")) return { preferir: ["Letícia", "Laura"] };
+  if(f.includes("backstage")) return { preferir: ["Patrícia"] };   /* fixa da Patrícia (fora do rodízio) */
   if(f.includes("acompanhar o pregador") || f.includes("nave da igreja")) return { casal: true };
   return {};
 }

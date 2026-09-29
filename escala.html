@@ -305,6 +305,30 @@ function regraDe(funcao){
   if(f.includes("acompanhar o pregador") || f.includes("nave da igreja")) return { casal: true };
   return {};
 }
+/* tipo de posição para o rodízio (banheiro feminino e masculino contam como "banheiro", os dois gazofilácios como um só) */
+function tipoPosicao(funcao){
+  const f = normal(funcao);
+  if(f.includes("banheiro feminino") || f.includes("banheiro masculino")) return "banheiro";
+  if(f.includes("gazofil")) return "gazofilacio";
+  if(f.includes("primicia")) return "primicia";
+  if(f.includes("ofertorio") && f.includes("pastores")) return "maquina-pastores";
+  return f;
+}
+/* nos OUTROS cultos desta escala (o que está salvo, ou o original): tipo → nomes que já estão nele */
+function ocupadosNosOutros(iAtual){
+  const mapa = {};
+  ESCALAS.forEach((c, i) => {
+    if(i === iAtual) return;
+    c.grupos.forEach(([titulo, itens]) => itens.forEach(([funcao, padrao]) => {
+      const nomes = NOMES_PESSOAS[chavePessoas(c, titulo, funcao)] || padrao;
+      if(nomes === "TODOS" || nomes === "Liderança") return;
+      const t = tipoPosicao(funcao);
+      const set = mapa[t] || (mapa[t] = new Set());
+      nomes.replace(/Lado [DE]:/g, ",").replace(/\(casal\)/g, "").split(/,| e |·/).map(x => normal(x)).filter(Boolean).forEach(n => set.add(n));
+    }));
+  });
+  return mapa;
+}
 function embaralhar(a){ a = a.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function formatarPessoas(ps, regra){
   if(regra.lados) return "Lado D: " + (ps[0] ? ps[0][0] : "") + " · Lado E: " + (ps[1] ? ps[1][0] : "");
@@ -330,12 +354,15 @@ async function lerDisponibilidade(iso){
   }
   return linhas;   /* null = não deu para ler */
 }
-function montarPropostaAutomatica(c, disponiveis){
+function montarPropostaAutomatica(c, disponiveis, ocupados){
+  ocupados = ocupados || {};
   const cont = {}; disponiveis.forEach(p => { cont[p[0]] = 0; });
+  /* pode ficar nesta posição sem repetir o que já faz nos outros cultos? */
+  const semRepetir = (v, x) => !(ocupados[v.tipo] && ocupados[v.tipo].has(normal(x[0])));
   const vagas = [];
   c.grupos.forEach(([titulo, itens]) => itens.forEach(([funcao, padrao]) => {
     const n = vagasDe(padrao);
-    if(n) vagas.push({ ch: chavePessoas(c, titulo, funcao), titulo, funcao, n, regra: regraDe(funcao), ordem: vagas.length, pessoas: [] });
+    if(n) vagas.push({ ch: chavePessoas(c, titulo, funcao), titulo, funcao, tipo: tipoPosicao(funcao), n, regra: regraDe(funcao), ordem: vagas.length, pessoas: [] });
   }));
   const restrita = v => (v.regra.sexo || v.regra.preferir || v.regra.casal) ? 0 : 1;
   const fila = vagas.slice().sort((a, b) => (restrita(a) - restrita(b)) || (a.ordem - b.ordem));
@@ -344,7 +371,9 @@ function montarPropostaAutomatica(c, disponiveis){
   const vMaq = vagas.find(v => normal(v.funcao).includes("maquinas da primicia"));
   const vCaixa = vagas.find(v => normal(v.funcao).includes("caixa da primicia"));
   if(vMaq && vCaixa){
-    const casais = embaralhar(disponiveis.filter(x => x[1] === "M" && x[2] && achar(x[2])))
+    const todosCasais = disponiveis.filter(x => x[1] === "M" && x[2] && achar(x[2]));
+    const novos = todosCasais.filter(x => semRepetir(vMaq, x) && semRepetir(vCaixa, achar(x[2])));   /* rodízio */
+    const casais = embaralhar(novos.length ? novos : todosCasais)
                      .sort((a, b) => (cont[a[0]] + cont[a[2]]) - (cont[b[0]] + cont[b[2]]));
     if(casais.length){
       const marido = casais[0], esposa = achar(marido[2]);
@@ -358,8 +387,9 @@ function montarPropostaAutomatica(c, disponiveis){
     const esc = v.pessoas;
     (v.regra.preferir || []).forEach(nm => { const p = achar(nm); if(p && esc.length < v.n && !esc.includes(p)) esc.push(p); });
     while(esc.length < v.n){
-      const cand = embaralhar(disponiveis.filter(p => !esc.includes(p) && (!v.regra.sexo || p[1] === v.regra.sexo)))
-                     .sort((a, b) => cont[a[0]] - cont[b[0]]);
+      const todos = disponiveis.filter(p => !esc.includes(p) && (!v.regra.sexo || p[1] === v.regra.sexo));
+      const novos = todos.filter(x => semRepetir(v, x));   /* rodízio: só repete a posição se não houver outra pessoa */
+      const cand = embaralhar(novos.length ? novos : todos).sort((a, b) => cont[a[0]] - cont[b[0]]);
       if(!cand.length) break;
       let p = cand[0];
       const livre = x => cont[x[0]] <= cont[p[0]];   /* não repete ninguém enquanto houver gente com menos posições */
@@ -368,18 +398,20 @@ function montarPropostaAutomatica(c, disponiveis){
         if(c2) p = c2;
       }
       esc.push(p);
-      if(!v.regra.sexo && p[2] && esc.length < v.n){ const par = achar(p[2]); if(par && !esc.includes(par) && cont[par[0]] <= cont[p[0]]) esc.push(par); }
+      if(!v.regra.sexo && p[2] && esc.length < v.n){ const par = achar(p[2]); if(par && !esc.includes(par) && cont[par[0]] <= cont[p[0]] && semRepetir(v, par)) esc.push(par); }
     }
     esc.forEach(p => { cont[p[0]]++; });
   });
   /* ninguém sem posição: quem sobrou vai para as laterais / fundo com menos gente */
   disponiveis.filter(p => !cont[p[0]]).forEach(p => {
     const alvo = vagas.filter(v => !v.regra.sexo && !v.regra.lados && v.titulo !== "Funções")
-                      .sort((a, b) => a.pessoas.length - b.pessoas.length)[0];
+                      .sort((a, b) => (semRepetir(b, p) - semRepetir(a, p)) || (a.pessoas.length - b.pessoas.length))[0];
     if(alvo){ alvo.pessoas.push(p); cont[p[0]]++; }
   });
   const res = {};
   vagas.forEach(v => { res[v.ch] = formatarPessoas(v.pessoas, v.regra); });
+  /* quantos ficaram repetindo a posição (só quando não havia outra pessoa possível) */
+  Object.defineProperty(res, "repeticoes", { value: vagas.reduce((t, v) => t + v.pessoas.filter(x => !semRepetir(v, x) && !(v.regra.preferir || []).includes(x[0])).length, 0), enumerable: false });
   return res;
 }
 async function montarEscalaAutomatica(btn){
@@ -392,13 +424,14 @@ async function montarEscalaAutomatica(btn){
   const disponiveis = EQUIPE_ESCALA.filter(p => !nao.has(normal(p[0])));
   const fora = EQUIPE_ESCALA.filter(p => nao.has(normal(p[0]))).map(p => p[0]);
   const semResposta = EQUIPE_ESCALA.filter(p => !responderam.has(normal(p[0]))).length;
-  const proposta = montarPropostaAutomatica(c, disponiveis);
+  const proposta = montarPropostaAutomatica(c, disponiveis, ocupadosNosOutros(CULTO_ATUAL));
   /* entra no modo edição com a proposta nos campos (sem salvar ainda) */
   document.querySelectorAll("#conteudo textarea.ed-p").forEach(t => t.remove());
   EDITANDO = true; SALVO_AGORA = false; PENDENTE_P = proposta;
   AUTO_INFO = "⚡ Montada com " + disponiveis.length + " obreiros" +
     (linhas === null ? " (não deu para ler quem respondeu NÃO)" :
       (fora.length ? ". Fora por não poder: " + fora.join(", ") : "") + (semResposta ? ". Sem resposta (incluídos): " + semResposta : "")) +
+    ". Rodízio: ninguém repete a posição que já tem nos outros cultos" + (proposta.repeticoes ? " (" + proposta.repeticoes + " repetição(ões) sem outra opção)" : "") +
     ". Confira e toque em SALVAR.";
   montar(CULTO_ATUAL);
 }

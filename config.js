@@ -187,7 +187,6 @@ function abrirPerfil(){
         '<div class="fp-aniv-msg"></div>' +
       '</div>' +
       '<button type="button" class="fp-op" data-a="avisos"><span>' + iconeCor("lembrete") + '</span><i class="fp-av">Avisos do devocional</i></button>' +
-      '<a class="fp-op" href="celulas.html"><span>' + iconeCor("celulas") + '</span>Mapa de células</a>' +
       '<a class="fp-op" href="manual.html"><span>' + iconeCor("devocional") + '</span>Como usar o app</a>' +
       '<button type="button" class="fp-op" data-a="senha"><span>' + iconeCor("escala") + '</span>Trocar minha senha</button>' +
       (EH_LIDER() ? '<a class="fp-op" href="index.html#admin"><span>' + iconeCor("todos") + '</span><i class="fp-apr">Admin: obreiros, aprovações e senhas</i></a>' : '') +

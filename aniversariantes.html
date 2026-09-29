@@ -152,9 +152,9 @@ function montar(lista){
   if(!lista.length){
     html += '<p class="vazio">Ainda não tem datas por aqui.<br>Cada obreiro informa a própria no <b>Perfil</b>.</p>';
   }else{
-    /* os 12 meses, começando pelo atual (os próximos aparecem primeiro) */
-    for(let k = 0; k < 12; k++){
-      const m = (mesAtual + k) % 12;
+    /* os 12 meses em ordem de calendário (janeiro a dezembro); o mês atual fica destacado */
+    for(let m = 0; m < 12; m++){
+      const k = m === mesAtual ? 0 : 1;
       const doMes = lista.filter(x => parseInt(x.mmdd.slice(0, 2), 10) - 1 === m)
                          .sort((a, b) => a.mmdd.localeCompare(b.mmdd) || a.nome.localeCompare(b.nome));
       if(!doMes.length) continue;

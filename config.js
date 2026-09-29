@@ -513,7 +513,7 @@ const ESCALAS = [
         ["Mesa de apoio / Máquinas e envelopes", "Hamilton e Miss Layne (casal)", "Conferir e carregar as máquinas, bobinas e envelopes nas cadeiras. Recolher após o culto."],
         ["Bebedouro e corredor", "Jaqueline e Marco Maia", "Copos, secar a água, controlar a circulação para as salas restritas."],
         ["Reservados", "Letícia e Laura", "Inserir nas cadeiras da frente e dos levitas. Recolher após o culto."],
-        ["Caixa da primícia", "Valéria", "Verificar a primícia e, após o ofertório, entregar à liderança."],
+        ["Caixa da primícia", "Miss Layne", "Verificar a primícia e, após o ofertório, entregar à liderança."],
         ["Máquinas da primícia", "Hamilton"],
         ["Máquinas para ofertório dos pastores no altar", "Kátia"],
         ["Ofertório (+)", "TODOS", "Cada obreiro atende o lado em que está. Ao terminar, ajuda o outro lado."],

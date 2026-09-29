@@ -297,6 +297,8 @@ function vagasDe(padrao){
 function regraDe(funcao){
   const f = normal(funcao);
   if(f.includes("gazofil")) return { sexo: "M", lados: true };
+  if(f.includes("maquinas da primicia")) return { sexo: "M" };   /* o marido; a esposa fica na caixa */
+  if(f.includes("caixa da primicia")) return { sexo: "F" };
   if(f.includes("banheiro masculino")) return { sexo: "M" };
   if(f.includes("banheiro feminino")) return { sexo: "F" };
   if(f.includes("reservados")) return { preferir: ["Letícia", "Laura"] };
@@ -338,7 +340,21 @@ function montarPropostaAutomatica(c, disponiveis){
   const restrita = v => (v.regra.sexo || v.regra.preferir || v.regra.casal) ? 0 : 1;
   const fila = vagas.slice().sort((a, b) => (restrita(a) - restrita(b)) || (a.ordem - b.ordem));
   const achar = nome => disponiveis.find(x => x[0] === nome);
+  /* primícia: marido nas máquinas e a esposa na caixa (casal com menos posições primeiro) */
+  const vMaq = vagas.find(v => normal(v.funcao).includes("maquinas da primicia"));
+  const vCaixa = vagas.find(v => normal(v.funcao).includes("caixa da primicia"));
+  if(vMaq && vCaixa){
+    const casais = embaralhar(disponiveis.filter(x => x[1] === "M" && x[2] && achar(x[2])))
+                     .sort((a, b) => (cont[a[0]] + cont[a[2]]) - (cont[b[0]] + cont[b[2]]));
+    if(casais.length){
+      const marido = casais[0], esposa = achar(marido[2]);
+      vMaq.pessoas.push(marido); vCaixa.pessoas.push(esposa);
+      cont[marido[0]]++; cont[esposa[0]]++;
+      vMaq.pronta = vCaixa.pronta = true;
+    }
+  }
   fila.forEach(v => {
+    if(v.pronta) return;
     const esc = v.pessoas;
     (v.regra.preferir || []).forEach(nm => { const p = achar(nm); if(p && esc.length < v.n && !esc.includes(p)) esc.push(p); });
     while(esc.length < v.n){

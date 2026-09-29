@@ -148,6 +148,7 @@
 
   /* ========== PAINEL ========== */
   #painel{display:none;}
+  body.so-ver .so-admin{display:none !important;}
   #painel h2{
     font-family:'Playfair Display',serif; font-size:1.25rem;
     color:var(--laranja); margin-bottom:16px; text-align:center;
@@ -329,7 +330,7 @@
       <div class="card">
         <label>📅 Datas da escala</label>
         <div id="datas-admin"></div>
-        <button class="enviar" style="margin-top:14px; padding:12px; font-size:.9rem;" onclick="salvarDatas()">SALVAR DATAS</button>
+        <button class="enviar so-admin" style="margin-top:14px; padding:12px; font-size:.9rem;" onclick="salvarDatas()">SALVAR DATAS</button>
         <div id="msg-datas" class="msg"></div>
       </div>
 
@@ -338,13 +339,13 @@
       <div class="acoes">
         <button onclick="exportarCSV()">⬇ Baixar CSV</button>
         <button onclick="render()">🔄 Atualizar</button>
-        <button onclick="voltarForm()">← Voltar</button>
+        <button onclick="voltarForm()">✋ Minha disponibilidade</button>
       </div>
     </div>
 
     <!-- ---- Aba 2: obreiros e acessos ---- -->
     <div id="painel-obreiros">
-      <div class="card">
+      <div class="card so-admin">
         <label>➕ Incluir obreiro</label>
         <div style="display:flex; gap:8px;">
           <input type="text" id="novo-nome" placeholder="Nome como aparecerá na lista"
@@ -364,7 +365,7 @@
 
       <div class="acoes">
         <button onclick="carregarObreiros()">🔄 Atualizar</button>
-        <button onclick="voltarForm()">← Voltar</button>
+        <button onclick="voltarForm()">✋ Minha disponibilidade</button>
       </div>
     </div>
   </div>
@@ -538,6 +539,7 @@ function montarDatasAdmin(){
     inp.type = "date";
     inp.className = "data-admin";
     inp.value = DATAS[i] ? DATAS[i].data : "";
+    inp.disabled = !EH_ADMIN();   /* datas da escala: só o administrador muda */
     cont.appendChild(inp);
   }
 }
@@ -767,12 +769,12 @@ async function carregarPedidos(){
     const div = document.createElement("div");
     div.className = "obreiro";
     div.innerHTML = '<div class="quem"><b>' + p.nome + '</b><span class="estado pendente">📲 ' + (p.whatsapp ? linkConversa(p.whatsapp) : "sem número") + ' · pediu em ' + quando + '</span></div>' +
-      '<div class="btns"><button data-a="liberar" style="border-color:var(--verde);color:var(--verde)">gerar senha e enviar</button><button data-a="ignorar">ignorar</button></div>';
-    div.querySelector('[data-a=liberar]').onclick = e => {
+      (EH_ADMIN() ? '<div class="btns"><button data-a="liberar" style="border-color:var(--verde);color:var(--verde)">gerar senha e enviar</button><button data-a="ignorar">ignorar</button></div>' : '');
+    if(EH_ADMIN()) div.querySelector('[data-a=liberar]').onclick = e => {
       const ob = OBREIROS.find(x => x.nome === p.nome) || { nome: p.nome };
       acaoObreiro("whats", Object.assign({}, ob, { whatsappPedido: p.whatsapp }), e.target);
     };
-    div.querySelector('[data-a=ignorar]').onclick = async () => {
+    if(EH_ADMIN()) div.querySelector('[data-a=ignorar]').onclick = async () => {
       await sb.from("pedidos_senha").delete().eq("nome", p.nome);
       carregarObreiros(); contarAguardando();
     };
@@ -857,10 +859,10 @@ async function carregarObreiros(){
     const numeroDiferente = o.pedido && o.pedido.whatsapp && o.whatsapp && nacional(o.pedido.whatsapp) !== nacional(o.whatsapp);
     const estado = (o.pedido ? '<span class="estado pedido">🔔 pediu a senha em ' + quandoPediu + '</span>' : '') +
                    (o.ativou ? estados[o.status] : (o.pedido ? '' : '<span class="estado">ainda sem conta</span>')) +
-                   (o.whatsapp ? '<span class="estado">📲 ' + linkConversa(o.whatsapp) + '<a class="alterar" data-alterar="1">alterar</a></span>'
+                   (o.whatsapp ? '<span class="estado">📲 ' + linkConversa(o.whatsapp) + (EH_ADMIN() ? '<a class="alterar" data-alterar="1">alterar</a>' : '') + '</span>'
                                : (corDe(o) === "vermelho"
-                                   ? '<span class="estado sem-whats">✗ não enviou o WhatsApp <a class="alterar" data-alterar="1">cadastrar</a></span>'
-                                   : '<span class="estado">📲 sem número <a class="alterar" data-alterar="1">cadastrar</a></span>')) +
+                                   ? '<span class="estado sem-whats">✗ não enviou o WhatsApp ' + (EH_ADMIN() ? '<a class="alterar" data-alterar="1">cadastrar</a>' : '') + '</span>'
+                                   : '<span class="estado">📲 sem número ' + (EH_ADMIN() ? '<a class="alterar" data-alterar="1">cadastrar</a>' : '') + '</span>')) +
                    (o.ativou ? '<span class="estado">🕒 ' + (o.vistoEm ? 'último acesso ' + quandoFoi(o.vistoEm) : 'ainda não abriu o app') + '</span>' : '') +
                    (o.aniversario ? '<span class="estado">🎂 ' + o.aniversario.slice(8) + '/' + o.aniversario.slice(5, 7) + '</span>' : '') +
                    (numeroDiferente ? '<span class="estado" style="color:var(--vermelho)">⚠️ no pedido veio outro número: ' + linkConversa(o.pedido.whatsapp) + '</span>' : '');
@@ -872,13 +874,13 @@ async function carregarObreiros(){
     div.innerHTML =
       '<div class="avatar" style="width:44px;height:44px;cursor:default">' + (o.foto ? '<img alt="" src="' + o.foto + '">' : iniciais(o.nome)) + '</div>' +
       '<div class="quem"><b>' + o.nome + '</b>' + selo + estado + '</div>' +
-      '<div class="btns">' + acesso +
+      (!EH_ADMIN() ? '' : '<div class="btns">' + acesso +
         (o.foto ? '<button data-acao="tirarfoto">tirar foto</button>' : '') +
         (o.nome !== PERFIL.nome ? '<button data-acao="whats" class="btn-whats">senha pelo WhatsApp</button>' : '') +
         '<button data-acao="papel">' + (o.papel === "lider" ? "tirar liderança" : "tornar líder") + '</button>' +
         (o.nome !== PERFIL.nome ? '<button data-acao="resetar" class="perigo">resetar tudo</button>' : '') +
         '<button data-acao="remover" class="perigo">excluir</button>' +
-      '</div>';
+      '</div>');
 
     div.querySelectorAll("button").forEach(b => {
       b.onclick = () => acaoObreiro(b.dataset.acao, o, b);
@@ -891,6 +893,7 @@ async function carregarObreiros(){
 
 async function acaoObreiro(acao, o, botao){
   limparMsgObreiros();
+  if(!EH_ADMIN()){ msgObreiros("erro", explicarErro("SO_ADMIN")); return; }
 
   const perguntas = {
     tirarfoto: "Tirar a foto de perfil de " + o.nome + "?",
@@ -1025,6 +1028,7 @@ async function adicionarObreiro(){
 function explicarErro(codigo){
   const textos = {
     NAO_AUTORIZADO: "Só a liderança pode fazer isso.",
+    SO_ADMIN:       "Só o administrador (Antonio) mexe em acessos. Os líderes acompanham por aqui.",
     ULTIMO_LIDER:   "Você é o único líder — promova outra pessoa antes de fazer isso, senão ninguém consegue administrar o site.",
     NAO_REMOVA_A_SI:"Você não pode remover a si mesmo.",
     NAO_REBAIXE_A_SI:"Você não pode tirar a própria liderança.",
@@ -1071,13 +1075,21 @@ setInterval(() => { if(typeof EH_LIDER === "function" && EH_LIDER()) contarAguar
   montarBoxCelulas(document.getElementById("box-celulas"));
   document.getElementById("nome-logado").textContent = perfil.nome;
   if(EH_LIDER()){
+    if(!EH_ADMIN()){
+      document.body.classList.add("so-ver");
+      document.getElementById("btn-admin").firstChild.textContent = "👥 OBREIROS";
+    }
     document.getElementById("link-admin").style.display = "block";
     document.getElementById("btn-admin").style.display = "inline-block";
     contarAguardando();
-    if(["#admin", "#aprovar", "#obreiros"].includes(location.hash)) setTimeout(abrirAdmin, 300);
   }
   await carregarNomes();
   await carregarTudo();
+  /* a tela inicial da liderança abre no Painel do Líder */
+  if(EH_LIDER()){
+    if(["#admin", "#aprovar", "#obreiros"].includes(location.hash)) abrirAdmin();
+    else if(location.hash !== "#minha") abrirPainel();
+  }
 })();
 
 /* ---------- Logo: remove o fundo cinza (mantém cruz + brilho) ---------- */

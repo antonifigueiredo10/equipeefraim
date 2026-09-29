@@ -37,6 +37,8 @@ let SESSAO = null;   // sessão do Supabase Auth
 let PERFIL = null;   // { nome, papel, status }  papel = 'obreiro' | 'lider' · status = 'pendente' | 'ativo' | 'bloqueado'
 
 const EH_LIDER = () => PERFIL && PERFIL.papel === "lider";
+/* administrador: só o Antonio (os outros líderes veem o painel, mas não mexem em acessos) */
+const EH_ADMIN = () => !!(EH_LIDER() && PERFIL.nome && PERFIL.nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() === "antonio");
 
 /* Guardião: chame no topo de toda página protegida.
    Se não houver sessão válida, manda para o login e devolve null. */
@@ -201,7 +203,7 @@ function abrirPerfil(){
       '<button type="button" class="fp-op" data-a="avisos"><span>' + iconeCor("lembrete") + '</span><i class="fp-av">Avisos do devocional</i></button>' +
       '<a class="fp-op" href="manual.html"><span>' + iconeCor("devocional") + '</span>Como usar o app</a>' +
       '<button type="button" class="fp-op" data-a="senha"><span>' + iconeCor("escala") + '</span>Trocar minha senha</button>' +
-      (EH_LIDER() ? '<a class="fp-op" href="index.html#admin"><span>' + iconeCor("todos") + '</span><i class="fp-apr">Admin: obreiros, aprovações e senhas</i></a>' : '') +
+      (EH_LIDER() ? '<a class="fp-op" href="index.html#admin"><span>' + iconeCor("todos") + '</span><i class="fp-apr">' + (EH_ADMIN() ? 'Admin: obreiros, aprovações e senhas' : 'Painel do líder') + '</i></a>' : '') +
       '<button type="button" class="fp-sair" data-a="sair">Sair do app</button>' +
     '</div>';
   cx.onclick = e => {
@@ -217,7 +219,7 @@ function abrirPerfil(){
   };
   document.body.appendChild(cx);
   rotuloAvisos(cx.querySelector('[data-a="avisos"]'));
-  if(EH_LIDER()) contarPendentes(cx.querySelector(".fp-apr"));
+  if(EH_ADMIN()) contarPendentes(cx.querySelector(".fp-apr"));
 }
 /* ---------- Data de aniversário (só dia e mês; o ano fica 2000 de propósito) ---------- */
 const MESES_ANIV = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];

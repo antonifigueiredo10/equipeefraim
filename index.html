@@ -1026,6 +1026,8 @@ async function adicionarObreiro(){
 }
 
 function explicarErro(codigo){
+  /* sessão que nem a renovação salvou: leva para o login */
+  if(codigo === "SEM_SESSAO" || codigo === "SESSAO_INVALIDA") setTimeout(() => { if(typeof sair === "function") sair(); }, 2500);
   const textos = {
     NAO_AUTORIZADO: "Só a liderança pode fazer isso.",
     SO_ADMIN:       "Só o administrador (Antonio) mexe em acessos. Os líderes acompanham por aqui.",
@@ -1038,8 +1040,8 @@ function explicarErro(codigo){
     NAO_ZERE_A_SI:  "Para trocar a sua própria senha, use Perfil → Trocar minha senha.",
     ACAO_DESCONHECIDA: "Não deu certo agora. Tente de novo em instantes.",
     NUMERO_INVALIDO:"Número de WhatsApp inválido. Use DDD + número.",
-    SEM_SESSAO:     "Sua sessão expirou. Saia e entre de novo.",
-    SESSAO_INVALIDA:"Sua sessão expirou. Saia e entre de novo."
+    SEM_SESSAO:     "Sua sessão expirou. Levando você para entrar de novo...",
+    SESSAO_INVALIDA:"Sua sessão expirou. Levando você para entrar de novo..."
   };
   return textos[codigo] || ("Não deu certo (" + codigo + "). Tente de novo.");
 }

@@ -107,18 +107,27 @@ async function carregarNomes(){
 /* Ponte para a função de administração, que roda no servidor do Supabase.
    Só responde a quem tem papel de liderança — a checagem é lá, não aqui. */
 async function chamarAdmin(acao, dados = {}){
-  const { data: { session } } = await sb.auth.getSession();
+  /* acesso vencido (app aberto muito tempo no celular): renova antes de chamar */
+  const renovar = async () => { try{ const r = await sb.auth.refreshSession(); return (r && r.data && r.data.session) || null; }catch(e){ return null; } };
+  let { data: { session } } = await sb.auth.getSession();
+  if(!session || (session.expires_at && session.expires_at * 1000 < Date.now() + 60000)) session = (await renovar()) || session;
   if(!session) throw new Error("SEM_SESSAO");
 
-  const r = await fetch(SUPABASE_URL + "/functions/v1/admin-efraim", {
+  const enviar = token => fetch(SUPABASE_URL + "/functions/v1/admin-efraim", {
     method: "POST",
     headers: {
-      "Authorization": "Bearer " + session.access_token,
+      "Authorization": "Bearer " + token,
       "apikey": SUPABASE_ANON_KEY,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({ acao, ...dados })
   });
+  let r = await enviar(session.access_token);
+  /* o servidor recusou o acesso: renova uma vez e tenta de novo */
+  if(r.status === 401){
+    const nova = await renovar();
+    if(nova){ session = nova; r = await enviar(nova.access_token); }
+  }
 
   const resposta = await r.json().catch(() => ({ erro: "RESPOSTA_INVALIDA" }));
   if(!r.ok || resposta.erro) throw new Error(resposta.erro || ("HTTP " + r.status));

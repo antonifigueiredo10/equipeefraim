@@ -113,6 +113,7 @@
     display:block; margin:12px auto 0; padding:9px 18px; border-radius:999px; cursor:pointer;
     border:1px dashed var(--laranja); background:transparent; color:var(--laranja); font:600 .76rem 'Poppins',sans-serif;
   }
+  .nomes .vago{font-style:italic; font-weight:400; color:var(--texto-suave);}
   .minha .de-todos{display:block; margin-top:8px; font-size:.74rem; color:var(--texto-suave);}
   .minha.fora{border-color:var(--cinza-borda); background:var(--preto-card);}
   .minha.fora b{color:var(--texto-suave);}
@@ -302,7 +303,7 @@ function regraDe(funcao){
   if(f.includes("banheiro masculino")) return { sexo: "M" };
   if(f.includes("banheiro feminino")) return { sexo: "F" };
   if(f.includes("reservados")) return { preferir: ["Letícia", "Laura"] };
-  if(f.includes("backstage")) return { preferir: ["Patrícia"] };   /* fixa da Patrícia (fora do rodízio) */
+  if(f.includes("backstage")) return { preferir: ["Patrícia"], soPreferido: true };   /* só a Patrícia; se ela não puder, fica vago */
   if(f.includes("acompanhar o pregador") || f.includes("nave da igreja")) return { casal: true };
   return {};
 }
@@ -368,6 +369,7 @@ function montarPropostaAutomatica(c, disponiveis, ocupados){
   const restrita = v => (v.regra.sexo || v.regra.preferir || v.regra.casal) ? 0 : 1;
   const fila = vagas.slice().sort((a, b) => (restrita(a) - restrita(b)) || (a.ordem - b.ordem));
   const achar = nome => disponiveis.find(x => x[0] === nome);
+  const exclusivos = new Set();   /* quem está numa posição exclusiva (Backstage) */
   /* primícia: marido nas máquinas e a esposa na caixa (casal com menos posições primeiro) */
   const vMaq = vagas.find(v => normal(v.funcao).includes("maquinas da primicia"));
   const vCaixa = vagas.find(v => normal(v.funcao).includes("caixa da primicia"));
@@ -387,8 +389,9 @@ function montarPropostaAutomatica(c, disponiveis, ocupados){
     if(v.pronta) return;
     const esc = v.pessoas;
     (v.regra.preferir || []).forEach(nm => { const p = achar(nm); if(p && esc.length < v.n && !esc.includes(p)) esc.push(p); });
+    if(v.regra.soPreferido){ esc.forEach(p => { cont[p[0]]++; exclusivos.add(p[0]); }); return; }   /* ninguém entra no lugar; quem está aqui não pega outra posição */
     while(esc.length < v.n){
-      const todos = disponiveis.filter(p => !esc.includes(p) && (!v.regra.sexo || p[1] === v.regra.sexo));
+      const todos = disponiveis.filter(p => !esc.includes(p) && !exclusivos.has(p[0]) && (!v.regra.sexo || p[1] === v.regra.sexo));
       /* rodízio: não repete a posição dos outros cultos, nem pega duas do mesmo tipo neste culto (ex.: os dois gazofilácios) */
       const jaNoTipo = x => vagas.some(w => w !== v && w.tipo === v.tipo && w.pessoas.includes(x));
       const novos = todos.filter(x => semRepetir(v, x) && !jaNoTipo(x));
@@ -412,7 +415,7 @@ function montarPropostaAutomatica(c, disponiveis, ocupados){
     if(alvo){ alvo.pessoas.push(p); cont[p[0]]++; }
   });
   const res = {};
-  vagas.forEach(v => { res[v.ch] = formatarPessoas(v.pessoas, v.regra); });
+  vagas.forEach(v => { res[v.ch] = v.pessoas.length ? formatarPessoas(v.pessoas, v.regra) : "Vago"; });
   /* quantos ficaram repetindo a posição (só quando não havia outra pessoa possível) */
   Object.defineProperty(res, "repeticoes", { value: vagas.reduce((t, v) => t + v.pessoas.filter(x => !semRepetir(v, x) && !(v.regra.preferir || []).includes(x[0])).length, 0), enumerable: false });
   return res;
@@ -455,6 +458,7 @@ function fimDoCulto(c){ const d = new Date(c.data + "T00:00:00"); d.setHours(0, 
 /* nomes: "(casal)" vira etiqueta; "Lado D · Lado E" quebra em duas linhas; TODOS em destaque */
 function nomesHTML(n){
   if(n === "TODOS" || n === "Liderança") return '<span class="todos">' + n.toUpperCase() + '</span>';
+  if(n === "Vago") return '<span class="vago">vago neste culto</span>';
   let h = esc(n).replace(/ \(casal\)/g, '<span class="casal">casal</span>');
   if(h.includes(" · Lado E:")){ const [a, b] = h.split(" · "); h = a + "<small>" + b + "</small>"; }
   return h;

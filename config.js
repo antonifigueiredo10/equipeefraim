@@ -70,8 +70,20 @@ async function exigirLogin(){
   }
 
   PERFIL = data;
+  marcarAcesso();
   document.documentElement.classList.add("logado");
   return PERFIL;
+}
+
+/* Guarda a hora em que a pessoa abriu o app (a liderança vê no Admin). No máximo 1 vez a cada 2 min por aparelho. */
+function marcarAcesso(){
+  try{
+    const k = "efraim-visto-" + (SESSAO && SESSAO.user ? SESSAO.user.id : "");
+    const agora = Date.now();
+    if(agora - parseInt(localStorage.getItem(k) || "0", 10) < 120000) return;
+    localStorage.setItem(k, String(agora));
+  }catch(e){}
+  try{ sb.rpc("marcar_acesso").then(() => {}, () => {}); }catch(e){}
 }
 
 async function sair(){

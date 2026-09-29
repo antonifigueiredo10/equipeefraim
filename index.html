@@ -781,6 +781,16 @@ async function carregarPedidos(){
   return data.map(p => p.nome);
 }
 
+/* "hoje às 20:41", "ontem às 18:02", "25/09 às 09:14" */
+function quandoFoi(iso){
+  const d = new Date(iso), agora = new Date();
+  const hh = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  const dias = Math.round((new Date(agora.getFullYear(), agora.getMonth(), agora.getDate()) - new Date(d.getFullYear(), d.getMonth(), d.getDate())) / 864e5);
+  if(dias === 0) return "hoje às " + hh;
+  if(dias === 1) return "ontem às " + hh;
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) + " às " + hh;
+}
+
 async function carregarObreiros(){
   await carregarPedidos();
   const cont = document.getElementById("lista-obreiros");
@@ -796,6 +806,9 @@ async function carregarObreiros(){
     /* aniversário (se a coluna já existir; senão segue sem) */
     const aniv = {};
     try{ const { data: an, error: ea } = await sb.from("perfis").select("nome,aniversario"); if(!ea) (an || []).forEach(p => { if(p.aniversario) aniv[p.nome] = p.aniversario; }); }catch(e){}
+    /* último acesso (só a liderança lê os perfis de todos) */
+    const visto = {};
+    try{ const { data: vs, error: ev } = await sb.from("perfis").select("nome,visto_em"); if(!ev) (vs || []).forEach(p => { if(p.visto_em) visto[p.nome] = p.visto_em; }); }catch(e){}
     /* WhatsApp guardado no cadastro (se já existir a coluna; senão segue sem) */
     try{
       const { data: wz, error: ew } = await sb.from("convites").select("nome,whatsapp");
@@ -806,6 +819,7 @@ async function carregarObreiros(){
       o.foto = ids[o.nome] ? fotos[ids[o.nome]] : null;
       o.pedido = PEDIDOS[o.nome] || null;
       o.aniversario = aniv[o.nome] || null;
+      o.vistoEm = visto[o.nome] || null;
       /* pediu e o cadastro ainda não tinha número: usa o do pedido */
       if(!o.whatsapp && o.pedido && o.pedido.whatsapp) o.whatsapp = o.pedido.whatsapp;
     });
@@ -847,6 +861,7 @@ async function carregarObreiros(){
                                : (corDe(o) === "vermelho"
                                    ? '<span class="estado sem-whats">✗ não enviou o WhatsApp <a class="alterar" data-alterar="1">cadastrar</a></span>'
                                    : '<span class="estado">📲 sem número <a class="alterar" data-alterar="1">cadastrar</a></span>')) +
+                   (o.ativou ? '<span class="estado">🕒 ' + (o.vistoEm ? 'último acesso ' + quandoFoi(o.vistoEm) : 'ainda não abriu o app') + '</span>' : '') +
                    (o.aniversario ? '<span class="estado">🎂 ' + o.aniversario.slice(8) + '/' + o.aniversario.slice(5, 7) + '</span>' : '') +
                    (numeroDiferente ? '<span class="estado" style="color:var(--vermelho)">⚠️ no pedido veio outro número: ' + linkConversa(o.pedido.whatsapp) + '</span>' : '');
     let acesso = "";

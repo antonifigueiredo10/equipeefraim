@@ -555,7 +555,7 @@ const ESCALAS = [
         ["Máquina de ofertório para os pastores no altar", "Kátia"],
         ["Gazofilácios em frente do altar", "Lado D: Denilson · Lado E: Felipe Bianchezzi", "Quem está no gazofilácio não passa máquina nem envelope. Fica ao lado dele."],
         ["Gazofilácios no meio da igreja (pilar)", "Lado D: Marco Maia · Lado E: Igor"],
-        ["Banheiro feminino", "Daiane Colman, Renata e Jugleyde Pompeo", "Orientar crianças e visitantes, repor insumos, recolher os lixos após o culto."],
+        ["Banheiro feminino", "Daiane Colman e Renata", "Orientar crianças e visitantes, repor insumos, recolher os lixos após o culto."],
         ["Banheiro masculino", "Jesus e Felipe Bianchezzi"],
         ["Organização do templo", "TODOS", "Alinhar cadeiras, recolher lixos e envelopes, cortinas, ar, portas e luzes."],
         ["Oração final", "Liderança"]
@@ -563,7 +563,7 @@ const ESCALAS = [
       ["Lateral esquerda · lado das portas de entrada", [
         ["Porta da frente / meio", "Antônio e Laura (casal)"],
         ["Porta do fundo", "Alessandra, Martina Mendes e Milene"],
-        ["Meio para o fundo", "Dri Gamarra e Jhuli"]
+        ["Meio para o fundo", "Dri Gamarra, Jhuli e Jugleyde Pompeo"]
       ]],
       ["Lateral direita · lado do banheiro e mesa de apoio", [
         ["Mesa de apoio / banheiro", "Clebson e Letícia (casal)"],

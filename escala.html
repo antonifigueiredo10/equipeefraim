@@ -315,13 +315,14 @@ function tipoPosicao(funcao){
   return f;
 }
 /* nos OUTROS cultos desta escala (o que está salvo, ou o original): tipo → nomes que já estão nele */
-function ocupadosNosOutros(iAtual){
+function ocupadosNosOutros(iAtual, fonte){
   const mapa = {};
   ESCALAS.forEach((c, i) => {
     if(i === iAtual) return;
     c.grupos.forEach(([titulo, itens]) => itens.forEach(([funcao, padrao]) => {
-      const nomes = NOMES_PESSOAS[chavePessoas(c, titulo, funcao)] || padrao;
-      if(nomes === "TODOS" || nomes === "Liderança") return;
+      const ch = chavePessoas(c, titulo, funcao);
+      const nomes = fonte ? fonte[ch] : (NOMES_PESSOAS[ch] || padrao);
+      if(!nomes || nomes === "TODOS" || nomes === "Liderança") return;
       const t = tipoPosicao(funcao);
       const set = mapa[t] || (mapa[t] = new Set());
       nomes.replace(/Lado [DE]:/g, ",").replace(/\(casal\)/g, "").split(/,| e |·/).map(x => normal(x)).filter(Boolean).forEach(n => set.add(n));
@@ -343,14 +344,14 @@ function formatarPessoas(ps, regra){
   if(partes.some(x => x.includes("(casal)"))) return partes.join(", ");
   return partes.slice(0, -1).join(", ") + " e " + partes[partes.length - 1];
 }
-async function lerDisponibilidade(iso){
+async function lerDisponibilidade(isos){
   let linhas = null;
   try{
-    const r = await sb.rpc("disponibilidade_escala", { p_datas: [iso] });
+    const r = await sb.rpc("disponibilidade_escala", { p_datas: isos });
     if(!r.error && Array.isArray(r.data)) linhas = r.data;
   }catch(e){}
   if(linhas === null){
-    try{ const r = await sb.from("respostas").select("nome,data,resposta").eq("data", iso); if(!r.error && Array.isArray(r.data)) linhas = r.data; }catch(e){}
+    try{ const r = await sb.from("respostas").select("nome,data,resposta").in("data", isos); if(!r.error && Array.isArray(r.data)) linhas = r.data; }catch(e){}
   }
   return linhas;   /* null = não deu para ler */
 }
@@ -361,7 +362,7 @@ function montarPropostaAutomatica(c, disponiveis, ocupados){
   const semRepetir = (v, x) => !(ocupados[v.tipo] && ocupados[v.tipo].has(normal(x[0])));
   const vagas = [];
   c.grupos.forEach(([titulo, itens]) => itens.forEach(([funcao, padrao]) => {
-    const n = vagasDe(padrao);
+    const n = /banheiro (feminino|masculino)/.test(normal(funcao)) ? 2 : vagasDe(padrao);   /* banheiro: sempre 2 */
     if(n) vagas.push({ ch: chavePessoas(c, titulo, funcao), titulo, funcao, tipo: tipoPosicao(funcao), n, regra: regraDe(funcao), ordem: vagas.length, pessoas: [] });
   }));
   const restrita = v => (v.regra.sexo || v.regra.preferir || v.regra.casal) ? 0 : 1;
@@ -388,7 +389,9 @@ function montarPropostaAutomatica(c, disponiveis, ocupados){
     (v.regra.preferir || []).forEach(nm => { const p = achar(nm); if(p && esc.length < v.n && !esc.includes(p)) esc.push(p); });
     while(esc.length < v.n){
       const todos = disponiveis.filter(p => !esc.includes(p) && (!v.regra.sexo || p[1] === v.regra.sexo));
-      const novos = todos.filter(x => semRepetir(v, x));   /* rodízio: só repete a posição se não houver outra pessoa */
+      /* rodízio: não repete a posição dos outros cultos, nem pega duas do mesmo tipo neste culto (ex.: os dois gazofilácios) */
+      const jaNoTipo = x => vagas.some(w => w !== v && w.tipo === v.tipo && w.pessoas.includes(x));
+      const novos = todos.filter(x => semRepetir(v, x) && !jaNoTipo(x));
       const cand = embaralhar(novos.length ? novos : todos).sort((a, b) => cont[a[0]] - cont[b[0]]);
       if(!cand.length) break;
       let p = cand[0];
@@ -405,7 +408,7 @@ function montarPropostaAutomatica(c, disponiveis, ocupados){
   /* ninguém sem posição: quem sobrou vai para as laterais / fundo com menos gente */
   disponiveis.filter(p => !cont[p[0]]).forEach(p => {
     const alvo = vagas.filter(v => !v.regra.sexo && !v.regra.lados && v.titulo !== "Funções")
-                      .sort((a, b) => (semRepetir(b, p) - semRepetir(a, p)) || (a.pessoas.length - b.pessoas.length))[0];
+                      .sort((a, b) => (semRepetir(b, p) - semRepetir(a, p)) || (vagas.some(w => w !== a && w.tipo === a.tipo && w.pessoas.includes(p)) - vagas.some(w => w !== b && w.tipo === b.tipo && w.pessoas.includes(p))) || (a.pessoas.length - b.pessoas.length))[0];
     if(alvo){ alvo.pessoas.push(p); cont[p[0]]++; }
   });
   const res = {};
@@ -416,23 +419,29 @@ function montarPropostaAutomatica(c, disponiveis, ocupados){
 }
 async function montarEscalaAutomatica(btn){
   if(!podeEditarNomes()) return;
-  const c = ESCALAS[CULTO_ATUAL];
   if(btn){ btn.disabled = true; btn.textContent = "montando..."; }
-  const linhas = await lerDisponibilidade(c.data);
-  const nao = new Set((linhas || []).filter(l => String(l.resposta).toUpperCase().startsWith("N")).map(l => normal(l.nome)));
+  /* os 3 cultos da escala (domingo, quarta e domingo), em sequência: cada um evita o que os anteriores já deram a cada pessoa */
+  const linhas = await lerDisponibilidade(ESCALAS.map(c => c.data));
+  const proposta = {}, fora = [];
+  let repeticoes = 0;
+  ESCALAS.forEach((c, i) => {
+    c.grupos.forEach(([t, itens]) => itens.forEach(([f, padrao]) => { PADRAO_PESSOAS[chavePessoas(c, t, f)] = padrao; }));
+    const nao = new Set((linhas || []).filter(l => String(l.data).slice(0, 10) === c.data && String(l.resposta).toUpperCase().startsWith("N")).map(l => normal(l.nome)));
+    const r = montarPropostaAutomatica(c, EQUIPE_ESCALA.filter(p => !nao.has(normal(p[0]))), ocupadosNosOutros(i, proposta));
+    Object.assign(proposta, r);
+    repeticoes += r.repeticoes || 0;
+    const quem = EQUIPE_ESCALA.filter(p => nao.has(normal(p[0]))).map(p => p[0]);
+    if(quem.length) fora.push(c.curto + " " + dataLonga(c.data).slice(0, 5) + ": " + quem.join(", "));
+  });
   const responderam = new Set((linhas || []).map(l => normal(l.nome)));
-  const disponiveis = EQUIPE_ESCALA.filter(p => !nao.has(normal(p[0])));
-  const fora = EQUIPE_ESCALA.filter(p => nao.has(normal(p[0]))).map(p => p[0]);
   const semResposta = EQUIPE_ESCALA.filter(p => !responderam.has(normal(p[0]))).length;
-  const proposta = montarPropostaAutomatica(c, disponiveis, ocupadosNosOutros(CULTO_ATUAL));
-  /* entra no modo edição com a proposta nos campos (sem salvar ainda) */
+  /* entra no modo edição com a proposta dos 3 cultos nos campos (sem salvar ainda) */
   document.querySelectorAll("#conteudo textarea.ed-p").forEach(t => t.remove());
   EDITANDO = true; SALVO_AGORA = false; PENDENTE_P = proposta;
-  AUTO_INFO = "⚡ Montada com " + disponiveis.length + " obreiros" +
-    (linhas === null ? " (não deu para ler quem respondeu NÃO)" :
-      (fora.length ? ". Fora por não poder: " + fora.join(", ") : "") + (semResposta ? ". Sem resposta (incluídos): " + semResposta : "")) +
-    ". Rodízio: ninguém repete a posição que já tem nos outros cultos" + (proposta.repeticoes ? " (" + proposta.repeticoes + " repetição(ões) sem outra opção)" : "") +
-    ". Confira e toque em SALVAR.";
+  AUTO_INFO = "⚡ Montei os 3 cultos (domingo, quarta e domingo) com rodízio: ninguém repete a mesma posição" +
+    (repeticoes ? " (" + repeticoes + " repetição(ões) sem outra opção)" : "") + ". Banheiro com 2 pessoas." +
+    (linhas === null ? " Não deu para ler quem respondeu NÃO." : (fora.length ? " Fora por não poder: " + fora.join(" · ") + "." : "") + (semResposta ? " Sem resposta (incluídos): " + semResposta + "." : "")) +
+    " Confira cada culto nos botões de cima e toque em SALVAR (salva os 3).";
   montar(CULTO_ATUAL);
 }
 

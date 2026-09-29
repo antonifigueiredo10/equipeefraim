@@ -257,7 +257,7 @@
   <h2 class="secao"><span class="ic" data-ic="list"></span>Plano completo</h2>
   <input type="text" class="busca" id="busca" placeholder="Buscar por nome, livro ou capítulo...">
   <div id="plano-todo"></div>
-  <button class="ver-mais" id="btn-ver-mais" onclick="alternarPlano()">ver o plano completo</button>
+  <button class="ver-mais" id="btn-ver-mais" onclick="alternarPlano()">▾ mostrar todas as leituras</button>
 
   <h2 class="secao"><span class="ic" data-ic="download"></span>Levar para o grupo</h2>
   <div class="acoes">
@@ -429,19 +429,23 @@ function montarPlanoTodo(filtro){
     : "<p style='color:var(--texto-suave); font-size:.85rem;'>Nada encontrado.</p>";
 }
 
+/* texto do botão da lista completa (não repete o título da seção) */
+function rotuloVerMais(aberto){
+  return aberto ? "▴ esconder as leituras" : "▾ mostrar todas as " + (PLANO.length ? PLANO.length + " " : "") + "leituras";
+}
 function alternarPlano(){
   const el = document.getElementById("plano-todo");
   const btn = document.getElementById("btn-ver-mais");
   const abrindo = el.style.display !== "block";
   el.style.display = abrindo ? "block" : "none";
-  btn.textContent = abrindo ? "esconder o plano completo" : "ver o plano completo";
+  btn.textContent = rotuloVerMais(abrindo);
 }
 
 document.getElementById("busca").addEventListener("input", e => {
   montarPlanoTodo(e.target.value);
   if(e.target.value.trim()){
     document.getElementById("plano-todo").style.display = "block";
-    document.getElementById("btn-ver-mais").textContent = "esconder o plano completo";
+    document.getElementById("btn-ver-mais").textContent = rotuloVerMais(true);
   }
 });
 
@@ -601,6 +605,8 @@ function montarTudo(){
   montarHoje();
   montarProximas();
   montarPlanoTodo(document.getElementById("busca").value);
+  const bv = document.getElementById("btn-ver-mais");
+  if(bv) bv.textContent = rotuloVerMais(document.getElementById("plano-todo").style.display === "block");
 }
 
 /* ---------- Início ---------- */

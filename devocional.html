@@ -541,7 +541,12 @@ function montarMeusDias(){
   const meus = PLANO.filter(l => l.nome === PERFIL.nome);
   const cx = document.getElementById("meus-dias");
   if(!meus.length){
-    cx.innerHTML = "<p style='color:var(--texto-suave); font-size:.85rem; line-height:1.6;'>Você não está no rodízio de leituras. Acompanhe o plano da equipe na aba Plano.</p>";
+    /* quem serve no Backstage não entra no rodízio do devocional, mas acompanha as leituras de todos */
+    const simples = t => String(t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+    const backstage = typeof ESCALAS !== "undefined" && ESCALAS.some(c => c.grupos.some(g => g[1].some(f => /backstage/i.test(f[0]) && simples(f[1]).includes(simples(PERFIL.nome)))));
+    cx.innerHTML = "<p style='color:var(--texto-suave); font-size:.85rem; line-height:1.6;'>" +
+      (backstage ? "Quem serve no <b>Backstage</b> não entra no rodízio do devocional. Acompanhe as leituras da equipe na aba Plano. 🙏"
+                 : "Você não está no rodízio de leituras. Acompanhe o plano da equipe na aba Plano.") + "</p>";
     return;
   }
   const vindo   = meus.filter(l => l.data >= hoje);

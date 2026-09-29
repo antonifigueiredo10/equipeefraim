@@ -194,7 +194,8 @@
 /* ---------- Preenche as listas de nomes (vêm do banco) ---------- */
 (async function(){
   if(!CONFIGURADO) return;
-  const nomes = await carregarNomes();
+  /* em ordem alfabética (Á = A, ignora maiúsculas) */
+  const nomes = (await carregarNomes()).slice().sort((a, b) => a.localeCompare(b, "pt-BR", { sensitivity: "base" }));
   ["nome-entrar"].forEach(id => {
     const sel = document.getElementById(id);
     nomes.forEach(n => sel.add(new Option(n, n)));

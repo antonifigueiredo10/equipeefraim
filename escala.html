@@ -311,7 +311,6 @@ function tipoPosicao(funcao){
   if(f.includes("banheiro feminino") || f.includes("banheiro masculino")) return "banheiro";
   if(f.includes("gazofil")) return "gazofilacio";
   if(f.includes("primicia")) return "primicia";
-  if(f.includes("ofertorio") && f.includes("pastores")) return "maquina-pastores";
   return f;
 }
 /* nos OUTROS cultos desta escala (o que está salvo, ou o original): tipo → nomes que já estão nele */
@@ -401,7 +400,7 @@ function montarPropostaAutomatica(c, disponiveis, ocupados){
         if(c2) p = c2;
       }
       esc.push(p);
-      if(!v.regra.sexo && p[2] && esc.length < v.n){ const par = achar(p[2]); if(par && !esc.includes(par) && cont[par[0]] <= cont[p[0]] && semRepetir(v, par)) esc.push(par); }
+      if(!v.regra.sexo && p[2] && esc.length < v.n){ const par = achar(p[2]); if(par && !esc.includes(par) && cont[par[0]] <= cont[p[0]] && semRepetir(v, par) && !jaNoTipo(par)) esc.push(par); }
     }
     esc.forEach(p => { cont[p[0]]++; });
   });

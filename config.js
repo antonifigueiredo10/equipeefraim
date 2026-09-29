@@ -515,7 +515,6 @@ const ESCALAS = [
         ["Reservados", "Letícia e Laura", "Inserir nas cadeiras da frente e dos levitas. Recolher após o culto."],
         ["Caixa da primícia", "Miss Layne", "Verificar a primícia e, após o ofertório, entregar à liderança."],
         ["Máquinas da primícia", "Hamilton"],
-        ["Máquinas para ofertório dos pastores no altar", "Kátia"],
         ["Ofertório (+)", "TODOS", "Cada obreiro atende o lado em que está. Ao terminar, ajuda o outro lado."],
         ["Gazofilácios em frente do altar", "Lado D: Felipe Bianchezzi · Lado E: Denilson", "Quem está no gazofilácio não passa máquina nem envelope. Fica ao lado dele."],
         ["Gazofilácios no meio da igreja (pilar)", "Lado D: Igor · Lado E: José Eduardo"],
@@ -552,7 +551,6 @@ const ESCALAS = [
         ["Nave da igreja: microfone e mão no coração", "Hamilton e Miss Layne (casal), Jackson e Thays (casal)", "Direcionar as pessoas e se posicionar com o microfone. Obreiras com as mulheres, obreiros com os homens."],
         ["Organizar as pessoas embaixo em fileiras e baldes", "TODOS"],
         ["Ofertório", "TODOS", "Cada obreiro atende o lado em que está. Ao terminar, ajuda o outro lado."],
-        ["Máquina de ofertório para os pastores no altar", "Kátia"],
         ["Gazofilácios em frente do altar", "Lado D: Denilson · Lado E: Felipe Bianchezzi", "Quem está no gazofilácio não passa máquina nem envelope. Fica ao lado dele."],
         ["Gazofilácios no meio da igreja (pilar)", "Lado D: Marco Maia · Lado E: Igor"],
         ["Banheiro feminino", "Daiane Colman e Renata", "Orientar crianças e visitantes, repor insumos, recolher os lixos após o culto."],
@@ -567,7 +565,7 @@ const ESCALAS = [
       ]],
       ["Lateral direita · lado do banheiro e mesa de apoio", [
         ["Mesa de apoio / banheiro", "Clebson e Letícia (casal)"],
-        ["Em frente ao altar", "Valéria e Jaqueline"],
+        ["Em frente ao altar", "Valéria, Jaqueline e Kátia"],
         ["Meio para o fundo", "Reinaldo e Cristiane (casal)"]
       ]]
     ]},
@@ -580,7 +578,6 @@ const ESCALAS = [
         ["Reservados", "Laura", "Inserir nas cadeiras da frente e dos levitas. Recolher após o culto."],
         ["Caixa da primícia", "Miss Layne", "Verificar a primícia e, após o ofertório, entregar à liderança."],
         ["Máquinas da primícia", "Hamilton"],
-        ["Máquinas para ofertório dos pastores no altar", "Kátia"],
         ["Ofertório (+)", "TODOS", "No culto de Santa Ceia há oferta missionária no final."],
         ["Gazofilácios em frente do altar", "Lado D: Jesus · Lado E: José Eduardo", "Quem está no gazofilácio não passa máquina nem envelope. Fica ao lado dele."],
         ["Gazofilácios no meio da igreja (pilar)", "Lado D: Igor · Lado E: Denilson"],
@@ -593,7 +590,7 @@ const ESCALAS = [
       ["Lateral esquerda · lado das portas de entrada", [
         ["Porta da frente", "Antônio e Laura (casal)"],
         ["Porta do meio", "Martina Mendes e Simone"],
-        ["Porta do fundo (cantina)", "Alessandra e Milene"]
+        ["Porta do fundo (cantina)", "Alessandra, Milene e Kátia"]
       ]],
       ["Lateral direita · lado do banheiro e mesa de apoio", [
         ["Mesa de apoio / banheiro", "José Luis e Marina Corrêa (casal)"],

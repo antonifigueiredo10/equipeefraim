@@ -168,9 +168,27 @@ const ICONES_COR = {
         '<path d="M16.5 6c2.2 2.6 2.2 4.4 0 5.6-2.2-1.2-2.2-3 0-5.6zM24 4c2.2 2.6 2.2 4.4 0 5.6-2.2-1.2-2.2-3 0-5.6zM31.5 6c2.2 2.6 2.2 4.4 0 5.6-2.2-1.2-2.2-3 0-5.6z" fill="#F7C23C"/>' +
         '<rect x="8" y="23" width="32" height="17" rx="3.5" fill="#F0834A"/><path d="M8 27a3.5 3.5 0 0 1 3.5-3.5h25A3.5 3.5 0 0 1 40 27v3c-3.2 2.6-6.4 2.6-9.6 0s-6.4-2.6-9.6 0-6.4 2.6-9.6 0L8 31z" fill="#FFF3E6"/>' +
         '<circle cx="16" cy="35" r="1.6" fill="#FFF3E6"/><circle cx="24" cy="36" r="1.6" fill="#FFF3E6"/><circle cx="32" cy="35" r="1.6" fill="#FFF3E6"/><rect x="5" y="39" width="38" height="4.5" rx="2.2" fill="#C98B5A"/>',
+  gabinete:'<rect x="7" y="6" width="26" height="36" rx="2.5" fill="#8B5A3C"/><rect x="11" y="10" width="18" height="28" rx="1.5" fill="#B07A52"/><circle cx="25" cy="25" r="1.8" fill="#F7C23C"/>' +
+            '<rect x="16.5" y="14" width="7" height="2.2" rx="1" fill="#FBD5B0"/><rect x="18.9" y="11.6" width="2.2" height="7" rx="1" fill="#FBD5B0"/>' +
+            '<circle cx="35" cy="33" r="10" fill="#fff"/><circle cx="35" cy="33" r="8.2" fill="#4FA3E8"/><path d="M35 28v5.3l3.4 2.1" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/>',
   calendario:'<rect x="6" y="9" width="36" height="33" rx="4" fill="#fff"/><path d="M6 13a4 4 0 0 1 4-4h28a4 4 0 0 1 4 4v7H6z" fill="#E8553B"/><rect x="14" y="5" width="4" height="9" rx="2" fill="#7A7A85"/><rect x="30" y="5" width="4" height="9" rx="2" fill="#7A7A85"/><rect x="12" y="25" width="6" height="5" rx="1" fill="#F0834A"/><rect x="21" y="25" width="6" height="5" rx="1" fill="#D5D8DE"/><rect x="30" y="25" width="6" height="5" rx="1" fill="#D5D8DE"/><rect x="12" y="33" width="6" height="5" rx="1" fill="#D5D8DE"/><rect x="21" y="33" width="6" height="5" rx="1" fill="#D5D8DE"/>'
 };
 function iconeCor(n){ return '<svg viewBox="0 0 48 48" aria-hidden="true">' + (ICONES_COR[n] || "") + '</svg>'; }
+
+/* ======================= GABINETE (horários dos pastores) =======================
+   Fase de teste: veem Antonio, Jesus e os pastores. Cadastram: Antonio (os dois) e cada pastor(a) a própria agenda.
+   O banco confere de novo (pode_ver_gabinete / pode_editar_gabinete). */
+const GABINETE_VER = ["antonio", "jesus", "pr. joel", "pra. vilma"];
+const GABINETE_PASTORES = ["Pr. Joel", "Pra. Vilma"];
+function nomeSimples(n){ return String(n || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim(); }
+function podeVerGabinete(){ return !!(PERFIL && GABINETE_VER.includes(nomeSimples(PERFIL.nome))); }
+/* pastores que esta pessoa pode agendar: o admin, os dois; cada pastor(a), só a própria agenda */
+function pastoresQuePosso(){
+  if(!PERFIL) return [];
+  const eu = nomeSimples(PERFIL.nome);
+  if(eu === "antonio") return GABINETE_PASTORES.slice();
+  return GABINETE_PASTORES.filter(p => nomeSimples(p) === eu);
+}
 
 function montarNavInferior(){
   if(document.getElementById("nav-inferior")) return;
@@ -178,8 +196,10 @@ function montarNavInferior(){
   const itens = EH_LIDER()
     ? [["inicio","Início","index.html"],["devocional","Devocional","devocional.html"],["celulas","Células","celulas.html"],["escala","Escala","escala.html"],["bolo","Parabéns","aniversariantes.html"],["perfil","Perfil",""]]
     : [["inicio","Início","devocional.html"],["devocional","Plano","devocional.html#todos"],["celulas","Células","celulas.html"],["escala","Escala","escala.html"],["bolo","Parabéns","aniversariantes.html"],["perfil","Perfil",""]];
+  if(podeVerGabinete()) itens.splice(4, 0, ["gabinete","Gabinete","gabinete.html"]);   /* fase de teste: só alguns veem */
   const nav = document.createElement("nav");
   nav.id = "nav-inferior";
+  if(itens.length >= 7) nav.classList.add("sete");
   nav.innerHTML = itens.map(([ic, rot, href]) => {
     const alvo = href.split("#")[0];
     const ativo = (!href.includes("#") && alvo === pag && ic !== "perfil");
@@ -942,6 +962,8 @@ document.addEventListener("DOMContentLoaded", () => setTimeout(mostrarInstalar, 
     #faixa-aniv .fa-txt{flex:1; min-width:0;}
     #faixa-aniv .fa-seta{color:#F2C94C; font-size:1.3rem; line-height:1;}
     #nav-inferior .ni-rot{white-space:nowrap;}
+    #nav-inferior.sete .ni-rot{font-size:.6rem; letter-spacing:0;}
+    #nav-inferior.sete .ni-ic{width:27px; height:27px;}
     #folha-perfil .fp-sair{width:100%; margin-top:6px; padding:13px; border-radius:14px; border:1px solid #E05555; background:transparent; color:#E05555; font:700 .82rem 'Poppins',sans-serif; cursor:pointer;}
     .icc{display:inline-flex; flex:none;}
     .icc svg{width:100%; height:100%; display:block;}

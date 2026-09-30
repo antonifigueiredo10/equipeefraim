@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0B0B0D">
+<meta name="robots" content="noindex,nofollow">
+<title>Gabinete — Equipe Efraim | Aliançados</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-title" content="EQUIPE EFRAIM">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,500&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --laranja:#F0834A; --laranja-claro:#F9A56E; --laranja-escuro:#D96A32;
+    --preto:#0B0B0D; --preto-card:#151518; --cinza-borda:#2A2A2F;
+    --branco:#F7F3EE; --texto-suave:#B8B2AA; --verde:#3DBB7A; --vermelho:#E05555; --azul:#4FA3E8;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--preto); color:var(--branco); font-family:'Poppins',system-ui,sans-serif; min-height:100vh;
+    background-image:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(240,131,74,.18), transparent 60%);
+  }
+  .hero{display:flex; align-items:center; gap:14px; max-width:600px; margin:0 auto; padding:16px 18px 0;}
+  .hero .ico{width:58px; height:58px; flex:none; filter:drop-shadow(0 0 18px rgba(79,163,232,.3));}
+  .hero .ico svg{width:100%; height:100%; display:block;}
+  .hero h1{font-family:'Playfair Display',serif; font-weight:800; font-size:clamp(1.3rem,5.6vw,1.75rem); letter-spacing:1px; line-height:1.15;}
+  .hero h1 span{color:var(--laranja);}
+  .hero .lema{color:var(--texto-suave); font-size:.66rem; letter-spacing:2.5px; text-transform:uppercase; margin-top:4px; font-weight:300;}
+  main{max-width:600px; margin:0 auto; padding:16px 18px 40px;}
+
+  .abas{display:flex; gap:6px; margin-bottom:14px;}
+  .abas button{flex:1; padding:10px 8px; border-radius:12px; border:1px solid var(--cinza-borda); background:var(--preto-card);
+    color:var(--texto-suave); font:600 .78rem 'Poppins',sans-serif; cursor:pointer;}
+  .abas button.ativo{background:var(--laranja); border-color:var(--laranja); color:#fff;}
+
+  .card{background:var(--preto-card); border:1px solid var(--cinza-borda); border-radius:16px; padding:14px 16px; margin-bottom:12px;}
+  .novo{border-color:rgba(79,163,232,.55); background:linear-gradient(160deg, rgba(79,163,232,.1), var(--preto-card) 60%);}
+  .novo h2{font-size:.72rem; letter-spacing:2px; text-transform:uppercase; color:var(--azul); margin-bottom:10px;}
+  .campos{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .campos .todo{grid-column:1 / -1;}
+  .campos label{display:block; font-size:.62rem; color:var(--texto-suave); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:4px; font-weight:600;}
+  .campos input, .campos select{width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--cinza-borda); background:#0F0F12;
+    color:var(--branco); font:500 .9rem 'Poppins',sans-serif; color-scheme:dark;}
+  .campos input:focus, .campos select:focus{outline:none; border-color:var(--azul);}
+  .btn{width:100%; margin-top:12px; padding:13px; border:none; border-radius:12px; cursor:pointer; color:#fff;
+    background:linear-gradient(135deg, var(--laranja), var(--laranja-escuro)); font:700 .85rem 'Poppins',sans-serif; letter-spacing:1px;}
+  .btn:disabled{opacity:.6;}
+  .msg{font-size:.78rem; margin-top:8px; min-height:1em; color:var(--texto-suave);}
+  .msg.erro{color:var(--vermelho);} .msg.ok{color:var(--verde);}
+
+  .dia{display:flex; align-items:center; gap:10px; margin:18px 2px 8px; font-size:.7rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--laranja);}
+  .dia::after{content:""; flex:1; height:1px; background:linear-gradient(90deg, rgba(240,131,74,.5), transparent);}
+  .dia.hoje{color:var(--verde);} .dia.hoje::after{background:linear-gradient(90deg, rgba(61,187,122,.5), transparent);}
+  .horario{display:flex; align-items:center; gap:12px; background:var(--preto-card); border:1px solid var(--cinza-borda); border-radius:14px; padding:11px 14px; margin-bottom:8px;}
+  .horario .hora{min-width:78px; font-weight:700; font-size:1rem; font-variant-numeric:tabular-nums;}
+  .horario .hora small{display:block; font-weight:400; font-size:.7rem; color:var(--texto-suave);}
+  .horario .quem{flex:1; min-width:0;}
+  .horario .quem b{display:block; font-size:.92rem;}
+  .horario .quem span{font-size:.75rem; color:var(--texto-suave); overflow-wrap:anywhere;}
+  .horario .tag{flex:none; font-size:.6rem; letter-spacing:1px; text-transform:uppercase; padding:3px 8px; border-radius:999px; border:1px solid rgba(61,187,122,.5); color:var(--verde);}
+  .horario .tirar{flex:none; background:none; border:1px solid var(--cinza-borda); color:var(--texto-suave); border-radius:999px; padding:6px 10px; font:600 .68rem 'Poppins',sans-serif; cursor:pointer;}
+  .horario .tirar:hover{border-color:var(--vermelho); color:var(--vermelho);}
+  .vazio{font-size:.85rem; color:var(--texto-suave); line-height:1.6; text-align:center; padding:26px 10px;}
+  .restrito{text-align:center; padding:40px 16px; color:var(--texto-suave); line-height:1.6;}
+  .restrito b{display:block; color:var(--branco); font-size:1.05rem; margin-bottom:6px;}
+  @media (max-width:520px){ .hero{padding:14px 14px 0; gap:12px;} main{padding:12px 12px 36px;} .campos{grid-template-columns:1fr 1fr;} }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <span class="ico" id="ico"></span>
+  <div>
+    <h1>GABI<span>NETE</span></h1>
+    <div class="lema">Horários disponíveis dos pastores</div>
+  </div>
+</div>
+
+<main>
+  <div id="conteudo"><p class="vazio">Carregando...</p></div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+let HORARIOS = [], FILTRO = "todos";
+const DIAS = ["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
+function escG(s){ return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+function hojeISO(){ const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function horaBR(t){ if(!t) return ""; const [h, m] = String(t).split(":"); return parseInt(h, 10) + "h" + m; }
+function diaBR(iso){ const d = new Date(iso + "T12:00:00"); const p = iso.split("-"); return DIAS[d.getDay()] + ", " + p[2] + "/" + p[1]; }
+
+async function carregar(){
+  const { data, error } = await sb.from("gabinete_horarios").select("id,pastor,data,hora,hora_fim,obs").gte("data", hojeISO()).order("data").order("hora");
+  if(error) throw error;
+  HORARIOS = data || [];
+}
+
+function montar(){
+  const cx = document.getElementById("conteudo");
+  const posso = pastoresQuePosso();
+  let html = '<div class="abas">' + [["todos", "Todos"], ["Pr. Joel", "Pr. Joel"], ["Pra. Vilma", "Pra. Vilma"]]
+    .map(([f, rot]) => '<button type="button" data-f="' + escG(f) + '"' + (FILTRO === f ? ' class="ativo"' : '') + '>' + escG(rot) + '</button>').join("") + '</div>';
+
+  /* cadastro: admin (os dois pastores) e cada pastor(a) a própria agenda */
+  if(posso.length){
+    html += '<div class="card novo"><h2>➕ Novo horário disponível</h2><div class="campos">' +
+      '<div class="todo"><label for="g-pastor">Pastor(a)</label><select id="g-pastor"' + (posso.length === 1 ? ' disabled' : '') + '>' +
+        posso.map(p => '<option' + (FILTRO === p ? ' selected' : '') + '>' + escG(p) + '</option>').join("") + '</select></div>' +
+      '<div class="todo"><label for="g-data">Dia</label><input type="date" id="g-data" min="' + hojeISO() + '" value="' + hojeISO() + '"></div>' +
+      '<div><label for="g-hora">Início</label><input type="time" id="g-hora" value="09:00" step="900"></div>' +
+      '<div><label for="g-fim">Fim (opcional)</label><input type="time" id="g-fim" step="900"></div>' +
+      '<div class="todo"><label for="g-obs">Observação (opcional)</label><input type="text" id="g-obs" maxlength="120" placeholder="Ex.: presencial no gabinete, online, para casais"></div>' +
+      '</div><button type="button" class="btn" id="g-add">ADICIONAR HORÁRIO</button><div class="msg" id="g-msg"></div></div>';
+  }
+
+  const lista = HORARIOS.filter(h => FILTRO === "todos" || h.pastor === FILTRO);
+  if(!lista.length){
+    html += '<p class="vazio">Nenhum horário disponível' + (FILTRO === "todos" ? '' : ' para ' + escG(FILTRO)) + ' por enquanto.' +
+            (posso.length ? '<br>Use o quadro acima para cadastrar.' : '') + '</p>';
+  }else{
+    let diaAtual = "";
+    const hoje = hojeISO();
+    lista.forEach(h => {
+      if(h.data !== diaAtual){ diaAtual = h.data; html += '<div class="dia' + (h.data === hoje ? ' hoje' : '') + '">' + escG(diaBR(h.data)) + (h.data === hoje ? ' · hoje' : '') + '</div>'; }
+      const tira = posso.includes(h.pastor);
+      html += '<div class="horario"><div class="hora">' + horaBR(h.hora) + (h.hora_fim ? '<small>até ' + horaBR(h.hora_fim) + '</small>' : '') + '</div>' +
+        '<div class="quem"><b>' + escG(h.pastor) + '</b>' + (h.obs ? '<span>' + escG(h.obs) + '</span>' : '') + '</div>' +
+        (tira ? '<button type="button" class="tirar" data-id="' + h.id + '">remover</button>' : '<span class="tag">disponível</span>') + '</div>';
+    });
+  }
+  cx.innerHTML = html;
+
+  cx.querySelectorAll(".abas button").forEach(b => { b.onclick = () => { FILTRO = b.dataset.f; montar(); }; });
+  cx.querySelectorAll(".tirar").forEach(b => { b.onclick = () => remover(+b.dataset.id, b); });
+  const add = document.getElementById("g-add");
+  if(add) add.onclick = adicionar;
+}
+
+async function adicionar(){
+  const msg = document.getElementById("g-msg"), btn = document.getElementById("g-add");
+  const pastor = document.getElementById("g-pastor").value, data = document.getElementById("g-data").value;
+  const hora = document.getElementById("g-hora").value, fim = document.getElementById("g-fim").value, obs = document.getElementById("g-obs").value.trim();
+  msg.className = "msg";
+  if(!pastor || !data || !hora){ msg.textContent = "Informe o dia e o horário de início."; msg.classList.add("erro"); return; }
+  if(data < hojeISO()){ msg.textContent = "Escolha hoje ou um dia à frente."; msg.classList.add("erro"); return; }
+  if(fim && fim <= hora){ msg.textContent = "O fim precisa ser depois do início."; msg.classList.add("erro"); return; }
+  if(HORARIOS.some(h => h.pastor === pastor && h.data === data && String(h.hora).slice(0, 5) === hora)){ msg.textContent = "Esse horário já está cadastrado."; msg.classList.add("erro"); return; }
+  btn.disabled = true; btn.textContent = "salvando...";
+  const { error } = await sb.from("gabinete_horarios").insert({ pastor, data, hora, hora_fim: fim || null, obs: obs || null });
+  btn.disabled = false; btn.textContent = "ADICIONAR HORÁRIO";
+  if(error){ msg.textContent = /row-level|permission|policy/i.test(error.message || "") ? "Seu usuário não pode cadastrar nessa agenda." : "Não deu para salvar agora. Tente de novo."; msg.classList.add("erro"); return; }
+  await carregar(); montar();
+  const m2 = document.getElementById("g-msg"); if(m2){ m2.className = "msg ok"; m2.textContent = "Horário de " + pastor + " cadastrado: " + diaBR(data) + " às " + horaBR(hora) + "."; }
+}
+
+async function remover(id, btn){
+  const h = HORARIOS.find(x => x.id === id);
+  if(!h || !confirm("Remover o horário de " + h.pastor + " em " + diaBR(h.data) + " às " + horaBR(h.hora) + "?")) return;
+  btn.disabled = true; btn.textContent = "...";
+  const { error } = await sb.from("gabinete_horarios").delete().eq("id", id);
+  if(error){ btn.disabled = false; btn.textContent = "remover"; alert("Não deu para remover agora. Tente de novo."); return; }
+  await carregar(); montar();
+}
+
+(async function(){
+  const perfil = await exigirLogin();
+  if(!perfil) return;
+  document.getElementById("ico").innerHTML = iconeCor("gabinete");
+  montarBarraUsuario();
+  if(!podeVerGabinete()){
+    document.getElementById("conteudo").innerHTML = '<div class="restrito"><b>O Gabinete ainda está em teste.</b>Em breve ele fica disponível para a equipe. 🙏</div>';
+    return;
+  }
+  try{ await carregar(); montar(); }
+  catch(e){ document.getElementById("conteudo").innerHTML = '<p class="vazio">Não deu para carregar os horários agora. Confira a internet e tente de novo.</p>'; }
+})();
+</script>
+</body>
+</html>

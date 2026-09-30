@@ -224,10 +224,11 @@ function montar(){
   if(agenda){
     const meus = HORARIOS.filter(h => h.meu);
     html += meus.length
-      ? meus.map(h => '<div class="card meu-ag"><h2>📌 Seu agendamento</h2><div class="linha">' + escG(diaBR(h.data)) + ' às ' + horaBR(h.hora) +
+      ? meus.map(h => '<div class="card meu-ag"><h2>📌 Agendado por você</h2><div class="linha">' + escG(diaBR(h.data)) + ' às ' + horaBR(h.hora) +
           '<small>com ' + escG(h.pastor) + (h.hora_fim ? ' · até ' + horaBR(h.hora_fim) : '') + (h.assunto ? ' · ' + escG(h.assunto) : '') + '</small></div>' +
           '<button type="button" class="btn" style="background:transparent;border:1px solid var(--cinza-borda);color:var(--texto-suave)" data-cancelar="' + h.id + '">cancelar agendamento</button></div>').join("")
-      : '<p class="dica-ag">Escolha um horário livre abaixo e toque em <b>Agendar</b>. Cada pessoa marca um horário por vez.</p>';
+      : '';
+    html += '<p class="dica-ag">Escolha um horário livre abaixo e toque em <b>Agendar</b>.</p>';
   }
   html += calendarioHTML();
 
@@ -244,7 +245,8 @@ function montar(){
   }
 
   const lista = HORARIOS.filter(h => (FILTRO === "todos" || h.pastor === FILTRO) && (!DIA_SEL || h.data === DIA_SEL));
-  const jaTenho = HORARIOS.some(h => h.meu);
+  /* horário que cruza com um agendamento seu (você não fica em dois lugares ao mesmo tempo) */
+  const cruzaComMeu = h => HORARIOS.some(m => m.meu && m.id !== h.id && m.data === h.data && minutos(h.hora) < fimMin(m) && minutos(m.hora) < fimMin(h));
   if(DIA_SEL) html += '<div class="filtro-dia"><span>Mostrando ' + escG(diaBR(DIA_SEL)) + '</span><button type="button" id="ver-todos-dias">ver todos os dias</button></div>';
   if(!lista.length){
     html += '<p class="vazio">Nenhum horário ' + (gestor ? 'cadastrado' : 'livre') + (FILTRO === "todos" ? '' : ' para ' + escG(FILTRO)) + ' por enquanto.' +
@@ -263,7 +265,8 @@ function montar(){
           (tira ? '<button type="button" class="tirar" data-id="' + h.id + '">remover</button>' : '') + '</div>';
       }else if(agenda){
         direita = h.meu ? '<span class="tag seu">seu horário</span>'
-                        : '<button type="button" class="agendar" data-agendar="' + h.id + '"' + (jaTenho ? ' disabled title="Você já tem um agendamento"' : '') + '>Agendar</button>';
+                        : (cruzaComMeu(h) ? '<span class="tag">você já tem outro nesse horário</span>'
+                                          : '<button type="button" class="agendar" data-agendar="' + h.id + '">Agendar</button>');
       }else direita = '<span class="tag">disponível</span>';
       const detalhe = gestor && h.agendado_nome ? '<span>👤 ' + escG(h.agendado_nome) + (h.assunto ? ' · ' + escG(h.assunto) : '') + '</span>' : (h.obs ? '<span>' + escG(h.obs) + '</span>' : '');
       html += '<div class="horario ' + classePastor(h.pastor) + (marcado ? ' marcado' : '') + '"><div class="hora">' + horaBR(h.hora) + (h.hora_fim ? '<small>até ' + horaBR(h.hora_fim) + '</small>' : '') + '</div>' +
@@ -323,6 +326,7 @@ async function adicionar(){
 }
 
 const ERROS_AG = {
+  VOCE_JA_TEM_NESSE_HORARIO: "Você já tem outro agendamento nesse mesmo horário.",
   JA_TEM_AGENDAMENTO: "Você já tem um agendamento. Cancele o atual antes de marcar outro.",
   HORARIO_OCUPADO: "Esse horário acabou de ser agendado por outra pessoa. Escolha outro.",
   HORARIO_PASSOU: "Esse horário já passou.",

@@ -48,6 +48,7 @@
   .campos input, .campos select{width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--cinza-borda); background:#0F0F12;
     color:var(--branco); font:500 .9rem 'Poppins',sans-serif; color-scheme:dark;}
   .campos input:focus, .campos select:focus{outline:none; border-color:var(--azul);}
+  .fim-auto{padding:11px 12px; border-radius:10px; border:1px dashed var(--cinza-borda); color:var(--texto-suave); font:600 .9rem 'Poppins',sans-serif;}
   .btn{width:100%; margin-top:12px; padding:13px; border:none; border-radius:12px; cursor:pointer; color:#fff;
     background:linear-gradient(135deg, var(--laranja), var(--laranja-escuro)); font:700 .85rem 'Poppins',sans-serif; letter-spacing:1px;}
   .btn:disabled{opacity:.6;}
@@ -122,6 +123,8 @@ function conflitoCom(pastor, data, hora, fim){
   const ini = minutos(hora), fm = fim ? minutos(fim) : ini + 60;
   return HORARIOS.find(h => h.pastor === pastor && h.data === data && ini < fimMin(h) && minutos(h.hora) < fm) || null;
 }
+const DURACAO_MIN = 60;   /* todo atendimento dura 1 hora */
+function maisUmaHora(hora){ const t = minutos(hora) + DURACAO_MIN; return String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0"); }
 function isoDe(d){ return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
 function calendarioHTML(){
   const hoje = hojeISO(), ano = MES.getFullYear(), mes = MES.getMonth();
@@ -167,8 +170,8 @@ function montar(){
       '<div class="todo"><label for="g-pastor">Pastor(a)</label><select id="g-pastor"' + (posso.length === 1 ? ' disabled' : '') + '>' +
         posso.map(p => '<option' + (FILTRO === p ? ' selected' : '') + '>' + escG(p) + '</option>').join("") + '</select></div>' +
       '<div class="todo"><label for="g-data">Dia</label><input type="date" id="g-data" min="' + hojeISO() + '" value="' + (DIA_SEL || hojeISO()) + '"></div>' +
-      '<div><label for="g-hora">Início</label><input type="time" id="g-hora" value="09:00" step="900"></div>' +
-      '<div><label for="g-fim">Fim (opcional)</label><input type="time" id="g-fim" step="900"></div>' +
+      '<div><label for="g-hora">Início</label><input type="time" id="g-hora" value="09:00" step="900" max="23:00"></div>' +
+      '<div><label>Fim (1 hora)</label><div class="fim-auto" id="g-fim">10h00</div></div>' +
       '<div class="todo"><label for="g-obs">Observação (opcional)</label><input type="text" id="g-obs" maxlength="120" placeholder="Ex.: presencial no gabinete, online, para casais"></div>' +
       '</div><button type="button" class="btn" id="g-add">ADICIONAR HORÁRIO</button><div class="msg" id="g-msg"></div></div>';
   }
@@ -200,24 +203,27 @@ function montar(){
   cx.querySelectorAll(".tirar").forEach(b => { b.onclick = () => remover(+b.dataset.id, b); });
   const add = document.getElementById("g-add");
   if(add) add.onclick = adicionar;
+  const ini = document.getElementById("g-hora"), fimTxt = document.getElementById("g-fim");
+  if(ini && fimTxt){ const atual = () => { fimTxt.textContent = ini.value ? horaBR(maisUmaHora(ini.value)) : "—"; }; ini.oninput = atual; ini.onchange = atual; atual(); }
 }
 
 async function adicionar(){
   const msg = document.getElementById("g-msg"), btn = document.getElementById("g-add");
   const pastor = document.getElementById("g-pastor").value, data = document.getElementById("g-data").value;
-  const hora = document.getElementById("g-hora").value, fim = document.getElementById("g-fim").value, obs = document.getElementById("g-obs").value.trim();
+  const hora = document.getElementById("g-hora").value, obs = document.getElementById("g-obs").value.trim();
+  const fim = hora ? maisUmaHora(hora) : "";
   msg.className = "msg";
   if(!pastor || !data || !hora){ msg.textContent = "Informe o dia e o horário de início."; msg.classList.add("erro"); return; }
   if(data < hojeISO()){ msg.textContent = "Escolha hoje ou um dia à frente."; msg.classList.add("erro"); return; }
-  if(fim && fim <= hora){ msg.textContent = "O fim precisa ser depois do início."; msg.classList.add("erro"); return; }
+  if(hora > "23:00"){ msg.textContent = "O último horário possível começa às 23h00."; msg.classList.add("erro"); return; }
   const choque = conflitoCom(pastor, data, hora, fim);
   if(choque){
     msg.textContent = "Cruza com o horário de " + horaBR(choque.hora) + " às " + horaBR(choque.hora_fim || (String(Math.floor(fimMin(choque) / 60)).padStart(2, "0") + ":" + String(fimMin(choque) % 60).padStart(2, "0"))) +
-                      " de " + pastor + " nesse dia. Escolha outro horário." + (fim ? "" : " (Sem fim, o horário conta 1 hora.)");
+                      " de " + pastor + " nesse dia. Escolha outro horário.";
     msg.classList.add("erro"); return;
   }
   btn.disabled = true; btn.textContent = "salvando...";
-  const { error } = await sb.from("gabinete_horarios").insert({ pastor, data, hora, hora_fim: fim || null, obs: obs || null });
+  const { error } = await sb.from("gabinete_horarios").insert({ pastor, data, hora, hora_fim: fim, obs: obs || null });
   btn.disabled = false; btn.textContent = "ADICIONAR HORÁRIO";
   if(error){
     const t = error.message || "";

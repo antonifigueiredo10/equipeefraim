@@ -124,6 +124,45 @@ function conflitoCom(pastor, data, hora, fim){
   return HORARIOS.find(h => h.pastor === pastor && h.data === data && ini < fimMin(h) && minutos(h.hora) < fm) || null;
 }
 const DURACAO_MIN = 60;   /* todo atendimento dura 1 hora */
+const PRIMEIRO_INICIO = "07:00", ULTIMO_INICIO = "22:00", PASSO_MIN = 30, DIAS_A_FRENTE = 60;
+const DIA_SEM = ["dom","seg","ter","qua","qui","sex","sáb"];
+/* horários de início livres para o pastor no dia: não cruzam com nenhum outro e, hoje, ainda não passaram */
+function horariosLivres(pastor, data){
+  const agora = new Date(), hoje = hojeISO(), minAgora = agora.getHours() * 60 + agora.getMinutes();
+  const livres = [];
+  for(let t = minutos(PRIMEIRO_INICIO); t <= minutos(ULTIMO_INICIO); t += PASSO_MIN){
+    const hh = String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0");
+    if(data === hoje && t <= minAgora) continue;
+    if(!conflitoCom(pastor, data, hh, maisUmaHora(hh))) livres.push(hh);
+  }
+  return livres;
+}
+function diasLivres(pastor){
+  const d0 = new Date(); d0.setHours(12, 0, 0, 0);
+  const dias = [];
+  for(let i = 0; i <= DIAS_A_FRENTE; i++){
+    const d = new Date(d0); d.setDate(d0.getDate() + i);
+    const iso = isoDe(d);
+    if(horariosLivres(pastor, iso).length) dias.push(iso);
+  }
+  return dias;
+}
+/* monta as listas do cadastro (dia → horários) conforme o pastor escolhido */
+function preencherForm(manterHora){
+  const selP = document.getElementById("g-pastor"), selD = document.getElementById("g-data"), selH = document.getElementById("g-hora");
+  if(!selP || !selD || !selH) return;
+  const pastor = selP.value, diaAntes = selD.value || DIA_SEL, horaAntes = manterHora ? selH.value : "";
+  const dias = diasLivres(pastor);
+  selD.innerHTML = dias.length ? dias.map(iso => { const p = iso.split("-"); const d = new Date(iso + "T12:00:00");
+      return '<option value="' + iso + '">' + DIA_SEM[d.getDay()] + ", " + p[2] + "/" + p[1] + (iso === hojeISO() ? " · hoje" : "") + '</option>'; }).join("")
+    : '<option value="">sem dias livres</option>';
+  if(diaAntes && dias.includes(diaAntes)) selD.value = diaAntes;
+  const horas = selD.value ? horariosLivres(pastor, selD.value) : [];
+  selH.innerHTML = horas.length ? horas.map(h => '<option value="' + h + '">' + horaBR(h) + '</option>').join("") : '<option value="">sem horário livre</option>';
+  if(horaAntes && horas.includes(horaAntes)) selH.value = horaAntes;
+  const fimTxt = document.getElementById("g-fim");
+  if(fimTxt) fimTxt.textContent = selH.value ? horaBR(maisUmaHora(selH.value)) : "—";
+}
 function maisUmaHora(hora){ const t = minutos(hora) + DURACAO_MIN; return String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0"); }
 function isoDe(d){ return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
 function calendarioHTML(){
@@ -169,8 +208,8 @@ function montar(){
     html += '<div class="card novo"><h2>➕ Novo horário disponível</h2><div class="campos">' +
       '<div class="todo"><label for="g-pastor">Pastor(a)</label><select id="g-pastor"' + (posso.length === 1 ? ' disabled' : '') + '>' +
         posso.map(p => '<option' + (FILTRO === p ? ' selected' : '') + '>' + escG(p) + '</option>').join("") + '</select></div>' +
-      '<div class="todo"><label for="g-data">Dia</label><input type="date" id="g-data" min="' + hojeISO() + '" value="' + (DIA_SEL || hojeISO()) + '"></div>' +
-      '<div><label for="g-hora">Início</label><input type="time" id="g-hora" value="09:00" step="900" max="23:00"></div>' +
+      '<div class="todo"><label for="g-data">Dia (só dias com horário livre)</label><select id="g-data"></select></div>' +
+      '<div><label for="g-hora">Início (livre)</label><select id="g-hora"></select></div>' +
       '<div><label>Fim (1 hora)</label><div class="fim-auto" id="g-fim">10h00</div></div>' +
       '<div class="todo"><label for="g-obs">Observação (opcional)</label><input type="text" id="g-obs" maxlength="120" placeholder="Ex.: presencial no gabinete, online, para casais"></div>' +
       '</div><button type="button" class="btn" id="g-add">ADICIONAR HORÁRIO</button><div class="msg" id="g-msg"></div></div>';
@@ -203,8 +242,13 @@ function montar(){
   cx.querySelectorAll(".tirar").forEach(b => { b.onclick = () => remover(+b.dataset.id, b); });
   const add = document.getElementById("g-add");
   if(add) add.onclick = adicionar;
-  const ini = document.getElementById("g-hora"), fimTxt = document.getElementById("g-fim");
-  if(ini && fimTxt){ const atual = () => { fimTxt.textContent = ini.value ? horaBR(maisUmaHora(ini.value)) : "—"; }; ini.oninput = atual; ini.onchange = atual; atual(); }
+  const selP = document.getElementById("g-pastor"), selD = document.getElementById("g-data"), selH = document.getElementById("g-hora");
+  if(selP && selD && selH){
+    preencherForm(false);
+    selP.onchange = () => preencherForm(false);
+    selD.onchange = () => { DIA_SEL = selD.value || null; preencherForm(false); };
+    selH.onchange = () => { const f = document.getElementById("g-fim"); if(f) f.textContent = selH.value ? horaBR(maisUmaHora(selH.value)) : "—"; };
+  }
 }
 
 async function adicionar(){
@@ -213,7 +257,7 @@ async function adicionar(){
   const hora = document.getElementById("g-hora").value, obs = document.getElementById("g-obs").value.trim();
   const fim = hora ? maisUmaHora(hora) : "";
   msg.className = "msg";
-  if(!pastor || !data || !hora){ msg.textContent = "Informe o dia e o horário de início."; msg.classList.add("erro"); return; }
+  if(!pastor || !data || !hora){ msg.textContent = "Não há dia ou horário livre para cadastrar."; msg.classList.add("erro"); return; }
   if(data < hojeISO()){ msg.textContent = "Escolha hoje ou um dia à frente."; msg.classList.add("erro"); return; }
   if(hora > "23:00"){ msg.textContent = "O último horário possível começa às 23h00."; msg.classList.add("erro"); return; }
   const choque = conflitoCom(pastor, data, hora, fim);

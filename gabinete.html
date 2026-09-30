@@ -329,7 +329,7 @@ function montarParaQuemAgenda(){
   html += meus.length ? meus.map(h => '<div class="horario ' + classePastor(h.pastor) + ' marcado"><div class="hora">' + horaBR(h.hora) +
         (h.hora_fim ? '<small>até ' + horaBR(h.hora_fim) + '</small>' : '') + '</div>' +
       '<div class="quem"><b>' + escG(h.pastor) + '</b><span>' + escG(diaBR(h.data)) + '</span>' + (h.assunto ? '<span>' + escG(h.assunto) + '</span>' : '') + '</div>' +
-      '<div class="acoes-h"><span class="tag seu">agendado</span><button type="button" class="tirar" data-cancelar="' + h.id + '">cancelar</button></div></div>').join("")
+      '<div class="acoes-h"><span class="tag seu">agendado</span><button type="button" class="tirar" data-cancelar="' + h.id + '">excluir</button></div></div>').join("")
     : '<p class="vazio">Você ainda não tem agendamento.</p>';
   cx.innerHTML = html;
 
@@ -428,7 +428,7 @@ async function cancelarAgendamento(id, btn){
   const h = HORARIOS.find(x => x.id === id);
   if(!h) return;
   const quem = h.agendado_nome ? " de " + h.agendado_nome : "";
-  if(!confirm("Cancelar o agendamento" + quem + " com " + h.pastor + " em " + diaBR(h.data) + " às " + horaBR(h.hora) + "?\n\nO horário volta a ficar livre.")) return;
+  if(!confirm((h.meu ? "Excluir o seu agendamento" : "Cancelar o agendamento" + quem) + " com " + h.pastor + " em " + diaBR(h.data) + " às " + horaBR(h.hora) + "?\n\nO horário volta a ficar livre.")) return;
   btn.disabled = true; btn.textContent = "...";
   const { error } = await sb.rpc("cancelar_agendamento_gabinete", { p_id: id });
   if(error){ btn.disabled = false; alert(erroAg(error)); return; }

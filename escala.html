@@ -117,6 +117,8 @@
   .minha .de-todos{display:block; margin-top:8px; font-size:.74rem; color:var(--texto-suave);}
   .minha.fora{border-color:var(--cinza-borda); background:var(--preto-card);}
   .minha.fora b{color:var(--texto-suave);}
+  .btn-editar-nomes.pdf{border-style:solid; border-color:var(--verde); color:var(--verde); background:rgba(61,187,122,.08);}
+  .msg-pdf{text-align:center; font-size:.74rem; color:var(--verde); margin-top:8px;}
   .acoes-escala{display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:12px;}
   .acoes-escala .btn-editar-nomes{margin:0;}
   .btn-editar-nomes.auto{border-style:solid; background:rgba(240,131,74,.12);}
@@ -186,6 +188,7 @@
 <footer>Aliançados · <span>Lugar de Crescimento</span> · 2026 · equipeefraim.com.br</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" defer></script>
 <script src="config.js"></script>
 <script>
 /* ================================================================
@@ -274,6 +277,104 @@ async function salvarEdicao(btn){
   }
 }
 function escAttr(s){ return esc(s).replace(/"/g, "&quot;"); }
+
+/* ======================= PDF DO CULTO (só liderança) =======================
+   Desenha no aparelho (jsPDF) o culto aberto, com os nomes ajustados pela liderança,
+   e abre o compartilhamento (WhatsApp). No computador, baixa e abre o WhatsApp. */
+function pdfDoCulto(){
+  const m = document.getElementById("msg-pdf");
+  if(!podeEditarNomes()) return;
+  if(!window.jspdf){ if(m) m.textContent = "Sem internet para montar o PDF agora. Tente de novo em instantes."; return; }
+  const c = ESCALAS[CULTO_ATUAL];
+  const d = c.data.split("-");
+  const titulo = c.dia + ", " + d[2] + "/" + d[1] + " · " + c.hora;
+  /* tenta caber em 1 página: letra e espaço um pouco menores e, por último, sem as descrições das funções */
+  const tentativas = [[1, true], [0.92, true], [0.85, true], [0.95, false], [0.86, false], [0.8, false]];
+  let doc = null;
+  for(const [k, comDica] of tentativas){ doc = desenharPdfCulto(c, titulo, k, comDica); if(doc.getNumberOfPages() === 1) break; }
+
+  const nome = "Escala-Efraim-" + c.curto + "-" + d[2] + "-" + d[1] + "-" + c.hora.replace(/[^0-9h]/g, "") + ".pdf";
+  const texto = "Escala · " + titulo + " · " + c.culto + " · Equipe 02 Efraim";
+  let arq = null;
+  try{ arq = new File([doc.output("blob")], nome, { type: "application/pdf" }); }catch(e){}
+  if(arq && navigator.canShare && navigator.canShare({ files: [arq] }) && navigator.share){
+    navigator.share({ files: [arq], title: texto, text: texto }).catch(e => { if(e && e.name !== "AbortError") baixarPdfCulto(doc, nome, texto); });
+  }else baixarPdfCulto(doc, nome, texto);
+}
+/* k = fator de tamanho (letra e espaços); comDica = mostra a descrição de cada função */
+function desenharPdfCulto(c, titulo, k, comDica){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "pt", format: "a4", compress: true });
+  const W = 595, H = 842, M = 36, larg = W - 2 * M;
+  const LAR = [240, 131, 74], ESC = [30, 30, 30], CIN = [115, 115, 115];
+  const cabecalho = continua => {
+    doc.setFillColor(...LAR); doc.rect(0, 0, W, 66, "F");
+    doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(9);
+    doc.text("EQUIPE 02 EFRAIM · ALIANÇADOS · ESCALA DE OBREIROS", M, 21);
+    doc.setFontSize(19); doc.text(titulo + (continua ? " (continuação)" : ""), M, 44);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.text(c.culto, M, 58);
+  };
+  cabecalho(false);
+  let y = 84;
+  /* chegada e uniforme */
+  doc.setFillColor(248, 242, 234); doc.setDrawColor(235, 222, 205);
+  doc.setFontSize(9.5 * k);
+  const uni = doc.splitTextToSize("Uniforme: " + c.uniforme, larg - 24);
+  const hInfo = (20 + uni.length * 12) * k;
+  doc.roundedRect(M, y - 12 * k, larg, hInfo, 5, 5, "FD");
+  doc.setTextColor(...ESC); doc.setFont("helvetica", "bold"); doc.setFontSize(10 * k);
+  doc.text("Chegada: " + c.chegada + " (1 hora antes)", M + 12, y + 1);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(9.5 * k); doc.text(uni, M + 12, y + 14 * k);
+  y += hInfo + 6 * k;
+
+  const colNome = M + larg * 0.52, largFun = larg * 0.5 - 8, largNome = larg * 0.48;
+  const novaPagina = () => { doc.addPage(); cabecalho(true); y = 88; };
+  c.grupos.forEach(([secao, itens]) => {
+    if(y > H - 80) novaPagina();
+    doc.setTextColor(...LAR); doc.setFont("helvetica", "bold"); doc.setFontSize(11.5 * k);
+    doc.text(nomePosicao(secao).toUpperCase(), M, y + 8 * k);
+    doc.setDrawColor(...LAR); doc.setLineWidth(1); doc.line(M, y + 12 * k, M + larg, y + 12 * k); doc.setLineWidth(.5);
+    y += 24 * k;
+    itens.forEach(([funcao, padrao, dica]) => {
+      const nomes = NOMES_PESSOAS[chavePessoas(c, secao, funcao)] || padrao;
+      doc.setFont("helvetica", "bold"); doc.setFontSize(9.5 * k); const fun = doc.splitTextToSize(nomePosicao(funcao), largFun);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8 * k); const dic = comDica && dica ? doc.splitTextToSize(dica, largFun) : [];
+      doc.setFontSize(10.5 * k); const nom = doc.splitTextToSize(nomes === "Vago" ? "vago neste culto" : nomes.replace(/ · /g, "  ·  "), largNome);
+      const h = (Math.max(fun.length * 12 + dic.length * 9.5, nom.length * 13) + 7) * k;
+      if(y + h > H - 44) novaPagina();
+      doc.setTextColor(...ESC); doc.setFont("helvetica", "bold"); doc.setFontSize(9.5 * k); doc.text(fun, M, y);
+      if(dic.length){ doc.setFont("helvetica", "normal"); doc.setFontSize(8 * k); doc.setTextColor(...CIN); doc.text(dic, M, y + (fun.length * 12 - 2) * k); }
+      const destaque = nomes === "TODOS" || nomes === "Liderança";
+      doc.setFont("helvetica", destaque ? "bold" : "normal"); doc.setFontSize(10.5 * k);
+      doc.setTextColor(...(destaque ? LAR : nomes === "Vago" ? CIN : ESC)); doc.text(nom, colNome, y);
+      doc.setDrawColor(235, 228, 218); doc.line(M, y + h - 9 * k, M + larg, y + h - 9 * k);
+      y += h;
+    });
+    y += 5 * k;
+  });
+  /* avisos e liderança */
+  doc.setFontSize(9 * k);
+  const linhasAv = (c.avisos || AVISOS).flatMap(a => doc.splitTextToSize("•  " + a, larg - 24));
+  const hAv = (22 + linhasAv.length * 11.5) * k;
+  if(y + hAv + 24 > H - 30) novaPagina();
+  doc.setFillColor(253, 240, 231); doc.setDrawColor(...LAR); doc.roundedRect(M, y, larg, hAv, 5, 5, "FD");
+  doc.setTextColor(150, 70, 20); doc.setFont("helvetica", "bold"); doc.setFontSize(10 * k); doc.text("Avisos", M + 12, y + 14 * k);
+  doc.setFont("helvetica", "normal"); doc.setTextColor(60, 60, 60); doc.setFontSize(9 * k); doc.text(linhasAv, M + 12, y + 27 * k);
+  y += hAv + 16 * k;
+  doc.setTextColor(...ESC); doc.setFont("helvetica", "bold"); doc.setFontSize(10 * k); doc.text(LIDERANCA, W / 2, y, { align: "center" });
+  const paginas = doc.getNumberOfPages();
+  for(let i = 1; i <= paginas; i++){
+    doc.setPage(i); doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(150, 150, 150);
+    doc.text("equipeefraim.com.br" + (paginas > 1 ? "   ·   página " + i + " de " + paginas : ""), M, H - 16);
+  }
+  return doc;
+}
+function baixarPdfCulto(doc, nome, texto){
+  doc.save(nome);
+  const m = document.getElementById("msg-pdf");
+  if(m) m.textContent = "PDF baixado. Anexe o arquivo " + nome + " na conversa do WhatsApp.";
+  window.open("https://wa.me/?text=" + encodeURIComponent(texto + " (PDF em anexo)"), "_blank", "noopener");
+}
 
 /* ======================= ESCALA AUTOMÁTICA =======================
    Monta quem serve em cada posição do culto aberto:
@@ -499,6 +600,8 @@ function montar(i){
     html += '<div class="acoes-escala">' +
       '<button type="button" class="btn-editar-nomes" onclick="editarNomes()">✏️ ' + (podeEditarPosicoes() ? 'Editar escala (posições e nomes)' : 'Editar nomes dos obreiros') + '</button>' +
       '<button type="button" class="btn-editar-nomes auto" onclick="montarEscalaAutomatica(this)">⚡ Montar escala automática</button>' +
+      '<button type="button" class="btn-editar-nomes pdf" onclick="pdfDoCulto()">📄 PDF deste culto (WhatsApp)</button>' +
+      '<div class="msg-pdf" id="msg-pdf"></div>' +
       '</div>';
   }
   const secoes = [];   /* [título, [{html, minha, todos}]] */

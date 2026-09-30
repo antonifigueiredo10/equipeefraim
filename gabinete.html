@@ -66,6 +66,28 @@
   .horario .tag{flex:none; font-size:.6rem; letter-spacing:1px; text-transform:uppercase; padding:3px 8px; border-radius:999px; border:1px solid rgba(61,187,122,.5); color:var(--verde);}
   .horario .tirar{flex:none; background:none; border:1px solid var(--cinza-borda); color:var(--texto-suave); border-radius:999px; padding:6px 10px; font:600 .68rem 'Poppins',sans-serif; cursor:pointer;}
   .horario .tirar:hover{border-color:var(--vermelho); color:var(--vermelho);}
+  /* calendário do mês */
+  .cal{background:var(--preto-card); border:1px solid var(--cinza-borda); border-radius:16px; padding:12px 12px 10px; margin-bottom:12px;}
+  .cal-top{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+  .cal-top b{font-family:'Playfair Display',serif; font-size:1.1rem; text-transform:capitalize;}
+  .cal-top button{width:36px; height:36px; border-radius:50%; border:1px solid var(--cinza-borda); background:transparent; color:var(--branco); font-size:1.1rem; cursor:pointer;}
+  .cal-top button:disabled{opacity:.25; cursor:default;}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; margin-top:10px;}
+  .cal-sem{font-size:.58rem; color:var(--texto-suave); text-align:center; text-transform:uppercase; letter-spacing:1px; padding:2px 0 4px;}
+  .cal-dia{aspect-ratio:1/1; border-radius:10px; border:1px solid transparent; background:#1D1D22; color:var(--branco);
+    font:600 .85rem 'Poppins',sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; cursor:pointer; padding:0;}
+  .cal-dia.fora{visibility:hidden;}
+  .cal-dia.passado{opacity:.32; cursor:default;}
+  .cal-dia.hoje{border-color:var(--verde); color:var(--verde);}
+  .cal-dia.sel{background:var(--laranja); border-color:var(--laranja); color:#fff;}
+  .cal-dia .pts{display:flex; gap:3px; height:6px;}
+  .pt{width:6px; height:6px; border-radius:50%; display:inline-block;}
+  .pt.joel{background:var(--azul);} .pt.vilma{background:#C58BFF;}
+  .cal-leg{display:flex; gap:14px; justify-content:center; font-size:.68rem; color:var(--texto-suave); margin-top:8px; flex-wrap:wrap;}
+  .cal-leg span{display:inline-flex; align-items:center; gap:5px;}
+  .filtro-dia{display:flex; align-items:center; justify-content:space-between; gap:8px; margin:4px 2px 0; font-size:.78rem; color:var(--texto-suave);}
+  .filtro-dia button{background:none; border:none; color:var(--laranja); font:600 .75rem 'Poppins',sans-serif; cursor:pointer; text-decoration:underline;}
+  .horario.joel{border-left:4px solid var(--azul);} .horario.vilma{border-left:4px solid #C58BFF;}
   .vazio{font-size:.85rem; color:var(--texto-suave); line-height:1.6; text-align:center; padding:26px 10px;}
   .restrito{text-align:center; padding:40px 16px; color:var(--texto-suave); line-height:1.6;}
   .restrito b{display:block; color:var(--branco); font-size:1.05rem; margin-bottom:6px;}
@@ -89,7 +111,37 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="config.js"></script>
 <script>
-let HORARIOS = [], FILTRO = "todos";
+let HORARIOS = [], FILTRO = "todos", DIA_SEL = null;
+let MES = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); })();
+const MESES_G = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const classePastor = p => /joel/i.test(p) ? "joel" : "vilma";
+/* minutos desde 0h; horário sem fim conta 1 hora */
+const minutos = t => { const [h, m] = String(t).split(":").map(Number); return h * 60 + m; };
+const fimMin = h => h.hora_fim ? minutos(h.hora_fim) : minutos(h.hora) + 60;
+function conflitoCom(pastor, data, hora, fim){
+  const ini = minutos(hora), fm = fim ? minutos(fim) : ini + 60;
+  return HORARIOS.find(h => h.pastor === pastor && h.data === data && ini < fimMin(h) && minutos(h.hora) < fm) || null;
+}
+function isoDe(d){ return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function calendarioHTML(){
+  const hoje = hojeISO(), ano = MES.getFullYear(), mes = MES.getMonth();
+  const primeiro = new Date(ano, mes, 1).getDay(), dias = new Date(ano, mes + 1, 0).getDate();
+  const doMes = HORARIOS.filter(h => FILTRO === "todos" || h.pastor === FILTRO);
+  const mesAtual = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); })();
+  let g = ["dom","seg","ter","qua","qui","sex","sáb"].map(x => '<div class="cal-sem">' + x + '</div>').join("");
+  for(let i = 0; i < primeiro; i++) g += '<button type="button" class="cal-dia fora" tabindex="-1"></button>';
+  for(let d = 1; d <= dias; d++){
+    const iso = isoDe(new Date(ano, mes, d));
+    const quem = [...new Set(doMes.filter(h => h.data === iso).map(h => classePastor(h.pastor)))];
+    const cls = "cal-dia" + (iso < hoje ? " passado" : "") + (iso === hoje ? " hoje" : "") + (iso === DIA_SEL ? " sel" : "");
+    g += '<button type="button" class="' + cls + '" data-iso="' + iso + '"' + (iso < hoje ? " disabled" : "") + '>' + d +
+         '<span class="pts">' + quem.map(q => '<i class="pt ' + q + '"></i>').join("") + '</span></button>';
+  }
+  return '<div class="cal"><div class="cal-top"><button type="button" id="cal-ant"' + (MES <= mesAtual ? " disabled" : "") + ' aria-label="mês anterior">‹</button>' +
+    '<b>' + MESES_G[mes] + ' ' + ano + '</b><button type="button" id="cal-prox" aria-label="próximo mês">›</button></div>' +
+    '<div class="cal-grid">' + g + '</div>' +
+    '<div class="cal-leg"><span><i class="pt joel"></i>Pr. Joel</span><span><i class="pt vilma"></i>Pra. Vilma</span></div></div>';
+}
 const DIAS = ["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
 function escG(s){ return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
 function hojeISO(){ const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
@@ -107,20 +159,22 @@ function montar(){
   const posso = pastoresQuePosso();
   let html = '<div class="abas">' + [["todos", "Todos"], ["Pr. Joel", "Pr. Joel"], ["Pra. Vilma", "Pra. Vilma"]]
     .map(([f, rot]) => '<button type="button" data-f="' + escG(f) + '"' + (FILTRO === f ? ' class="ativo"' : '') + '>' + escG(rot) + '</button>').join("") + '</div>';
+  html += calendarioHTML();
 
   /* cadastro: admin (os dois pastores) e cada pastor(a) a própria agenda */
   if(posso.length){
     html += '<div class="card novo"><h2>➕ Novo horário disponível</h2><div class="campos">' +
       '<div class="todo"><label for="g-pastor">Pastor(a)</label><select id="g-pastor"' + (posso.length === 1 ? ' disabled' : '') + '>' +
         posso.map(p => '<option' + (FILTRO === p ? ' selected' : '') + '>' + escG(p) + '</option>').join("") + '</select></div>' +
-      '<div class="todo"><label for="g-data">Dia</label><input type="date" id="g-data" min="' + hojeISO() + '" value="' + hojeISO() + '"></div>' +
+      '<div class="todo"><label for="g-data">Dia</label><input type="date" id="g-data" min="' + hojeISO() + '" value="' + (DIA_SEL || hojeISO()) + '"></div>' +
       '<div><label for="g-hora">Início</label><input type="time" id="g-hora" value="09:00" step="900"></div>' +
       '<div><label for="g-fim">Fim (opcional)</label><input type="time" id="g-fim" step="900"></div>' +
       '<div class="todo"><label for="g-obs">Observação (opcional)</label><input type="text" id="g-obs" maxlength="120" placeholder="Ex.: presencial no gabinete, online, para casais"></div>' +
       '</div><button type="button" class="btn" id="g-add">ADICIONAR HORÁRIO</button><div class="msg" id="g-msg"></div></div>';
   }
 
-  const lista = HORARIOS.filter(h => FILTRO === "todos" || h.pastor === FILTRO);
+  const lista = HORARIOS.filter(h => (FILTRO === "todos" || h.pastor === FILTRO) && (!DIA_SEL || h.data === DIA_SEL));
+  if(DIA_SEL) html += '<div class="filtro-dia"><span>Mostrando ' + escG(diaBR(DIA_SEL)) + '</span><button type="button" id="ver-todos-dias">ver todos os dias</button></div>';
   if(!lista.length){
     html += '<p class="vazio">Nenhum horário disponível' + (FILTRO === "todos" ? '' : ' para ' + escG(FILTRO)) + ' por enquanto.' +
             (posso.length ? '<br>Use o quadro acima para cadastrar.' : '') + '</p>';
@@ -130,7 +184,7 @@ function montar(){
     lista.forEach(h => {
       if(h.data !== diaAtual){ diaAtual = h.data; html += '<div class="dia' + (h.data === hoje ? ' hoje' : '') + '">' + escG(diaBR(h.data)) + (h.data === hoje ? ' · hoje' : '') + '</div>'; }
       const tira = posso.includes(h.pastor);
-      html += '<div class="horario"><div class="hora">' + horaBR(h.hora) + (h.hora_fim ? '<small>até ' + horaBR(h.hora_fim) + '</small>' : '') + '</div>' +
+      html += '<div class="horario ' + classePastor(h.pastor) + '"><div class="hora">' + horaBR(h.hora) + (h.hora_fim ? '<small>até ' + horaBR(h.hora_fim) + '</small>' : '') + '</div>' +
         '<div class="quem"><b>' + escG(h.pastor) + '</b>' + (h.obs ? '<span>' + escG(h.obs) + '</span>' : '') + '</div>' +
         (tira ? '<button type="button" class="tirar" data-id="' + h.id + '">remover</button>' : '<span class="tag">disponível</span>') + '</div>';
     });
@@ -138,6 +192,11 @@ function montar(){
   cx.innerHTML = html;
 
   cx.querySelectorAll(".abas button").forEach(b => { b.onclick = () => { FILTRO = b.dataset.f; montar(); }; });
+  cx.querySelectorAll(".cal-dia[data-iso]").forEach(b => { b.onclick = () => { if(b.disabled) return; DIA_SEL = DIA_SEL === b.dataset.iso ? null : b.dataset.iso; montar(); }; });
+  const ant = document.getElementById("cal-ant"), prox = document.getElementById("cal-prox"), todos = document.getElementById("ver-todos-dias");
+  if(ant) ant.onclick = () => { MES = new Date(MES.getFullYear(), MES.getMonth() - 1, 1); montar(); };
+  if(prox) prox.onclick = () => { MES = new Date(MES.getFullYear(), MES.getMonth() + 1, 1); montar(); };
+  if(todos) todos.onclick = () => { DIA_SEL = null; montar(); };
   cx.querySelectorAll(".tirar").forEach(b => { b.onclick = () => remover(+b.dataset.id, b); });
   const add = document.getElementById("g-add");
   if(add) add.onclick = adicionar;
@@ -151,11 +210,23 @@ async function adicionar(){
   if(!pastor || !data || !hora){ msg.textContent = "Informe o dia e o horário de início."; msg.classList.add("erro"); return; }
   if(data < hojeISO()){ msg.textContent = "Escolha hoje ou um dia à frente."; msg.classList.add("erro"); return; }
   if(fim && fim <= hora){ msg.textContent = "O fim precisa ser depois do início."; msg.classList.add("erro"); return; }
-  if(HORARIOS.some(h => h.pastor === pastor && h.data === data && String(h.hora).slice(0, 5) === hora)){ msg.textContent = "Esse horário já está cadastrado."; msg.classList.add("erro"); return; }
+  const choque = conflitoCom(pastor, data, hora, fim);
+  if(choque){
+    msg.textContent = "Cruza com o horário de " + horaBR(choque.hora) + " às " + horaBR(choque.hora_fim || (String(Math.floor(fimMin(choque) / 60)).padStart(2, "0") + ":" + String(fimMin(choque) % 60).padStart(2, "0"))) +
+                      " de " + pastor + " nesse dia. Escolha outro horário." + (fim ? "" : " (Sem fim, o horário conta 1 hora.)");
+    msg.classList.add("erro"); return;
+  }
   btn.disabled = true; btn.textContent = "salvando...";
   const { error } = await sb.from("gabinete_horarios").insert({ pastor, data, hora, hora_fim: fim || null, obs: obs || null });
   btn.disabled = false; btn.textContent = "ADICIONAR HORÁRIO";
-  if(error){ msg.textContent = /row-level|permission|policy/i.test(error.message || "") ? "Seu usuário não pode cadastrar nessa agenda." : "Não deu para salvar agora. Tente de novo."; msg.classList.add("erro"); return; }
+  if(error){
+    const t = error.message || "";
+    msg.textContent = /HORARIO_EM_CONFLITO/.test(t) ? "Esse horário cruza com outro já cadastrado para " + pastor + ". Escolha outro."
+                    : /FIM_ANTES_DO_INICIO/.test(t) ? "O fim precisa ser depois do início."
+                    : /row-level|permission|policy/i.test(t) ? "Seu usuário não pode cadastrar nessa agenda." : "Não deu para salvar agora. Tente de novo.";
+    msg.classList.add("erro"); return;
+  }
+  DIA_SEL = data; MES = new Date(Number(data.slice(0, 4)), Number(data.slice(5, 7)) - 1, 1);
   await carregar(); montar();
   const m2 = document.getElementById("g-msg"); if(m2){ m2.className = "msg ok"; m2.textContent = "Horário de " + pastor + " cadastrado: " + diaBR(data) + " às " + horaBR(hora) + "."; }
 }

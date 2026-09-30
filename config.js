@@ -182,6 +182,9 @@ const GABINETE_VER = ["antonio", "jesus", "pr. joel", "pra. vilma"];
 const GABINETE_PASTORES = ["Pr. Joel", "Pra. Vilma"];
 function nomeSimples(n){ return String(n || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim(); }
 function podeVerGabinete(){ return !!(PERFIL && GABINETE_VER.includes(nomeSimples(PERFIL.nome))); }
+/* quem agenda um horário (fase de teste: só o Jesus); o banco confere em pode_agendar_gabinete() */
+const GABINETE_AGENDA = ["jesus"];
+function podeAgendarGabinete(){ return !!(PERFIL && GABINETE_AGENDA.includes(nomeSimples(PERFIL.nome))); }
 /* pastores que esta pessoa pode agendar: o admin, os dois; cada pastor(a), só a própria agenda */
 function pastoresQuePosso(){
   if(!PERFIL) return [];

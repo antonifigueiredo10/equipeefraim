@@ -63,7 +63,7 @@
   .horario .hora small{display:block; font-weight:400; font-size:.7rem; color:var(--texto-suave);}
   .horario .quem{flex:1; min-width:0;}
   .horario .quem b{display:block; font-size:.92rem;}
-  .horario .quem span{font-size:.75rem; color:var(--texto-suave); overflow-wrap:anywhere;}
+  .horario .quem span{display:block; font-size:.75rem; color:var(--texto-suave); overflow-wrap:anywhere;}
   .horario .tag{flex:none; font-size:.6rem; letter-spacing:1px; text-transform:uppercase; padding:3px 8px; border-radius:999px; border:1px solid rgba(61,187,122,.5); color:var(--verde);}
   .horario .tirar{flex:none; background:none; border:1px solid var(--cinza-borda); color:var(--texto-suave); border-radius:999px; padding:6px 10px; font:600 .68rem 'Poppins',sans-serif; cursor:pointer;}
   .horario .tirar:hover{border-color:var(--vermelho); color:var(--vermelho);}
@@ -89,6 +89,18 @@
   .filtro-dia{display:flex; align-items:center; justify-content:space-between; gap:8px; margin:4px 2px 0; font-size:.78rem; color:var(--texto-suave);}
   .filtro-dia button{background:none; border:none; color:var(--laranja); font:600 .75rem 'Poppins',sans-serif; cursor:pointer; text-decoration:underline;}
   .horario.joel{border-left:4px solid var(--azul);} .horario.vilma{border-left:4px solid #C58BFF;}
+  .meu-ag{border-color:rgba(240,131,74,.6); background:linear-gradient(160deg, rgba(240,131,74,.14), var(--preto-card) 60%);}
+  .meu-ag h2{font-size:.72rem; letter-spacing:2px; text-transform:uppercase; color:var(--laranja); margin-bottom:8px;}
+  .meu-ag .linha{font-size:.95rem; font-weight:600; line-height:1.5;}
+  .meu-ag .linha small{display:block; font-weight:400; font-size:.78rem; color:var(--texto-suave);}
+  .dica-ag{font-size:.8rem; color:var(--texto-suave); margin:0 2px 12px; line-height:1.5;}
+  .horario .agendar{flex:none; border:none; border-radius:999px; padding:8px 14px; cursor:pointer; color:#fff;
+    background:linear-gradient(135deg, var(--laranja), var(--laranja-escuro)); font:700 .72rem 'Poppins',sans-serif; letter-spacing:.5px;}
+  .horario .agendar:disabled{opacity:.6;}
+  .horario .tag.ocupado{border-color:rgba(240,131,74,.6); color:var(--laranja);}
+  .horario .tag.seu{border-color:rgba(240,131,74,.6); color:var(--laranja); background:rgba(240,131,74,.12);}
+  .horario .acoes-h{display:flex; flex-direction:column; gap:6px; align-items:flex-end; flex:none;}
+  .horario.marcado{background:linear-gradient(120deg, rgba(240,131,74,.1), var(--preto-card) 55%);}
   .vazio{font-size:.85rem; color:var(--texto-suave); line-height:1.6; text-align:center; padding:26px 10px;}
   .restrito{text-align:center; padding:40px 16px; color:var(--texto-suave); line-height:1.6;}
   .restrito b{display:block; color:var(--branco); font-size:1.05rem; margin-bottom:6px;}
@@ -168,7 +180,7 @@ function isoDe(d){ return d.getFullYear() + "-" + String(d.getMonth() + 1).padSt
 function calendarioHTML(){
   const hoje = hojeISO(), ano = MES.getFullYear(), mes = MES.getMonth();
   const primeiro = new Date(ano, mes, 1).getDay(), dias = new Date(ano, mes + 1, 0).getDate();
-  const doMes = HORARIOS.filter(h => FILTRO === "todos" || h.pastor === FILTRO);
+  const doMes = HORARIOS.filter(h => FILTRO === "todos" || h.pastor === FILTRO);   /* quem agenda já recebe só livres + o seu */
   const mesAtual = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); })();
   let g = ["dom","seg","ter","qua","qui","sex","sáb"].map(x => '<div class="cal-sem">' + x + '</div>').join("");
   for(let i = 0; i < primeiro; i++) g += '<button type="button" class="cal-dia fora" tabindex="-1"></button>';
@@ -190,10 +202,17 @@ function hojeISO(){ const d = new Date(); return d.getFullYear() + "-" + String(
 function horaBR(t){ if(!t) return ""; const [h, m] = String(t).split(":"); return parseInt(h, 10) + "h" + m; }
 function diaBR(iso){ const d = new Date(iso + "T12:00:00"); const p = iso.split("-"); return DIAS[d.getDay()] + ", " + p[2] + "/" + p[1]; }
 
+const ehGestor = () => pastoresQuePosso().length > 0;
 async function carregar(){
-  const { data, error } = await sb.from("gabinete_horarios").select("id,pastor,data,hora,hora_fim,obs").gte("data", hojeISO()).order("data").order("hora");
-  if(error) throw error;
-  HORARIOS = data || [];
+  if(ehGestor()){
+    const { data, error } = await sb.from("gabinete_horarios").select("id,pastor,data,hora,hora_fim,obs,agendado_nome,assunto").gte("data", hojeISO()).order("data").order("hora");
+    if(error) throw error;
+    HORARIOS = data || [];
+  }else if(podeAgendarGabinete()){
+    const { data, error } = await sb.rpc("gabinete_para_mim");
+    if(error) throw error;
+    HORARIOS = Array.isArray(data) ? data : [];
+  }else HORARIOS = [];
 }
 
 function montar(){
@@ -201,6 +220,15 @@ function montar(){
   const posso = pastoresQuePosso();
   let html = '<div class="abas">' + [["todos", "Todos"], ["Pr. Joel", "Pr. Joel"], ["Pra. Vilma", "Pra. Vilma"]]
     .map(([f, rot]) => '<button type="button" data-f="' + escG(f) + '"' + (FILTRO === f ? ' class="ativo"' : '') + '>' + escG(rot) + '</button>').join("") + '</div>';
+  const gestor = ehGestor(), agenda = !gestor && podeAgendarGabinete();
+  if(agenda){
+    const meus = HORARIOS.filter(h => h.meu);
+    html += meus.length
+      ? meus.map(h => '<div class="card meu-ag"><h2>📌 Seu agendamento</h2><div class="linha">' + escG(diaBR(h.data)) + ' às ' + horaBR(h.hora) +
+          '<small>com ' + escG(h.pastor) + (h.hora_fim ? ' · até ' + horaBR(h.hora_fim) : '') + (h.assunto ? ' · ' + escG(h.assunto) : '') + '</small></div>' +
+          '<button type="button" class="btn" style="background:transparent;border:1px solid var(--cinza-borda);color:var(--texto-suave)" data-cancelar="' + h.id + '">cancelar agendamento</button></div>').join("")
+      : '<p class="dica-ag">Escolha um horário livre abaixo e toque em <b>Agendar</b>. Cada pessoa marca um horário por vez.</p>';
+  }
   html += calendarioHTML();
 
   /* cadastro: admin (os dois pastores) e cada pastor(a) a própria agenda */
@@ -216,9 +244,10 @@ function montar(){
   }
 
   const lista = HORARIOS.filter(h => (FILTRO === "todos" || h.pastor === FILTRO) && (!DIA_SEL || h.data === DIA_SEL));
+  const jaTenho = HORARIOS.some(h => h.meu);
   if(DIA_SEL) html += '<div class="filtro-dia"><span>Mostrando ' + escG(diaBR(DIA_SEL)) + '</span><button type="button" id="ver-todos-dias">ver todos os dias</button></div>';
   if(!lista.length){
-    html += '<p class="vazio">Nenhum horário disponível' + (FILTRO === "todos" ? '' : ' para ' + escG(FILTRO)) + ' por enquanto.' +
+    html += '<p class="vazio">Nenhum horário ' + (gestor ? 'cadastrado' : 'livre') + (FILTRO === "todos" ? '' : ' para ' + escG(FILTRO)) + ' por enquanto.' +
             (posso.length ? '<br>Use o quadro acima para cadastrar.' : '') + '</p>';
   }else{
     let diaAtual = "";
@@ -226,9 +255,19 @@ function montar(){
     lista.forEach(h => {
       if(h.data !== diaAtual){ diaAtual = h.data; html += '<div class="dia' + (h.data === hoje ? ' hoje' : '') + '">' + escG(diaBR(h.data)) + (h.data === hoje ? ' · hoje' : '') + '</div>'; }
       const tira = posso.includes(h.pastor);
-      html += '<div class="horario ' + classePastor(h.pastor) + '"><div class="hora">' + horaBR(h.hora) + (h.hora_fim ? '<small>até ' + horaBR(h.hora_fim) + '</small>' : '') + '</div>' +
-        '<div class="quem"><b>' + escG(h.pastor) + '</b>' + (h.obs ? '<span>' + escG(h.obs) + '</span>' : '') + '</div>' +
-        (tira ? '<button type="button" class="tirar" data-id="' + h.id + '">remover</button>' : '<span class="tag">disponível</span>') + '</div>';
+      const marcado = gestor ? !!h.agendado_nome : !!h.meu;
+      let direita;
+      if(gestor){
+        direita = '<div class="acoes-h">' + (h.agendado_nome ? '<span class="tag ocupado">agendado</span>' : '<span class="tag">livre</span>') +
+          (tira && h.agendado_nome ? '<button type="button" class="tirar" data-cancelar="' + h.id + '">liberar</button>' : '') +
+          (tira ? '<button type="button" class="tirar" data-id="' + h.id + '">remover</button>' : '') + '</div>';
+      }else if(agenda){
+        direita = h.meu ? '<span class="tag seu">seu horário</span>'
+                        : '<button type="button" class="agendar" data-agendar="' + h.id + '"' + (jaTenho ? ' disabled title="Você já tem um agendamento"' : '') + '>Agendar</button>';
+      }else direita = '<span class="tag">disponível</span>';
+      const detalhe = gestor && h.agendado_nome ? '<span>👤 ' + escG(h.agendado_nome) + (h.assunto ? ' · ' + escG(h.assunto) : '') + '</span>' : (h.obs ? '<span>' + escG(h.obs) + '</span>' : '');
+      html += '<div class="horario ' + classePastor(h.pastor) + (marcado ? ' marcado' : '') + '"><div class="hora">' + horaBR(h.hora) + (h.hora_fim ? '<small>até ' + horaBR(h.hora_fim) + '</small>' : '') + '</div>' +
+        '<div class="quem"><b>' + escG(h.pastor) + '</b>' + detalhe + (gestor && h.agendado_nome && h.obs ? '<span>' + escG(h.obs) + '</span>' : '') + '</div>' + direita + '</div>';
     });
   }
   cx.innerHTML = html;
@@ -239,7 +278,9 @@ function montar(){
   if(ant) ant.onclick = () => { MES = new Date(MES.getFullYear(), MES.getMonth() - 1, 1); montar(); };
   if(prox) prox.onclick = () => { MES = new Date(MES.getFullYear(), MES.getMonth() + 1, 1); montar(); };
   if(todos) todos.onclick = () => { DIA_SEL = null; montar(); };
-  cx.querySelectorAll(".tirar").forEach(b => { b.onclick = () => remover(+b.dataset.id, b); });
+  cx.querySelectorAll(".tirar[data-id]").forEach(b => { b.onclick = () => remover(+b.dataset.id, b); });
+  cx.querySelectorAll("[data-cancelar]").forEach(b => { b.onclick = () => cancelarAgendamento(+b.dataset.cancelar, b); });
+  cx.querySelectorAll("[data-agendar]").forEach(b => { b.onclick = () => agendar(+b.dataset.agendar, b); });
   const add = document.getElementById("g-add");
   if(add) add.onclick = adicionar;
   const selP = document.getElementById("g-pastor"), selD = document.getElementById("g-data"), selH = document.getElementById("g-hora");
@@ -281,9 +322,40 @@ async function adicionar(){
   const m2 = document.getElementById("g-msg"); if(m2){ m2.className = "msg ok"; m2.textContent = "Horário de " + pastor + " cadastrado: " + diaBR(data) + " às " + horaBR(hora) + "."; }
 }
 
+const ERROS_AG = {
+  JA_TEM_AGENDAMENTO: "Você já tem um agendamento. Cancele o atual antes de marcar outro.",
+  HORARIO_OCUPADO: "Esse horário acabou de ser agendado por outra pessoa. Escolha outro.",
+  HORARIO_PASSOU: "Esse horário já passou.",
+  HORARIO_NAO_EXISTE: "Esse horário não existe mais. Atualize a página.",
+  SEM_PERMISSAO: "Seu usuário ainda não pode agendar no Gabinete."
+};
+function erroAg(e){ const t = (e && e.message) || ""; const k = Object.keys(ERROS_AG).find(x => t.includes(x)); return k ? ERROS_AG[k] : "Não deu certo agora. Confira a internet e tente de novo."; }
+async function agendar(id, btn){
+  const h = HORARIOS.find(x => x.id === id);
+  if(!h) return;
+  const assunto = prompt("Agendar com " + h.pastor + "\n" + diaBR(h.data) + " às " + horaBR(h.hora) + (h.hora_fim ? " (até " + horaBR(h.hora_fim) + ")" : "") +
+                         "\n\nAssunto (opcional, só o pastor vê):", "");
+  if(assunto === null) return;
+  btn.disabled = true; btn.textContent = "...";
+  const { error } = await sb.rpc("agendar_gabinete", { p_id: id, p_assunto: assunto });
+  if(error){ btn.disabled = false; btn.textContent = "Agendar"; alert(erroAg(error)); await carregar(); montar(); return; }
+  await carregar(); montar();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+async function cancelarAgendamento(id, btn){
+  const h = HORARIOS.find(x => x.id === id);
+  if(!h) return;
+  const quem = h.agendado_nome ? " de " + h.agendado_nome : "";
+  if(!confirm("Cancelar o agendamento" + quem + " com " + h.pastor + " em " + diaBR(h.data) + " às " + horaBR(h.hora) + "?\n\nO horário volta a ficar livre.")) return;
+  btn.disabled = true; btn.textContent = "...";
+  const { error } = await sb.rpc("cancelar_agendamento_gabinete", { p_id: id });
+  if(error){ btn.disabled = false; alert(erroAg(error)); return; }
+  await carregar(); montar();
+}
+
 async function remover(id, btn){
   const h = HORARIOS.find(x => x.id === id);
-  if(!h || !confirm("Remover o horário de " + h.pastor + " em " + diaBR(h.data) + " às " + horaBR(h.hora) + "?")) return;
+  if(!h || !confirm("Remover o horário de " + h.pastor + " em " + diaBR(h.data) + " às " + horaBR(h.hora) + "?" + (h.agendado_nome ? "\n\nAtenção: " + h.agendado_nome + " tinha agendado esse horário." : ""))) return;
   btn.disabled = true; btn.textContent = "...";
   const { error } = await sb.from("gabinete_horarios").delete().eq("id", id);
   if(error){ btn.disabled = false; btn.textContent = "remover"; alert("Não deu para remover agora. Tente de novo."); return; }

@@ -146,6 +146,19 @@
   .card.editando{flex-direction:column; align-items:stretch; gap:8px;}
   .card.editando .nomes{text-align:left;}
   .card .nomes label.ed-rot{display:block; font-size:.6rem; color:var(--texto-suave); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:4px; font-weight:600;}
+  .sel-p{display:flex; flex-wrap:wrap; gap:6px; align-items:center; padding:8px; border:1px solid rgba(61,187,122,.55);
+    border-radius:12px; background:#0F0F12;}
+  .chip-p{display:inline-flex; align-items:center; gap:2px; padding:5px 4px 5px 12px; border-radius:999px; font-size:.86rem; font-weight:600;
+    background:rgba(61,187,122,.14); border:1px solid rgba(61,187,122,.5); color:var(--branco);}
+  .chip-p.esp{background:rgba(240,131,74,.14); border-color:rgba(240,131,74,.55); color:var(--laranja);}
+  .chip-p button{border:none; background:none; color:var(--texto-suave); font-size:1.05rem; line-height:1; padding:2px 8px; cursor:pointer;}
+  .add-p, .lado-p select{font:600 .82rem 'Poppins',sans-serif; color:var(--verde); background:transparent; border:1px dashed rgba(61,187,122,.65);
+    border-radius:999px; padding:7px 12px; max-width:100%;}
+  .add-p{flex:1 1 170px;}
+  .add-p option, .lado-p select option{color:#111;}
+  .lado-p{display:flex; align-items:center; gap:8px; width:100%;}
+  .lado-p span{flex:none; width:52px; font-size:.7rem; color:var(--texto-suave); text-transform:uppercase; letter-spacing:1px;}
+  .lado-p select{flex:1; border-style:solid; color:var(--branco);}
   textarea.ed-p{
     width:100%; padding:8px 10px; border:1px solid var(--verde); border-radius:10px; background:#0F0F12; resize:vertical;
     color:var(--branco); font:600 .84rem 'Poppins',sans-serif; line-height:1.4;
@@ -247,7 +260,7 @@ async function salvarAjustes(posicoes, pessoas){
 /* guarda o que foi digitado antes de trocar de culto ou salvar */
 function guardarDigitado(){
   document.querySelectorAll("#conteudo input.ed").forEach(inp => { PENDENTE[inp.dataset.orig] = inp.value; });
-  document.querySelectorAll("#conteudo textarea.ed-p").forEach(t => { PENDENTE_P[t.dataset.chave] = t.value; });
+  document.querySelectorAll("#conteudo .sel-p").forEach(el => { PENDENTE_P[el.dataset.chave] = el.dataset.valor; });
 }
 function editarNomes(){ EDITANDO = true; PENDENTE = {}; PENDENTE_P = {}; SALVO_AGORA = false; AUTO_INFO = ""; montar(CULTO_ATUAL); }
 function cancelarEdicao(){ EDITANDO = false; PENDENTE = {}; PENDENTE_P = {}; AUTO_INFO = ""; montar(CULTO_ATUAL); }
@@ -540,7 +553,7 @@ async function montarEscalaAutomatica(btn){
   const responderam = new Set((linhas || []).map(l => normal(l.nome)));
   const semResposta = EQUIPE_ESCALA.filter(p => !responderam.has(normal(p[0]))).length;
   /* entra no modo edição com a proposta dos 3 cultos nos campos (sem salvar ainda) */
-  document.querySelectorAll("#conteudo textarea.ed-p").forEach(t => t.remove());
+  document.querySelectorAll("#conteudo .sel-p").forEach(t => t.remove());
   EDITANDO = true; SALVO_AGORA = false; PENDENTE_P = proposta;
   AUTO_INFO = "⚡ Montei os 3 cultos (domingo, quarta e domingo) com rodízio: ninguém repete a mesma posição" +
     (repeticoes ? " (" + repeticoes + " repetição(ões) sem outra opção)" : "") + ". Banheiro com 2 pessoas." +
@@ -591,7 +604,7 @@ function montar(i){
   if(EDITANDO){
     html += '<div class="barra-edicao">✏️ <b>' + (edPos ? 'Editando a escala.</b> No campo laranja, o nome da posição (vale em todos os cultos). No campo verde, '
                                                        : 'Editando quem serve.</b> No campo verde, ') +
-            '<b>quem serve</b> em cada posição (vale só neste culto). Para casal, escreva (casal). Campo vazio volta ao original.' +
+            '<b>quem serve</b>: toque em <b>+ adicionar obreiro</b> para escolher (um ou mais) e no <b>×</b> para tirar. Vale só neste culto. Casal é marcado sozinho.' +
             (AUTO_INFO ? '<div class="be-auto">' + esc(AUTO_INFO) + '<button type="button" onclick="montarEscalaAutomatica(this)">⚡ montar de novo</button></div>' : '') +
             '<div class="be-btns"><button type="button" class="be-cancelar" onclick="cancelarEdicao()">CANCELAR</button>' +
             '<button type="button" class="be-salvar" onclick="salvarEdicao(this)">SALVAR</button></div><div class="be-msg"></div></div>';
@@ -622,7 +635,7 @@ function montar(i){
         : esc(nomePosicao(funcao));
       const valorP = (ch in PENDENTE_P) ? PENDENTE_P[ch] : nomes;
       const blocoNomes = EDITANDO
-        ? '<label class="ed-rot">Quem serve</label><textarea class="ed-p" rows="2" maxlength="200" data-chave="' + escAttr(ch) + '">' + esc(valorP) + '</textarea>' +
+        ? '<label class="ed-rot">Quem serve</label><div class="sel-p" data-chave="' + escAttr(ch) + '" data-funcao="' + escAttr(funcao) + '" data-valor="' + escAttr(valorP) + '"></div>' +
           (nomes !== padrao ? '<span class="orig">na escala original: ' + esc(padrao) + '</span>' : '')
         : nomesHTML(nomes);
       lista.push({ minha, todos: nomes === "TODOS", funcao: nomePosicao(funcao),
@@ -650,6 +663,76 @@ function montar(i){
     '<div class="aviso">' + (c.avisos || AVISOS).map(esc).join("<br>") + '</div>' +
     '<div class="lideranca"><b>' + esc(LIDERANCA) + '</b></div>';
   document.getElementById("conteudo").innerHTML = html;
+  if(EDITANDO) montarSeletoresP();
+}
+
+/* ======================= ESCOLHER QUEM SERVE (sem digitar) ======================= */
+const ESPECIAIS_P = ["TODOS", "Liderança", "Vago"];
+/* "A e B (casal), C" → [A, B, C] · "Lado D: X · Lado E: Y" → [X, Y] */
+function nomesDoValor(v){
+  v = String(v || "").trim();
+  if(!v) return [];
+  if(ESPECIAIS_P.includes(v)) return [v];
+  if(/Lado D:/.test(v)){
+    const d = (v.match(/Lado D:\s*([^·]*)/) || [])[1] || "", e = (v.match(/Lado E:\s*(.*)$/) || [])[1] || "";
+    return [d.trim(), e.trim()];
+  }
+  return v.replace(/\(casal\)/g, "").split(/,| e /).map(x => x.trim()).filter(Boolean);
+}
+function pessoaDaEquipe(nome){ return EQUIPE_ESCALA.find(p => normal(p[0]) === normal(nome)) || [nome, "?"]; }
+function valorDosNomes(nomes, lados){
+  if(lados) return "Lado D: " + (nomes[0] || "") + " · Lado E: " + (nomes[1] || "");
+  const esp = nomes.find(n => ESPECIAIS_P.includes(n));
+  if(esp) return esp;
+  if(!nomes.length) return "Vago";                       /* tirou todo mundo: fica vago (vazio voltaria ao original) */
+  return formatarPessoas(nomes.map(pessoaDaEquipe), {});  /* marca "(casal)" sozinho */
+}
+/* quem já está em outra posição deste culto (para avisar na lista) */
+function escaladosNoCulto(c, exceto){
+  const usados = new Set();
+  c.grupos.forEach(([t, itens]) => itens.forEach(([f, padrao]) => {
+    const ch = chavePessoas(c, t, f);
+    if(ch === exceto) return;
+    const v = (ch in PENDENTE_P) ? PENDENTE_P[ch] : (NOMES_PESSOAS[ch] || padrao);
+    nomesDoValor(v).forEach(n => { if(n && !ESPECIAIS_P.includes(n)) usados.add(normal(n)); });
+  }));
+  return usados;
+}
+function montarSeletoresP(){
+  const c = ESCALAS[CULTO_ATUAL];
+  document.querySelectorAll("#conteudo .sel-p").forEach(el => desenharSeletorP(el, c));
+}
+function desenharSeletorP(el, c){
+  const lados = !!regraDe(el.dataset.funcao).lados;
+  const nomes = nomesDoValor(el.dataset.valor);
+  const usados = escaladosNoCulto(c, el.dataset.chave);
+  const equipe = EQUIPE_ESCALA.map(p => p[0]).sort((a, b) => a.localeCompare(b, "pt-BR", { sensitivity: "base" }));
+  const opcao = (n, sel) => '<option value="' + escAttr(n) + '"' + (sel ? " selected" : "") + '>' + esc(n) + (usados.has(normal(n)) ? "  · já escalado" : "") + '</option>';
+  if(lados){
+    el.innerHTML = ["Lado D", "Lado E"].map((rot, i) =>
+      '<label class="lado-p"><span>' + rot + '</span><select data-i="' + i + '"><option value="">escolher…</option>' +
+      equipe.map(n => opcao(n, !!nomes[i] && normal(n) === normal(nomes[i]))).join("") + '</select></label>').join("");
+    el.querySelectorAll("select").forEach(sel => { sel.onchange = () => atualizarP(el, valorDosNomes([...el.querySelectorAll("select")].map(x => x.value), true)); });
+    return;
+  }
+  const livres = equipe.filter(n => !nomes.some(x => normal(x) === normal(n)));
+  el.innerHTML = nomes.map((n, i) => '<span class="chip-p' + (ESPECIAIS_P.includes(n) ? " esp" : "") + '">' + esc(n === "Vago" ? "vago" : n) +
+      '<button type="button" data-i="' + i + '" aria-label="tirar ' + escAttr(n) + '">×</button></span>').join("") +
+    '<select class="add-p"><option value="">+ adicionar obreiro</option>' +
+      '<optgroup label="Equipe">' + livres.map(n => opcao(n, false)).join("") + '</optgroup>' +
+      '<optgroup label="Outros">' + ESPECIAIS_P.filter(x => !nomes.includes(x)).map(x => '<option value="' + x + '">' + (x === "Vago" ? "Deixar vago" : x) + '</option>').join("") + '</optgroup>' +
+    '</select>';
+  el.querySelectorAll(".chip-p button").forEach(b => { b.onclick = () => atualizarP(el, valorDosNomes(nomes.filter((_, i) => i !== +b.dataset.i), false)); });
+  el.querySelector(".add-p").onchange = e => {
+    const n = e.target.value;
+    if(!n) return;
+    atualizarP(el, valorDosNomes(ESPECIAIS_P.includes(n) ? [n] : nomes.filter(x => !ESPECIAIS_P.includes(x)).concat(n), false));
+  };
+}
+function atualizarP(el, valor){
+  el.dataset.valor = valor;
+  PENDENTE_P[el.dataset.chave] = valor;
+  montarSeletoresP();   /* redesenha todos: o aviso "já escalado" acompanha */
 }
 
 function montarSeletor(){

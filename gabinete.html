@@ -89,6 +89,15 @@
   .filtro-dia{display:flex; align-items:center; justify-content:space-between; gap:8px; margin:4px 2px 0; font-size:.78rem; color:var(--texto-suave);}
   .filtro-dia button{background:none; border:none; color:var(--laranja); font:600 .75rem 'Poppins',sans-serif; cursor:pointer; text-decoration:underline;}
   .horario.joel{border-left:4px solid var(--azul);} .horario.vilma{border-left:4px solid #C58BFF;}
+  .dias-card{border-color:rgba(61,187,122,.5); background:linear-gradient(160deg, rgba(61,187,122,.08), var(--preto-card) 60%);}
+  .dias-card h2{font-size:.72rem; letter-spacing:2px; text-transform:uppercase; color:var(--verde); margin-bottom:8px;}
+  .dias-card .sel-lista{font-size:.82rem; color:var(--branco); margin-bottom:10px; line-height:1.6;}
+  .dias-card .sel-lista button{background:none; border:none; color:var(--laranja); font:600 .75rem 'Poppins',sans-serif; text-decoration:underline; cursor:pointer; margin-left:6px;}
+  .dias-btns{display:flex; gap:8px; margin-top:12px;}
+  .dias-btns button{flex:1; padding:12px 8px; border-radius:12px; cursor:pointer; font:700 .8rem 'Poppins',sans-serif; letter-spacing:.5px;}
+  .dias-btns .lib{border:none; color:#fff; background:linear-gradient(135deg, #3DBB7A, #2E9A63);}
+  .dias-btns .blq{border:1px solid rgba(224,85,85,.6); color:var(--vermelho); background:rgba(224,85,85,.08);}
+  .dias-btns button:disabled{opacity:.55;}
   .meu-ag{border-color:rgba(240,131,74,.6); background:linear-gradient(160deg, rgba(240,131,74,.14), var(--preto-card) 60%);}
   .meu-ag h2{font-size:.72rem; letter-spacing:2px; text-transform:uppercase; color:var(--laranja); margin-bottom:8px;}
   .meu-ag .linha{font-size:.95rem; font-weight:600; line-height:1.5;}
@@ -125,6 +134,7 @@
 <script src="config.js"></script>
 <script>
 let HORARIOS = [], FILTRO = "todos", DIA_SEL = null;
+const SEL_DIAS = new Set();   /* pastor/admin: vários dias marcados no calendário */
 let MES = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); })();
 const MESES_G = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
 const classePastor = p => /joel/i.test(p) ? "joel" : "vilma";
@@ -187,7 +197,7 @@ function calendarioHTML(){
   for(let d = 1; d <= dias; d++){
     const iso = isoDe(new Date(ano, mes, d));
     const quem = [...new Set(doMes.filter(h => h.data === iso).map(h => classePastor(h.pastor)))];
-    const cls = "cal-dia" + (iso < hoje ? " passado" : "") + (iso === hoje ? " hoje" : "") + (iso === DIA_SEL ? " sel" : "");
+    const cls = "cal-dia" + (iso < hoje ? " passado" : "") + (iso === hoje ? " hoje" : "") + ((iso === DIA_SEL || SEL_DIAS.has(iso)) ? " sel" : "");
     g += '<button type="button" class="' + cls + '" data-iso="' + iso + '"' + (iso < hoje ? " disabled" : "") + '>' + d +
          '<span class="pts">' + quem.map(q => '<i class="pt ' + q + '"></i>').join("") + '</span></button>';
   }
@@ -233,6 +243,25 @@ function montar(){
   }
   html += calendarioHTML();
 
+  /* liberar ou bloquear vários dias de uma vez */
+  if(posso.length){
+    const dias = [...SEL_DIAS].sort();
+    html += '<div class="card dias-card"><h2>🗓 Liberar ou bloquear dias</h2>';
+    if(!dias.length){
+      html += '<p class="dica-ag" style="margin:0">Toque nos dias do calendário para selecionar. Pode escolher vários.</p></div>';
+    }else{
+      const opH = (de, ate, sel) => { let o = ""; for(let h = de; h <= ate; h++){ const v = String(h).padStart(2, "0") + ":00"; o += '<option value="' + v + '"' + (v === sel ? " selected" : "") + '>' + h + 'h00</option>'; } return o; };
+      html += '<div class="sel-lista">' + dias.length + (dias.length === 1 ? ' dia: ' : ' dias: ') + dias.map(d => { const x = new Date(d + "T12:00:00"); return DIA_SEM[x.getDay()] + " " + d.slice(8) + "/" + d.slice(5, 7); }).join(", ") +
+        '<button type="button" id="d-limpar">limpar</button></div><div class="campos">' +
+        (posso.length > 1 ? '<div class="todo"><label for="d-pastor">Agenda de</label><select id="d-pastor">' + posso.map(p => '<option' + (FILTRO === p ? " selected" : "") + '>' + escG(p) + '</option>').join("") + '</select></div>'
+                          : '<input type="hidden" id="d-pastor" value="' + escG(posso[0]) + '">') +
+        '<div><label for="d-de">Liberar das</label><select id="d-de">' + opH(7, 22, "09:00") + '</select></div>' +
+        '<div><label for="d-ate">até</label><select id="d-ate">' + opH(8, 23, "17:00") + '</select></div>' +
+        '</div><div class="dias-btns"><button type="button" class="lib" id="d-liberar">✅ Liberar</button><button type="button" class="blq" id="d-bloquear">⛔ Bloquear</button></div>' +
+        '<div class="msg" id="d-msg"></div></div>';
+    }
+  }
+
   /* cadastro: admin (os dois pastores) e cada pastor(a) a própria agenda */
   if(posso.length){
     html += '<div class="card novo"><h2>➕ Novo horário disponível</h2><div class="campos">' +
@@ -245,10 +274,11 @@ function montar(){
       '</div><button type="button" class="btn" id="g-add">ADICIONAR HORÁRIO</button><div class="msg" id="g-msg"></div></div>';
   }
 
-  const lista = HORARIOS.filter(h => (FILTRO === "todos" || h.pastor === FILTRO) && (!DIA_SEL || h.data === DIA_SEL));
+  const lista = HORARIOS.filter(h => (FILTRO === "todos" || h.pastor === FILTRO) && (SEL_DIAS.size ? SEL_DIAS.has(h.data) : (!DIA_SEL || h.data === DIA_SEL)));
   /* horário que cruza com um agendamento seu (você não fica em dois lugares ao mesmo tempo) */
   const cruzaComMeu = h => HORARIOS.some(m => m.meu && m.id !== h.id && m.data === h.data && minutos(h.hora) < fimMin(m) && minutos(m.hora) < fimMin(h));
-  if(DIA_SEL) html += '<div class="filtro-dia"><span>Mostrando ' + escG(diaBR(DIA_SEL)) + '</span><button type="button" id="ver-todos-dias">ver todos os dias</button></div>';
+  if(SEL_DIAS.size) html += '<div class="filtro-dia"><span>Mostrando os dias selecionados</span><button type="button" id="ver-todos-dias">ver todos os dias</button></div>';
+  else if(DIA_SEL) html += '<div class="filtro-dia"><span>Mostrando ' + escG(diaBR(DIA_SEL)) + '</span><button type="button" id="ver-todos-dias">ver todos os dias</button></div>';
   if(!lista.length){
     html += '<p class="vazio">Nenhum horário ' + (gestor ? 'cadastrado' : 'livre') + (FILTRO === "todos" ? '' : ' para ' + escG(FILTRO)) + ' por enquanto.' +
             (posso.length ? '<br>Use o quadro acima para cadastrar.' : '') + '</p>';
@@ -277,11 +307,21 @@ function montar(){
   cx.innerHTML = html;
 
   cx.querySelectorAll(".abas button").forEach(b => { b.onclick = () => { FILTRO = b.dataset.f; montar(); }; });
-  cx.querySelectorAll(".cal-dia[data-iso]").forEach(b => { b.onclick = () => { if(b.disabled) return; DIA_SEL = DIA_SEL === b.dataset.iso ? null : b.dataset.iso; montar(); }; });
+  cx.querySelectorAll(".cal-dia[data-iso]").forEach(b => { b.onclick = () => {
+    if(b.disabled) return;
+    const iso = b.dataset.iso;
+    if(SEL_DIAS.has(iso)) SEL_DIAS.delete(iso); else SEL_DIAS.add(iso);
+    DIA_SEL = SEL_DIAS.size ? [...SEL_DIAS].sort()[0] : null;   /* o cadastro de 1 horário já abre no primeiro dia marcado */
+    montar();
+  }; });
   const ant = document.getElementById("cal-ant"), prox = document.getElementById("cal-prox"), todos = document.getElementById("ver-todos-dias");
+  const limpar = document.getElementById("d-limpar"), lib = document.getElementById("d-liberar"), blq = document.getElementById("d-bloquear");
+  if(limpar) limpar.onclick = () => { SEL_DIAS.clear(); DIA_SEL = null; montar(); };
+  if(lib) lib.onclick = liberarDias;
+  if(blq) blq.onclick = bloquearDias;
   if(ant) ant.onclick = () => { MES = new Date(MES.getFullYear(), MES.getMonth() - 1, 1); montar(); };
   if(prox) prox.onclick = () => { MES = new Date(MES.getFullYear(), MES.getMonth() + 1, 1); montar(); };
-  if(todos) todos.onclick = () => { DIA_SEL = null; montar(); };
+  if(todos) todos.onclick = () => { DIA_SEL = null; SEL_DIAS.clear(); montar(); };
   cx.querySelectorAll(".tirar[data-id]").forEach(b => { b.onclick = () => remover(+b.dataset.id, b); });
   cx.querySelectorAll("[data-cancelar]").forEach(b => { b.onclick = () => cancelarAgendamento(+b.dataset.cancelar, b); });
   cx.querySelectorAll("[data-agendar]").forEach(b => { b.onclick = () => agendar(+b.dataset.agendar, b); });
@@ -371,6 +411,50 @@ async function agendarPeloQuadro(){
   const m = document.getElementById("a-msg");
   if(m){ m.className = "msg ok"; m.textContent = "Agendado com " + h.pastor + ": " + diaBR(h.data) + " às " + horaBR(h.hora) + "."; }
   else{ const cx = document.querySelector(".card.novo"); if(cx) cx.insertAdjacentHTML("beforeend", '<div class="msg ok">Agendado com ' + escG(h.pastor) + ': ' + escG(diaBR(h.data)) + ' às ' + horaBR(h.hora) + '.</div>'); }
+}
+
+/* LIBERAR: cria horários de 1 hora (de hora em hora) na faixa, em cada dia marcado; pula o que cruza ou já passou */
+async function liberarDias(){
+  const msg = document.getElementById("d-msg"), btn = document.getElementById("d-liberar");
+  const pastor = document.getElementById("d-pastor").value, de = document.getElementById("d-de").value, ate = document.getElementById("d-ate").value;
+  msg.className = "msg";
+  if(minutos(ate) - minutos(de) < DURACAO_MIN){ msg.textContent = "A faixa precisa ter pelo menos 1 hora."; msg.classList.add("erro"); return; }
+  const agora = new Date(), hoje = hojeISO(), minAgora = agora.getHours() * 60 + agora.getMinutes();
+  const novos = []; let pulados = 0;
+  [...SEL_DIAS].sort().forEach(dia => {
+    for(let t = minutos(de); t + DURACAO_MIN <= minutos(ate); t += DURACAO_MIN){
+      const hh = String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0");
+      if((dia === hoje && t <= minAgora) || conflitoCom(pastor, dia, hh, maisUmaHora(hh))){ pulados++; continue; }
+      novos.push({ pastor, data: dia, hora: hh, hora_fim: maisUmaHora(hh), obs: null });
+    }
+  });
+  if(!novos.length){ msg.textContent = "Nada para liberar: esses horários já existem ou já passaram."; msg.classList.add("erro"); return; }
+  btn.disabled = true; btn.textContent = "liberando...";
+  const { error } = await sb.from("gabinete_horarios").insert(novos);
+  btn.disabled = false; btn.textContent = "✅ Liberar";
+  if(error){ msg.textContent = /HORARIO_EM_CONFLITO/.test(error.message || "") ? "Algum horário cruzou com outro recém cadastrado. Atualize a página e tente de novo." : /row-level|policy|permission/i.test(error.message || "") ? "Seu usuário não pode mexer nessa agenda." : "Não deu para liberar agora. Tente de novo."; msg.classList.add("erro"); return; }
+  const n = SEL_DIAS.size;
+  await carregar(); montar();
+  const m = document.getElementById("d-msg");
+  if(m){ m.className = "msg ok"; m.textContent = novos.length + " horário(s) liberado(s) para " + pastor + " em " + n + " dia(s)" + (pulados ? " · " + pulados + " pulado(s) por já existir ou já ter passado" : "") + "."; }
+}
+/* BLOQUEAR: tira os horários LIVRES do pastor nos dias marcados; os já agendados ficam */
+async function bloquearDias(){
+  const msg = document.getElementById("d-msg"), btn = document.getElementById("d-bloquear");
+  const pastor = document.getElementById("d-pastor").value;
+  const doDia = HORARIOS.filter(h => h.pastor === pastor && SEL_DIAS.has(h.data));
+  const livres = doDia.filter(h => !h.agendado_nome), ocupados = doDia.filter(h => h.agendado_nome);
+  msg.className = "msg";
+  if(!livres.length){ msg.textContent = ocupados.length ? "Esses dias só têm horários já agendados. Para tirar, use liberar/remover em cada um." : "Não há horários de " + pastor + " nesses dias."; msg.classList.add("erro"); return; }
+  if(!confirm("Bloquear " + SEL_DIAS.size + " dia(s) de " + pastor + "?\n\n" + livres.length + " horário(s) livre(s) serão tirados." +
+              (ocupados.length ? "\n" + ocupados.length + " agendado(s) continuam: " + ocupados.map(h => h.agendado_nome + " " + horaBR(h.hora)).join(", ") + "." : ""))) return;
+  btn.disabled = true; btn.textContent = "bloqueando...";
+  const { error } = await sb.from("gabinete_horarios").delete().in("id", livres.map(h => h.id));
+  btn.disabled = false; btn.textContent = "⛔ Bloquear";
+  if(error){ msg.textContent = "Não deu para bloquear agora. Tente de novo."; msg.classList.add("erro"); return; }
+  await carregar(); montar();
+  const m = document.getElementById("d-msg");
+  if(m){ m.className = "msg ok"; m.textContent = livres.length + " horário(s) livre(s) tirado(s)" + (ocupados.length ? " · " + ocupados.length + " agendado(s) mantido(s)" : "") + "."; }
 }
 
 async function adicionar(){

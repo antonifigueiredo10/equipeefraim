@@ -216,6 +216,7 @@ async function carregar(){
 }
 
 function montar(){
+  if(!ehGestor() && podeAgendarGabinete()){ montarParaQuemAgenda(); return; }
   const cx = document.getElementById("conteudo");
   const posso = pastoresQuePosso();
   let html = '<div class="abas">' + [["todos", "Todos"], ["Pr. Joel", "Pr. Joel"], ["Pra. Vilma", "Pra. Vilma"]]
@@ -293,6 +294,83 @@ function montar(){
     selD.onchange = () => { DIA_SEL = selD.value || null; preencherForm(false); };
     selH.onchange = () => { const f = document.getElementById("g-fim"); if(f) f.textContent = selH.value ? horaBR(maisUmaHora(selH.value)) : "—"; };
   }
+}
+
+/* ======================= TELA DE QUEM AGENDA =======================
+   Quadro "Agendar horário" (só horários livres) + calendário + só os agendamentos da própria pessoa. */
+function livresParaMim(){
+  const agora = new Date(), hoje = hojeISO(), minAgora = agora.getHours() * 60 + agora.getMinutes();
+  const meus = HORARIOS.filter(h => h.meu);
+  const cruza = h => meus.some(m => m.data === h.data && minutos(h.hora) < fimMin(m) && minutos(m.hora) < fimMin(h));
+  return HORARIOS.filter(h => !h.meu && !cruza(h) && (h.data > hoje || minutos(h.hora) > minAgora));
+}
+function montarParaQuemAgenda(){
+  const cx = document.getElementById("conteudo");
+  const livres = livresParaMim(), meus = HORARIOS.filter(h => h.meu);
+  const pastores = GABINETE_PASTORES.filter(p => livres.some(h => h.pastor === p));
+  let html = '<div class="abas">' + [["todos", "Todos"], ["Pr. Joel", "Pr. Joel"], ["Pra. Vilma", "Pra. Vilma"]]
+    .map(([f, rot]) => '<button type="button" data-f="' + escG(f) + '"' + (FILTRO === f ? ' class="ativo"' : '') + '>' + escG(rot) + '</button>').join("") + '</div>';
+  html += '<div class="card novo"><h2>📅 Agendar horário</h2>';
+  if(!pastores.length){
+    html += '<p class="dica-ag" style="margin:0">Nenhum horário livre no momento. Assim que os pastores liberarem novos horários, eles aparecem aqui.</p></div>';
+  }else{
+    html += '<div class="campos">' +
+      '<div class="todo"><label for="a-pastor">Com quem</label><select id="a-pastor">' +
+        pastores.map(p => '<option' + (FILTRO === p ? ' selected' : '') + '>' + escG(p) + '</option>').join("") + '</select></div>' +
+      '<div class="todo"><label for="a-data">Dia (só dias com horário livre)</label><select id="a-data"></select></div>' +
+      '<div class="todo"><label for="a-hora">Horário livre</label><select id="a-hora"></select></div>' +
+      '<div class="todo"><label for="a-assunto">Assunto (opcional, só o pastor vê)</label><input type="text" id="a-assunto" maxlength="120" placeholder="Ex.: aconselhamento, oração, conversa"></div>' +
+      '</div><button type="button" class="btn" id="a-btn">AGENDAR</button><div class="msg" id="a-msg"></div></div>';
+  }
+  /* calendário: dias com horário livre */
+  const guarda = HORARIOS; HORARIOS = livres; html += calendarioHTML(); HORARIOS = guarda;
+  /* só os agendamentos da própria pessoa */
+  html += '<div class="dia">Seus agendamentos</div>';
+  html += meus.length ? meus.map(h => '<div class="horario ' + classePastor(h.pastor) + ' marcado"><div class="hora">' + horaBR(h.hora) +
+        (h.hora_fim ? '<small>até ' + horaBR(h.hora_fim) + '</small>' : '') + '</div>' +
+      '<div class="quem"><b>' + escG(h.pastor) + '</b><span>' + escG(diaBR(h.data)) + '</span>' + (h.assunto ? '<span>' + escG(h.assunto) + '</span>' : '') + '</div>' +
+      '<div class="acoes-h"><span class="tag seu">agendado</span><button type="button" class="tirar" data-cancelar="' + h.id + '">cancelar</button></div></div>').join("")
+    : '<p class="vazio">Você ainda não tem agendamento.</p>';
+  cx.innerHTML = html;
+
+  cx.querySelectorAll(".abas button").forEach(b => { b.onclick = () => { FILTRO = b.dataset.f; montar(); }; });
+  cx.querySelectorAll(".cal-dia[data-iso]").forEach(b => { b.onclick = () => { if(b.disabled) return; DIA_SEL = DIA_SEL === b.dataset.iso ? null : b.dataset.iso; montar(); }; });
+  const ant = document.getElementById("cal-ant"), prox = document.getElementById("cal-prox");
+  if(ant) ant.onclick = () => { MES = new Date(MES.getFullYear(), MES.getMonth() - 1, 1); montar(); };
+  if(prox) prox.onclick = () => { MES = new Date(MES.getFullYear(), MES.getMonth() + 1, 1); montar(); };
+  cx.querySelectorAll("[data-cancelar]").forEach(b => { b.onclick = () => cancelarAgendamento(+b.dataset.cancelar, b); });
+  const selP = document.getElementById("a-pastor"), selD = document.getElementById("a-data"), selH = document.getElementById("a-hora");
+  if(selP && selD && selH){
+    const preencher = () => {
+      const doPastor = livres.filter(h => h.pastor === selP.value);
+      const dias = [...new Set(doPastor.map(h => h.data))].sort();
+      const diaAntes = selD.value || DIA_SEL;
+      selD.innerHTML = dias.map(iso => { const pp = iso.split("-"); const d = new Date(iso + "T12:00:00");
+        return '<option value="' + iso + '">' + DIA_SEM[d.getDay()] + ", " + pp[2] + "/" + pp[1] + (iso === hojeISO() ? " · hoje" : "") + '</option>'; }).join("");
+      if(diaAntes && dias.includes(diaAntes)) selD.value = diaAntes;
+      const horas = doPastor.filter(h => h.data === selD.value).sort((a, b) => minutos(a.hora) - minutos(b.hora));
+      selH.innerHTML = horas.map(h => '<option value="' + h.id + '">' + horaBR(h.hora) + (h.hora_fim ? ' às ' + horaBR(h.hora_fim) : '') + '</option>').join("");
+    };
+    preencher();
+    selP.onchange = () => { selD.value = ""; preencher(); };
+    selD.onchange = () => { DIA_SEL = selD.value; preencher(); };
+    document.getElementById("a-btn").onclick = agendarPeloQuadro;
+  }
+}
+async function agendarPeloQuadro(){
+  const msg = document.getElementById("a-msg"), btn = document.getElementById("a-btn");
+  const id = +document.getElementById("a-hora").value, assunto = document.getElementById("a-assunto").value.trim();
+  const h = HORARIOS.find(x => x.id === id);
+  msg.className = "msg";
+  if(!h){ msg.textContent = "Escolha um horário livre."; msg.classList.add("erro"); return; }
+  btn.disabled = true; btn.textContent = "agendando...";
+  const { error } = await sb.rpc("agendar_gabinete", { p_id: id, p_assunto: assunto });
+  btn.disabled = false; btn.textContent = "AGENDAR";
+  if(error){ msg.textContent = erroAg(error); msg.classList.add("erro"); await carregar(); montar(); const m = document.getElementById("a-msg"); if(m){ m.className = "msg erro"; m.textContent = erroAg(error); } return; }
+  await carregar(); montar();
+  const m = document.getElementById("a-msg");
+  if(m){ m.className = "msg ok"; m.textContent = "Agendado com " + h.pastor + ": " + diaBR(h.data) + " às " + horaBR(h.hora) + "."; }
+  else{ const cx = document.querySelector(".card.novo"); if(cx) cx.insertAdjacentHTML("beforeend", '<div class="msg ok">Agendado com ' + escG(h.pastor) + ': ' + escG(diaBR(h.data)) + ' às ' + horaBR(h.hora) + '.</div>'); }
 }
 
 async function adicionar(){

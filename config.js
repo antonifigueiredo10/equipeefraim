@@ -553,7 +553,7 @@ const ESCALAS = [
         ["Ofertório (+)", "TODOS", "Cada obreiro atende o lado em que está. Ao terminar, ajuda o outro lado."],
         ["Gazofilácios em frente do altar", "Lado D: Felipe Bianchezzi · Lado E: Denilson", "Quem está no gazofilácio não passa máquina nem envelope. Fica ao lado dele."],
         ["Gazofilácios no meio da igreja (pilar)", "Lado D: Igor · Lado E: José Eduardo"],
-        ["Banheiro feminino", "Dri Gamarra e Simone", "Orientar crianças e visitantes, repor insumos, recolher os lixos após o culto."],
+        ["Banheiro feminino", "Alessandra e Simone", "Orientar crianças e visitantes, repor insumos, recolher os lixos após o culto."],
         ["Banheiro masculino", "Marco Maia e Jesus"],
         ["Organização do templo", "TODOS", "Alinhar cadeiras, recolher lixos e envelopes, cortinas, ar, portas e luzes."],
         ["Organização da sala dos obreiros", "Liderança"],
@@ -562,7 +562,7 @@ const ESCALAS = [
       ["Lateral esquerda · lado das portas de entrada", [
         ["Porta da frente", "Jugleyde Pompeo e Martina Mendes"],
         ["Porta do meio", "Antônio e Laura (casal), Milene"],
-        ["Porta do fundo (cantina)", "Alessandra, Daiane Colman e Renata"]
+        ["Porta do fundo (cantina)", "Daiane Colman e Renata"]
       ]],
       ["Lateral direita · lado do banheiro e mesa de apoio", [
         ["Mesa de apoio / banheiro", "Clebson, José Luis e Marina Corrêa (casal)"],
@@ -597,7 +597,7 @@ const ESCALAS = [
       ["Lateral esquerda · lado das portas de entrada", [
         ["Porta da frente / meio", "Antônio e Laura (casal)"],
         ["Porta do fundo", "Alessandra, Martina Mendes e Milene"],
-        ["Meio para o fundo", "Dri Gamarra, Jhuli e Jugleyde Pompeo"]
+        ["Meio para o fundo", "Jhuli e Jugleyde Pompeo"]
       ]],
       ["Lateral direita · lado do banheiro e mesa de apoio", [
         ["Mesa de apoio / banheiro", "Clebson e Letícia (casal)"],
@@ -618,7 +618,7 @@ const ESCALAS = [
         ["Ofertório (+)", "TODOS", "No culto de Santa Ceia há oferta missionária no final."],
         ["Gazofilácios em frente do altar", "Lado D: Jesus · Lado E: José Eduardo", "Quem está no gazofilácio não passa máquina nem envelope. Fica ao lado dele."],
         ["Gazofilácios no meio da igreja (pilar)", "Lado D: Igor · Lado E: Denilson"],
-        ["Banheiro feminino", "Dri Gamarra e Jhuli", "Orientar crianças e visitantes, repor insumos, recolher os lixos após o culto."],
+        ["Banheiro feminino", "Milene e Jhuli", "Orientar crianças e visitantes, repor insumos, recolher os lixos após o culto."],
         ["Banheiro masculino", "Felipe Bianchezzi e Marco Maia"],
         ["Organização do templo", "TODOS", "Alinhar cadeiras, recolher lixos e envelopes, cortinas, ar, portas e luzes."],
         ["Organização da sala dos obreiros", "Liderança"],
@@ -627,7 +627,7 @@ const ESCALAS = [
       ["Lateral esquerda · lado das portas de entrada", [
         ["Porta da frente", "Antônio e Laura (casal)"],
         ["Porta do meio", "Martina Mendes e Simone"],
-        ["Porta do fundo (cantina)", "Alessandra, Milene e Kátia"]
+        ["Porta do fundo (cantina)", "Alessandra e Kátia"]
       ]],
       ["Lateral direita · lado do banheiro e mesa de apoio", [
         ["Mesa de apoio / banheiro", "José Luis e Marina Corrêa (casal)"],

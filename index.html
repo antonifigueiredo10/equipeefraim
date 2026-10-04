@@ -55,10 +55,23 @@
     font-size:clamp(1.7rem, 6vw, 2.4rem); letter-spacing:1px; margin-top:14px;
   }
   .hero h1 span{color:var(--laranja);}
-  .hero .lema{
-    color:var(--texto-suave); font-size:.85rem; letter-spacing:3px;
-    text-transform:uppercase; margin-top:6px; font-weight:300;
+  .hero .equipe-nome{margin-top:20px; line-height:1;}
+  .hero .equipe-nome .eq{
+    display:flex; align-items:center; justify-content:center; gap:14px;
+    font-family:'Poppins',sans-serif; font-weight:600; font-size:clamp(1rem,3.8vw,1.35rem);
+    letter-spacing:.55em; text-transform:uppercase; color:var(--laranja-claro);
   }
+  .hero .equipe-nome .eq i{font-style:normal; margin-right:-.55em;}
+  .hero .equipe-nome .eq::before, .hero .equipe-nome .eq::after{content:""; width:clamp(26px,9vw,64px); height:1px; background:linear-gradient(90deg,transparent,var(--laranja));}
+  .hero .equipe-nome .eq::after{background:linear-gradient(90deg,var(--laranja),transparent);}
+  .hero .equipe-nome b{
+    display:block; font-family:'Playfair Display',serif; font-weight:800;
+    font-size:clamp(3rem,14vw,5.2rem); letter-spacing:.06em; margin-top:6px;
+    background:linear-gradient(180deg,#FFFFFF 0%,#FFD9C2 48%,var(--laranja) 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 0 22px rgba(240,131,74,.38));
+  }
+  .hero .equipe-nome .ob{display:block; margin-top:8px; color:var(--texto-suave); font-size:.74rem; letter-spacing:5px; text-transform:uppercase; font-weight:300;}
   .hero .ano{
     display:inline-block; margin-top:16px; padding:8px 22px;
     border:1px solid var(--laranja); border-radius:999px;
@@ -262,7 +275,8 @@
     .hero .logo{width:130px; height:130px;}
     .hero .logo.recortada{width:140px;}
     .hero h1{font-size:1.55rem; margin-top:10px;}
-    .hero .lema{font-size:.72rem; letter-spacing:2px;}
+    .hero .equipe-nome{margin-top:16px;}
+    .hero .equipe-nome b{font-size:clamp(2.7rem,15vw,3.7rem);}
     .hero .ano{margin-top:12px; padding:6px 16px; font-size:.75rem;}
     .versiculo{font-size:.88rem; margin-top:18px;}
     .faixa{margin-top:22px;}
@@ -279,7 +293,7 @@
 <div class="hero">
   <img src="logo1.png" alt="Aliançados" class="logo" id="logo-img">
   <h1>ALIANÇADOS<br><span>Lugar de Crescimento</span></h1>
-  <div class="lema">Equipe Efraim — Obreiros</div>
+  <div class="equipe-nome"><span class="eq"><i>Equipe</i></span><b>EFRAIM</b><span class="ob">Obreiros</span></div>
   <div class="ano">✦ 2026 · O Ano da Gratidão ✦</div>
   <div class="versiculo">
     “Em tudo dai graças, porque esta é a vontade de Deus em Cristo Jesus para convosco.”

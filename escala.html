@@ -585,7 +585,7 @@ function ehMinha(n){
 
 /* obreiro vê só a própria posição; liderança, quem monta a escala (Antonio e Letícia) e pastores veem tudo */
 function verEscalaCompleta(){
-  return (typeof EH_LIDER === "function" && EH_LIDER()) || podeEditarNomes() || /^(pr|pra|ap)\.?\s/i.test((PERFIL && PERFIL.nome) || "");
+  return (typeof EH_LIDER === "function" && EH_LIDER()) || podeEditarNomes() || /^(pr|pra|ap|bispo|bispa)\.?\s/i.test((PERFIL && PERFIL.nome) || "");
 }
 
 function montar(i){

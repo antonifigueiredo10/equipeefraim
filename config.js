@@ -356,7 +356,9 @@ function estouNaHome(){
 /* como chamar a pessoa: primeiro nome; com título (Pr., Pra., Ap.) vai junto o nome */
 function chamarPor(nome){
   const p = String(nome || "").trim().split(/\s+/);
-  return (p[0] && p[0].endsWith(".") && p[1]) ? p[0] + " " + p[1] : (p[0] || "");
+  /* título (Pr., Pra., Ap., Bispo, Pastor...) vai junto com o nome: "Bispo André" */
+  const titulo = p[0] && (p[0].endsWith(".") || /^(bispo|bispa|pastor|pastora|apóstolo|apóstola|missionário|missionária|evangelista)$/i.test(p[0]));
+  return (titulo && p[1]) ? p[0] + " " + p[1] : (p[0] || "");
 }
 function iniciais(nome){
   return (nome || "?").split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0]).join("").toUpperCase();

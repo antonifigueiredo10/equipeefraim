@@ -46,6 +46,19 @@
     background:transparent; color:var(--laranja); font:600 .78rem 'Poppins',sans-serif; cursor:pointer;
   }
   .barra-acoes select{color:var(--branco); border-color:var(--cinza-borda); background:#0F0F12;}
+  .resumo-cel{display:flex; gap:12px; align-items:stretch; background:var(--preto-card); border:1px solid var(--cinza-borda); border-radius:14px; padding:12px; margin-top:12px;}
+  .resumo-cel .tot{flex:none; min-width:78px; display:flex; flex-direction:column; align-items:center; justify-content:center; border-right:1px solid var(--cinza-borda); padding-right:12px; cursor:pointer;}
+  .resumo-cel .tot b{font-family:'Playfair Display',serif; font-size:2rem; color:var(--laranja); line-height:1;}
+  .resumo-cel .tot span{font-size:.6rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--texto-suave); margin-top:5px;}
+  .resumo-cel .lado{flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; gap:8px;}
+  .resumo-cel .dias{display:flex; flex-wrap:wrap; gap:6px;}
+  .resumo-cel .dias button{display:flex; flex-direction:column; align-items:center; min-width:44px; padding:5px 7px; border-radius:10px; cursor:pointer;
+    border:1px solid var(--cinza-borda); background:#1D1D22; color:var(--texto-suave); font:600 .62rem 'Poppins',sans-serif; text-transform:uppercase; letter-spacing:.5px;}
+  .resumo-cel .dias button b{color:var(--branco); font-size:.95rem; letter-spacing:0;}
+  .resumo-cel .dias button.ativo{background:var(--laranja); border-color:var(--laranja); color:#fff;}
+  .resumo-cel .dias button.ativo b{color:#fff;}
+  .resumo-cel .tipos{font-size:.7rem; color:var(--texto-suave); line-height:1.5;}
+  .resumo-cel .tipos b{color:var(--branco); font-weight:600;}
   .aviso{font-size:.78rem; color:var(--texto-suave); margin-top:10px; line-height:1.5; text-align:center;}
 
   h2{font-size:.72rem; font-weight:600; color:var(--laranja); text-transform:uppercase; letter-spacing:2.5px; margin:24px 0 10px;}
@@ -86,6 +99,7 @@
       <option>quinta</option><option>sexta</option><option>sábado</option><option>domingo</option>
     </select>
   </div>
+  <div class="resumo-cel" id="resumo-cel"></div>
   <div class="aviso" id="aviso">Permita a localização para ver as células mais próximas de você.</div>
 
   <h2 id="tit-lista">Células</h2>
@@ -122,11 +136,32 @@ function popup(c){
     (zap ? ' · <a href="https://wa.me/' + zap + '" target="_blank" rel="noopener">WhatsApp</a>' : '');
 }
 
+/* resumo: total, por dia da semana (toque filtra) e por tipo */
+const DIAS_CEL = [["segunda","seg"],["terça","ter"],["quarta","qua"],["quinta","qui"],["sexta","sex"],["sábado","sáb"],["domingo","dom"]];
+function montarResumo(){
+  const cx = document.getElementById("resumo-cel");
+  if(!cx || !CELULAS.length){ if(cx) cx.style.display = "none"; return; }
+  const sel = document.getElementById("filtro-dia").value;
+  const porDia = DIAS_CEL.map(([d, curto]) => [d, curto, CELULAS.filter(c => (c.dia || "").toLowerCase().startsWith(d)).length]).filter(x => x[2] > 0);
+  const tipos = {};
+  CELULAS.forEach(c => String(c.modelo || "").split(/[\/,]/).map(t => t.trim().toLowerCase()).filter(Boolean).forEach(t => { tipos[t] = (tipos[t] || 0) + 1; }));
+  const listaTipos = Object.entries(tipos).sort((a, b) => b[1] - a[1]);
+  cx.innerHTML = '<div class="tot" data-dia="" title="ver todas"><b>' + CELULAS.length + '</b><span>células</span></div>' +
+    '<div class="lado"><div class="dias">' + porDia.map(([d, curto, n]) => '<button type="button" data-dia="' + d + '"' + (sel === d ? ' class="ativo"' : '') + '>' + curto + '<b>' + n + '</b></button>').join("") + '</div>' +
+    (listaTipos.length ? '<div class="tipos">' + listaTipos.map(([t, n]) => '<b>' + n + '</b> ' + t).join(" · ") + '</div>' : '') + '</div>';
+  cx.querySelectorAll("[data-dia]").forEach(el => { el.onclick = () => {
+    const f = document.getElementById("filtro-dia");
+    f.value = (f.value === el.dataset.dia) ? "" : el.dataset.dia;   /* tocar de novo volta para todos os dias */
+    montarLista();
+  }; });
+}
+
 function montarLista(){
   const dia = document.getElementById("filtro-dia").value;
+  montarResumo();
   let lista = POS ? ordenarPorDistancia(CELULAS, POS) : CELULAS.slice();
   if(dia) lista = lista.filter(c => (c.dia || "").toLowerCase().startsWith(dia));
-  document.getElementById("tit-lista").textContent = POS ? "Mais próximas de você" : "Células (" + lista.length + ")";
+  document.getElementById("tit-lista").textContent = (POS ? "Mais próximas de você" : "Células") + " · " + lista.length + (dia ? " na " + dia : (lista.length === 1 ? " célula" : " células"));
   document.getElementById("lista").innerHTML = lista.length ? lista.map((c, i) =>
     '<div class="cel' + (POS && i < 3 ? ' perto' : '') + '" data-id="' + c.id + '">' +
       (POS ? '<div class="km">' + textoDist(c.km) + '</div>' : '') +

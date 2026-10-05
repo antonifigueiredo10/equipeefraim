@@ -729,6 +729,42 @@ async function senhaAleatoriaPara(nome, senhaAtual){
     return e2 ? null : nova;
   }catch(e){ return null; }
 }
+/* Mesma ideia, mas com a senha que o administrador escolheu, e já definitiva (o app não pede para trocar) */
+async function trocarSenhaComo(nome, senhaAtual, nova){
+  try{
+    const tmp = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, storageKey: "efraim-temp-" + Date.now() }
+    });
+    const { error: e1 } = await tmp.auth.signInWithPassword({ email: emailDe(nome), password: senhaAtual });
+    if(e1) return false;
+    const { error: e2 } = await tmp.auth.updateUser({ password: nova });
+    if(!e2){ try{ await tmp.rpc("senha_definida"); }catch(e){} }
+    try{ await tmp.auth.signOut({ scope: "local" }); }catch(e){}
+    return !e2;
+  }catch(e){ return false; }
+}
+/* Senha escolhida no Admin: mostra, copia o recado e (se tiver número) abre o WhatsApp da pessoa */
+function mostrarSenhaNova(nome, senha, whats){
+  const cx = document.getElementById("codigo-novo");
+  const seguro = String(senha).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+  const recado = "Graça e Paz, " + chamarPor(nome) + "! 🙏 Sua senha do app da Equipe Efraim foi alterada.\n\n" +
+                 "Entre em https://equipeefraim.com.br\nNome: " + nome + "\nSenha: " + senha + "\n\n" +
+                 "Se quiser trocar, é no Perfil, em Trocar minha senha.";
+  cx.innerHTML =
+    '<div class="rotulo">Senha nova de ' + nome + '</div>' +
+    '<div class="valor">' + seguro + '</div>' +
+    '<div class="aviso">A senha antiga já não vale. Passe essa <b>no privado</b>.</div>' +
+    (whats ? '<a class="btn-zap" href="' + linkWhats(whats, recado) + '" target="_blank" rel="noopener">📲 ENVIAR NO WHATSAPP</a>' : '') +
+    '<button type="button" id="btn-copiar-codigo">copiar recado</button>';
+  cx.style.display = "block";
+  document.getElementById("btn-copiar-codigo").onclick = function(){
+    navigator.clipboard.writeText(recado).then(() => {
+      this.textContent = "copiado!";
+      setTimeout(() => this.textContent = "copiar recado", 1800);
+    });
+  };
+  cx.scrollIntoView({ behavior: "smooth", block: "center" });
+}
 function linkWhats(v, texto){
   let n = String(v || "").replace(/\D/g, "");
   if(n.length === 10 || n.length === 11) n = "55" + n;
@@ -906,6 +942,7 @@ async function carregarObreiros(){
       '<div class="quem"><b>' + o.nome + '</b>' + selo + estado + '</div>' +
       (!EH_ADMIN() ? '' : '<div class="btns">' + acesso +
         (o.foto ? '<button data-acao="tirarfoto">tirar foto</button>' : '') +
+        (o.ativou && o.nome !== PERFIL.nome ? '<button data-acao="alterarsenha">alterar senha</button>' : '') +
         (o.nome !== PERFIL.nome ? '<button data-acao="whats" class="btn-whats">senha pelo WhatsApp</button>' : '') +
         '<button data-acao="papel">' + (o.papel === "lider" ? "tirar liderança" : "tornar líder") + '</button>' +
         (o.nome !== PERFIL.nome ? '<button data-acao="resetar" class="perigo">resetar tudo</button>' : '') +
@@ -1071,6 +1108,17 @@ async function acaoObreiro(acao, o, botao){
     if(whatsDigitado.length < 10 || whatsDigitado.length > 11){ msgObreiros("erro", "Número inválido. Use DDD + número, por exemplo (67) 99999-9999."); return; }
     perguntas.whats = "Gerar uma senha para " + o.nome + " e mandar no WhatsApp " + formatarWhats(whatsDigitado) + "?\n\nSe ele já tinha senha, a antiga deixa de valer. Nada é apagado.";
   }
+  /* alterar senha: você escolhe a senha nova e passa para a pessoa depois */
+  let senhaEscolhida = "";
+  if(acao === "alterarsenha"){
+    const r = prompt("Senha nova de " + o.nome + " (pelo menos 6 caracteres).\nDepois você passa essa senha para a pessoa.", "");
+    if(r === null) return;
+    senhaEscolhida = r.trim();
+    if(senhaEscolhida.length < 6){ msgObreiros("erro", "A senha precisa ter pelo menos 6 caracteres."); return; }
+    if(senhaEscolhida === "123456"){ msgObreiros("erro", "123456 é a senha inicial de todo mundo. Escolha outra."); return; }
+    perguntas.alterarsenha = "Trocar a senha de " + o.nome + " para " + senhaEscolhida + " ?\n\n" +
+      "A senha antiga deixa de valer na hora. Com essa a pessoa já entra, sem precisar trocar (se quiser, troca no Perfil). Nada é apagado.";
+  }
   if(!confirm(perguntas[acao])) return;
 
   const original = botao.textContent;
@@ -1102,6 +1150,25 @@ async function acaoObreiro(acao, o, botao){
       try{ await sb.from("pedidos_senha").delete().eq("nome", o.nome); }catch(e){}
       mostrarSenhaWhats(o.nome, senha, whatsDigitado);
       msgObreiros("ok", "Senha de " + o.nome + " pronta. Toque no botão verde para mandar no WhatsApp.");
+      contarAguardando();
+    }
+    if(acao === "alterarsenha"){
+      const eraBloqueado = o.status === "bloqueado";
+      /* 1) o servidor volta a senha para a inicial (só ele mexe na senha de outra pessoa) */
+      const r = await chamarAdmin("senha", { nome: o.nome });
+      const inicial = r.senha || "123456";
+      /* 2) entra como a pessoa num cliente temporário e grava a senha que você escolheu, já definitiva */
+      const ok = await trocarSenhaComo(o.nome, inicial, senhaEscolhida);
+      /* zerar a senha libera o acesso; quem estava bloqueado continua bloqueado */
+      if(eraBloqueado){ try{ await sb.rpc("definir_acesso", { p_nome: o.nome, p_status: "bloqueado" }); }catch(e){} }
+      try{ await sb.from("pedidos_senha").delete().eq("nome", o.nome); }catch(e){}
+      if(ok){
+        mostrarSenhaNova(o.nome, senhaEscolhida, o.whatsapp);
+        msgObreiros("ok", "Senha de " + o.nome + " trocada. Agora é só passar para a pessoa.");
+      }else{
+        mostrarSenha(o.nome, inicial);
+        msgObreiros("erro", "Não deu para gravar a senha escolhida. A senha de " + o.nome + " ficou a inicial " + inicial + " e o app pede para criar uma no primeiro acesso.");
+      }
       contarAguardando();
     }
     if(acao === "senha"){

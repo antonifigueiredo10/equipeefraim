@@ -37,7 +37,7 @@
     border-radius:50%; border:1px solid rgba(240,131,74,.4);
     box-shadow:0 0 44px rgba(240,131,74,.28);
   }
-  .topo img.recortada{width:130px; height:auto; object-fit:contain; border-radius:0; border:none; box-shadow:none;}
+  .topo img.recortada{width:88px; height:auto; object-fit:contain; border-radius:0; border:none; box-shadow:none;}
   .topo h1{
     font-family:'Playfair Display',serif; font-weight:800;
     font-size:clamp(1.4rem,5.5vw,1.9rem); letter-spacing:1px; margin-top:14px;
@@ -141,7 +141,7 @@
   @media (max-width:520px){
     body{padding:24px 14px;}
     .topo img{width:96px; height:96px;}
-    .topo img.recortada{width:106px;}
+    .topo img.recortada{width:74px;}
     .caixa{padding:20px;}
   }
 </style>
@@ -404,25 +404,42 @@ async function entrar(ev){
       const ctx = c.getContext("2d");
       ctx.drawImage(img, 0, 0);
       const d = ctx.getImageData(0, 0, c.width, c.height), p = d.data;
-      let minX = c.width, minY = c.height, maxX = 0, maxY = 0;
+      const lin = new Uint32Array(c.height), col = new Uint32Array(c.width);
       for(let i = 0; i < p.length; i += 4){
         const mx = Math.max(p[i], p[i+1], p[i+2]), mn = Math.min(p[i], p[i+1], p[i+2]);
         const a = Math.max(0, Math.min(255, (mx - mn - 6) * 2.2));
         p[i+3] = a;
-        if(a > 40){
-          const px = (i/4) % c.width, py = Math.floor((i/4) / c.width);
-          if(px < minX) minX = px; if(px > maxX) maxX = px;
-          if(py < minY) minY = py; if(py > maxY) maxY = py;
+        if(mx >= 245 && mx - mn > 80){   /* laranja aceso = a cruz; o brilho em volta fica só na margem */
+          const px = (i/4) % c.width;
+          col[px]++; lin[((i/4) - px) / c.width]++;
         }
       }
+      /* a cruz é onde há muitos pixels acesos por linha e coluna; pontinhos soltos no brilho não contam */
+      const faixa = arr => {
+        let m = 0; for(const v of arr) if(v > m) m = v;
+        const lim = Math.max(1, m * 0.05);
+        let ini = 0, fim = arr.length - 1;
+        while(ini < arr.length && arr[ini] < lim) ini++;
+        while(fim > 0 && arr[fim] < lim) fim--;
+        return [ini, fim];
+      };
+      const [minX, maxX] = faixa(col), [minY, maxY] = faixa(lin);
       if(maxX <= minX || maxY <= minY) return;
       ctx.putImageData(d, 0, 0);
-      const pad = 40;
+      const pad = 45;
       const sx = Math.max(0, minX - pad), sy = Math.max(0, minY - pad);
       const sw = Math.min(c.width, maxX + pad) - sx, sh = Math.min(c.height, maxY + pad) - sy;
       const c2 = document.createElement("canvas");
       c2.width = sw; c2.height = sh;
-      c2.getContext("2d").drawImage(c, sx, sy, sw, sh, 0, 0, sw, sh);
+      const ctx2 = c2.getContext("2d");
+      ctx2.drawImage(c, sx, sy, sw, sh, 0, 0, sw, sh);
+      /* o brilho some aos poucos na borda do recorte, sem corte seco */
+      const d2 = ctx2.getImageData(0, 0, sw, sh), q = d2.data;
+      for(let y = 0; y < sh; y++) for(let x = 0; x < sw; x++){
+        const borda = Math.min(x, y, sw - 1 - x, sh - 1 - y);
+        if(borda < pad){ const k = (y * sw + x) * 4 + 3; q[k] = q[k] * Math.pow(borda / pad, 1.6); }
+      }
+      ctx2.putImageData(d2, 0, 0);
       feito = true;
       img.onload = null;
       img.src = c2.toDataURL("image/png");

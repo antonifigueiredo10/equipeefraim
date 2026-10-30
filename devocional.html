@@ -565,6 +565,7 @@ async function montarDisponibilidade(){
   if(!cx) return;
   let datas = [];
   try{ const { data } = await sb.from("datas").select("data"); datas = (data || []).map(l => l.data); }catch(e){}
+  if(typeof carregarEscalas === "function") await carregarEscalas();
   if(typeof datasDaEscala === "function") datas = datas.concat(datasDaEscala());
   const hoje = hojeISO();
   datas = [...new Set(datas)].filter(x => x >= hoje).sort();

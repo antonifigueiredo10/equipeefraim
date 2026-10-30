@@ -541,7 +541,7 @@ const UNI_NOITE = "Camiseta de servo + colete + calça jeans ou preta + tênis/s
 const UNI_MANHA = "Camiseta de servo + calça jeans ou preta + tênis/sapato fechado baixo";
 
 /* Gerado pelo gera_escala.py (pasta preview-local): mesmas posições e pessoas do PDF e do Excel. */
-const ESCALAS = [
+const ESCALA_MODELO = [
   { data:"2026-11-01", hora:"18h00", inicio:18, dia:"Domingo", curto:"DOM", culto:"Culto da Família", chegada:"17h00", uniforme:UNI_NOITE,
     avisos:["Não aglomerar, principalmente perto da mesa de apoio.", "Distribuam-se por toda a lateral da arena, iniciando o posicionamento a partir da 1ª fileira de cadeiras.", "Horário de chegada: 1 hora antes do culto."],
     grupos:[
@@ -645,7 +645,59 @@ const ESCALAS = [
 ];
 
 
-/* Datas em que a equipe serve, para a disponibilidade */
+/* Datas em que a equipe serve: a Equipe 02 serve a cada 4 semanas (domingo 18h, quarta 19h30 e domingo 9h:
+   01/11, 04/11, 08/11 · 29/11, 02/12, 06/12 · ...). ESCALA_MODELO acima dá as posições de cada um dos 3 cultos
+   (e os nomes, só na semana em que foi gerado). O administrador pode informar as datas de cada escala
+   no app (escala.html); elas ficam na linha reservada data 2000-01-02 do devocional.
+   ESCALAS = só a PRÓXIMA escala (a primeira cujo último culto ainda não terminou). */
+const CICLO_ESCALA = { inicio: "2026-11-01", dias: 28, desloc: [0, 3, 7] };
+const CONFIG_BLOCOS = { data: "2000-01-02", livro: "__blocos_escala__" };
+const DIAS_SEMANA = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+const DIAS_CURTO = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
+let BLOCOS_SALVOS = [];   /* [[d1, d2, d3], ...] informados pelo administrador */
+function isoMais(iso, n){ const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() + n); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function fimDoBloco(b){ const d = new Date(b[2] + "T00:00:00"); d.setHours(0, Math.round((ESCALA_MODELO[2].inicio + 3) * 60)); return d; }
+/* escalas que ainda não terminaram: as do ciclo de 4 semanas, trocadas pelas datas que o administrador salvou */
+function blocosEscala(qtd){
+  const ciclo = d => CICLO_ESCALA.desloc.map(n => isoMais(d, n));
+  const salvos = BLOCOS_SALVOS.filter(b => Array.isArray(b) && b.length === 3 && b.every(x => /^\d{4}-\d{2}-\d{2}$/.test(x)))
+                              .map(b => b.slice().sort()).sort((a, b) => a[0] < b[0] ? -1 : 1);
+  const todos = [];
+  for(let d = CICLO_ESCALA.inicio; todos.length < qtd && (!salvos.length || ciclo(d)[2] < salvos[0][0]); d = isoMais(d, CICLO_ESCALA.dias)){
+    if(fimDoBloco(ciclo(d)) >= new Date()) todos.push(ciclo(d));
+  }
+  salvos.forEach(b => { if(fimDoBloco(b) >= new Date()) todos.push(b); });
+  if(salvos.length) for(let d = isoMais(salvos[salvos.length - 1][0], CICLO_ESCALA.dias); todos.length < qtd; d = isoMais(d, CICLO_ESCALA.dias)){
+    if(fimDoBloco(ciclo(d)) >= new Date()) todos.push(ciclo(d));
+  }
+  return todos.slice(0, qtd);
+}
+/* os 3 cultos de uma escala; fora da semana do modelo, quem serve fica "A definir" (menos TODOS, Liderança, Backstage e Reservados).
+   Cada item: [função, quem serve, dica, quem serve no modelo (dá o número de vagas da escala automática)] */
+function cultosDoBloco(b){
+  return ESCALA_MODELO.map((m, i) => {
+    const iso = b[i], dia = new Date(iso + "T12:00:00").getDay(), mesma = m.data === iso;
+    const grupos = m.grupos.map(([t, itens]) => [t, itens.map(([f, p, dica]) =>
+      [f, (mesma || p === "TODOS" || p === "Liderança" || /backstage|reservados/i.test(f)) ? p : "A definir", dica, p])]);
+    return Object.assign({}, m, { data: iso, dia: DIAS_SEMANA[dia], curto: DIAS_CURTO[dia], grupos });
+  });
+}
+let ESCALAS = cultosDoBloco(blocosEscala(1)[0] || ESCALA_MODELO.map(c => c.data));
+/* lê as datas salvas pelo administrador (1 vez por página) e refaz ESCALAS */
+let ESCALAS_CARREGANDO = null;
+function carregarEscalas(){
+  return ESCALAS_CARREGANDO || (ESCALAS_CARREGANDO = (async () => {
+    try{
+      const { data } = await sb.from("devocional").select("referencia")
+        .eq("data", CONFIG_BLOCOS.data).eq("livro", CONFIG_BLOCOS.livro).maybeSingle();
+      const m = data && data.referencia ? JSON.parse(data.referencia) : null;
+      BLOCOS_SALVOS = (m && Array.isArray(m.blocos)) ? m.blocos : [];
+    }catch(e){ BLOCOS_SALVOS = []; }
+    const b = blocosEscala(1)[0];
+    if(b) ESCALAS = cultosDoBloco(b);
+    return ESCALAS;
+  })());
+}
 function datasDaEscala(){ return ESCALAS.map(c => c.data); }
 function cultoDaData(iso){ return ESCALAS.find(c => c.data === iso) || null; }
 

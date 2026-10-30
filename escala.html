@@ -169,6 +169,29 @@
     background:rgba(61,187,122,.12); border:1px solid rgba(61,187,122,.4); color:var(--verde);
   }
 
+  /* ---- Escalas futuras e datas (só o administrador) ---- */
+  .blocos{margin-bottom:10px; padding:10px 12px; border-radius:14px; background:var(--preto-card); border:1px dashed rgba(240,131,74,.55);}
+  .blocos .bl-tit{font-size:.62rem; letter-spacing:2px; text-transform:uppercase; color:var(--laranja); font-weight:600; margin-bottom:6px;}
+  .blocos .bl-linha{display:flex; gap:8px; align-items:center;}
+  .blocos select{flex:1; min-width:0; font:600 .8rem 'Poppins',sans-serif; color:var(--branco); background:#0F0F12; border:1px solid var(--cinza-borda); border-radius:10px; padding:8px 10px;}
+  .blocos select option{color:#111;}
+  .blocos .bl-datas{flex:none; padding:8px 12px; border-radius:10px; border:1px solid var(--laranja); background:rgba(240,131,74,.12); color:var(--laranja); font:600 .74rem 'Poppins',sans-serif; cursor:pointer;}
+  .blocos .bl-nota{font-size:.68rem; color:var(--texto-suave); margin-top:6px; line-height:1.45;}
+  .form-datas{margin-top:10px; border-top:1px solid var(--cinza-borda); padding-top:10px;}
+  .form-datas .fd-bloco{display:grid; grid-template-columns:auto 1fr 1fr 1fr auto; gap:6px; align-items:center; margin-bottom:6px;}
+  .form-datas .fd-bloco b{font-size:.68rem; color:var(--texto-suave); width:18px;}
+  .form-datas input[type=date]{width:100%; min-width:0; padding:7px 4px; border:1px solid var(--cinza-borda); border-radius:8px; background:#0F0F12; color:var(--branco); font:500 .72rem 'Poppins',sans-serif; color-scheme:dark;}
+  .form-datas .fd-tirar{border:none; background:none; color:var(--texto-suave); font-size:1.1rem; cursor:pointer; padding:0 4px;}
+  .form-datas .fd-cab{display:grid; grid-template-columns:auto 1fr 1fr 1fr auto; gap:6px; font-size:.6rem; color:var(--texto-suave); letter-spacing:1px; text-transform:uppercase; margin-bottom:4px;}
+  .form-datas .fd-cab span:first-child{width:18px;} .form-datas .fd-cab span:last-child{width:22px;}
+  .form-datas .fd-btns{display:flex; gap:8px; margin-top:8px;}
+  .form-datas .fd-btns button{flex:1; padding:9px; border-radius:10px; cursor:pointer; font:700 .74rem 'Poppins',sans-serif;}
+  .form-datas .fd-mais, .form-datas .fd-ciclo{border:1px dashed var(--laranja); background:transparent; color:var(--laranja);}
+  .form-datas .fd-salvar{border:none; color:#fff; background:linear-gradient(135deg, var(--laranja), var(--laranja-escuro));}
+  .form-datas .fd-msg{font-size:.72rem; margin-top:6px; color:var(--vermelho);}
+  .form-datas .fd-msg.ok{color:var(--verde);}
+  @media (max-width:380px){ .form-datas input[type=date]{font-size:.64rem; padding:6px 2px;} }
+
   footer{text-align:center; padding:26px 20px 36px; color:var(--texto-suave); font-size:.7rem; letter-spacing:2px; text-transform:uppercase; font-weight:300;}
   footer span{color:var(--laranja);}
 
@@ -193,6 +216,7 @@
 </div>
 
 <main>
+  <div class="blocos" id="blocos" style="display:none"></div>
   <div class="cultos" id="cultos"></div>
   <div id="conteudo"></div>
   <a class="voltar" href="index.html" id="voltar" style="display:none">← Painel da liderança</a>
@@ -359,7 +383,7 @@ function desenharPdfCulto(c, titulo, k, comDica){
       if(dic.length){ doc.setFont("helvetica", "normal"); doc.setFontSize(8 * k); doc.setTextColor(...CIN); doc.text(dic, M, y + (fun.length * 12 - 2) * k); }
       const destaque = nomes === "TODOS" || nomes === "Liderança";
       doc.setFont("helvetica", destaque ? "bold" : "normal"); doc.setFontSize(10.5 * k);
-      doc.setTextColor(...(destaque ? LAR : nomes === "Vago" ? CIN : ESC)); doc.text(nom, colNome, y);
+      doc.setTextColor(...(destaque ? LAR : (nomes === "Vago" || nomes === "A definir") ? CIN : ESC)); doc.text(nom, colNome, y);
       doc.setDrawColor(235, 228, 218); doc.line(M, y + h - 9 * k, M + larg, y + h - 9 * k);
       y += h;
     });
@@ -437,7 +461,7 @@ function ocupadosNosOutros(iAtual, fonte){
     c.grupos.forEach(([titulo, itens]) => itens.forEach(([funcao, padrao]) => {
       const ch = chavePessoas(c, titulo, funcao);
       const nomes = fonte ? fonte[ch] : (NOMES_PESSOAS[ch] || padrao);
-      if(!nomes || nomes === "TODOS" || nomes === "Liderança") return;
+      if(!nomes || nomes === "TODOS" || nomes === "Liderança" || nomes === "A definir") return;
       const t = tipoPosicao(funcao);
       const set = mapa[t] || (mapa[t] = new Set());
       nomes.replace(/Lado [DE]:/g, ",").replace(/\(casal\)/g, "").split(/,| e |·/).map(x => normal(x)).filter(Boolean).forEach(n => set.add(n));
@@ -476,8 +500,8 @@ function montarPropostaAutomatica(c, disponiveis, ocupados){
   /* pode ficar nesta posição sem repetir o que já faz nos outros cultos? */
   const semRepetir = (v, x) => !(ocupados[v.tipo] && ocupados[v.tipo].has(normal(x[0])));
   const vagas = [];
-  c.grupos.forEach(([titulo, itens]) => itens.forEach(([funcao, padrao]) => {
-    const n = /banheiro (feminino|masculino)/.test(normal(funcao)) ? 2 : vagasDe(padrao);   /* banheiro: sempre 2 */
+  c.grupos.forEach(([titulo, itens]) => itens.forEach(([funcao, padrao, , modelo]) => {
+    const n = /banheiro (feminino|masculino)/.test(normal(funcao)) ? 2 : vagasDe(modelo || padrao);   /* banheiro: sempre 2; vagas = as do modelo */
     if(n) vagas.push({ ch: chavePessoas(c, titulo, funcao), titulo, funcao, tipo: tipoPosicao(funcao), n, regra: regraDe(funcao), ordem: vagas.length, pessoas: [] });
   }));
   const restrita = v => (v.regra.sexo || v.regra.preferir || v.regra.casal) ? 0 : 1;
@@ -573,6 +597,7 @@ function fimDoCulto(c){ const d = new Date(c.data + "T00:00:00"); d.setHours(0, 
 function nomesHTML(n){
   if(n === "TODOS" || n === "Liderança") return '<span class="todos">' + n.toUpperCase() + '</span>';
   if(n === "Vago") return '<span class="vago">vago neste culto</span>';
+  if(n === "A definir") return '<span class="vago">a definir</span>';
   let h = esc(n).replace(/ \(casal\)/g, '<span class="casal">casal</span>');
   if(h.includes(" · Lado E:")){ const [a, b] = h.split(" · "); h = a + "<small>" + b + "</small>"; }
   return h;
@@ -618,6 +643,7 @@ function montar(i){
       '</div>';
   }
   const secoes = [];   /* [título, [{html, minha, todos}]] */
+  let aDefinir = 0;    /* posições que a liderança ainda não preencheu */
   /* no modo edição, o campo mostra o que já foi digitado (ou o nome atual) */
   const valorEd = orig => (orig in PENDENTE) ? PENDENTE[orig] : nomePosicao(orig);
   const campo = orig => '<input class="ed" type="text" maxlength="80" data-orig="' + escAttr(orig) + '" value="' + escAttr(valorEd(orig)) + '">';
@@ -630,6 +656,7 @@ function montar(i){
       const nomes = NOMES_PESSOAS[ch] || padrao;          /* quem serve: o ajuste da liderança ou o da escala */
       const minha = ehMinha(nomes);
       if(minha) minhas.push(nomePosicao(funcao));
+      if(nomes === "A definir") aDefinir++;
       const rotulo = edPos
         ? campo(funcao) + (nomePosicao(funcao) !== funcao ? '<span class="orig">original: ' + esc(funcao) + '</span>' : '')
         : esc(nomePosicao(funcao));
@@ -652,7 +679,9 @@ function montar(i){
     if(mostrar.length) cartoes += cab + mostrar.map(x => x.html).join("");
   });
   if(!veTudo && !minhas.length){
-    cartoes = '<div class="minha fora"><b>Neste culto</b><span>Você não está na escala.</span><br>Se acha que deveria estar, fale com a liderança.</div>';
+    cartoes = aDefinir
+      ? '<div class="minha fora"><b>Neste culto</b><span>A escala ainda está sendo montada.</span><br>Assim que a liderança definir, a sua função aparece aqui.</div>'
+      : '<div class="minha fora"><b>Neste culto</b><span>Você não está na escala.</span><br>Se acha que deveria estar, fale com a liderança.</div>';
   }
   if(minhas.length){
     html += '<div class="minha"><b>Sua função neste culto</b><span>' + minhas.map(esc).join(" · ") + '</span>' +
@@ -671,7 +700,7 @@ const ESPECIAIS_P = ["TODOS", "Liderança", "Vago"];
 /* "A e B (casal), C" → [A, B, C] · "Lado D: X · Lado E: Y" → [X, Y] */
 function nomesDoValor(v){
   v = String(v || "").trim();
-  if(!v) return [];
+  if(!v || v === "A definir") return [];
   if(ESPECIAIS_P.includes(v)) return [v];
   if(/Lado D:/.test(v)){
     const d = (v.match(/Lado D:\s*([^·]*)/) || [])[1] || "", e = (v.match(/Lado E:\s*(.*)$/) || [])[1] || "";
@@ -748,6 +777,91 @@ function montarSeletor(){
   montar(i < 0 ? ESCALAS.length - 1 : i);
 }
 
+/* ======================= ESCALAS FUTURAS E DATAS (só o administrador) =======================
+   A equipe vê só a próxima escala. O administrador escolhe uma escala dos próximos 3 meses para
+   montar com antecedência (⚡ automática ou ✏️ à mão) e informa as datas dos 3 cultos de cada uma.
+   As datas ficam na linha reservada CONFIG_BLOCOS (config.js); quem serve continua por data|seção|posição. */
+const QTD_BLOCOS = 4;   /* ~3 meses, uma escala a cada 4 semanas */
+let BLOCO_ATUAL = 0, FORM_DATAS = false, FORM_LISTA = [], FORM_ORIGINAL = [];
+function rotuloBloco(b){ const f = iso => iso.slice(8, 10) + "/" + iso.slice(5, 7); return f(b[0]) + " · " + f(b[1]) + " · " + f(b[2]); }
+function montarBlocos(){
+  const cx = document.getElementById("blocos");
+  if(!podeEditarPosicoes()){ cx.style.display = "none"; return; }
+  const lista = blocosEscala(QTD_BLOCOS);
+  if(BLOCO_ATUAL >= lista.length) BLOCO_ATUAL = 0;
+  let h = '<div class="bl-tit">📅 Escalas · administrador</div><div class="bl-linha"><select onchange="trocarBloco(+this.value)">' +
+    lista.map((b, i) => '<option value="' + i + '"' + (i === BLOCO_ATUAL ? " selected" : "") + '>' + rotuloBloco(b) + (i === 0 ? "  · próxima (a equipe vê)" : "") + '</option>').join("") +
+    '</select><button type="button" class="bl-datas" onclick="abrirDatas()">' + (FORM_DATAS ? "Fechar" : "✏️ Datas") + '</button></div>' +
+    '<div class="bl-nota">' + (BLOCO_ATUAL ? "Escala futura: só a liderança vê. Monte com ⚡ ou ✏️ e salve; a equipe vê quando ela for a próxima."
+                                            : "A equipe vê só esta escala. Escolha outra acima para montar com antecedência.") + '</div>';
+  if(FORM_DATAS){
+    h += '<div class="form-datas"><div class="fd-cab"><span></span><span>Dom 18h</span><span>Qua 19h30</span><span>Dom 9h</span><span></span></div>' +
+      FORM_LISTA.map((b, i) => '<div class="fd-bloco"><b>' + (i + 1) + '</b>' +
+        b.map((d, j) => '<input type="date" value="' + d + '" data-i="' + i + '" data-j="' + j + '">').join("") +
+        '<button type="button" class="fd-tirar" onclick="tirarBlocoForm(' + i + ')" aria-label="tirar esta escala">×</button></div>').join("") +
+      '<div class="fd-btns"><button type="button" class="fd-mais" onclick="maisBlocoForm()">+ escala</button>' +
+      '<button type="button" class="fd-salvar" onclick="salvarDatasEscala(this)">SALVAR DATAS</button></div><div class="fd-msg" id="fd-msg"></div></div>';
+  }
+  cx.innerHTML = h;
+  cx.style.display = "block";
+}
+function trocarBloco(i){
+  EDITANDO = false; PENDENTE = {}; PENDENTE_P = {}; AUTO_INFO = "";
+  BLOCO_ATUAL = i;
+  const b = blocosEscala(QTD_BLOCOS)[i];
+  if(b) ESCALAS = cultosDoBloco(b);
+  montarBlocos();
+  montarSeletor();
+}
+function lerFormDatas(){ document.querySelectorAll(".form-datas input[type=date]").forEach(inp => { FORM_LISTA[+inp.dataset.i][+inp.dataset.j] = inp.value; }); }
+function abrirDatas(){
+  FORM_DATAS = !FORM_DATAS;
+  if(FORM_DATAS){ FORM_ORIGINAL = blocosEscala(QTD_BLOCOS); FORM_LISTA = FORM_ORIGINAL.map(b => b.slice()); }
+  montarBlocos();
+}
+function maisBlocoForm(){
+  lerFormDatas();
+  const ult = FORM_LISTA[FORM_LISTA.length - 1];
+  const ini = ult && ult[0] ? isoMais(ult[0], CICLO_ESCALA.dias) : blocosEscala(1)[0][0];
+  FORM_LISTA.push(CICLO_ESCALA.desloc.map(n => isoMais(ini, n)));
+  montarBlocos();
+}
+function tirarBlocoForm(i){ lerFormDatas(); FORM_LISTA.splice(i, 1); FORM_ORIGINAL.splice(i, 1); montarBlocos(); }
+async function salvarDatasEscala(btn){
+  lerFormDatas();
+  const msg = document.getElementById("fd-msg");
+  msg.className = "fd-msg";
+  if(!FORM_LISTA.length){ msg.textContent = "Deixe ao menos uma escala."; return; }
+  if(FORM_LISTA.some(b => b.some(d => !d))){ msg.textContent = "Preencha as 3 datas de cada escala."; return; }
+  const novos = FORM_LISTA.map(b => b.slice().sort()).sort((a, b) => a[0] < b[0] ? -1 : 1);
+  if(novos.some(b => new Set(b).size < 3)){ msg.textContent = "Cada escala precisa de 3 datas diferentes."; return; }
+  if(novos.some((b, i) => i && b[0] <= novos[i - 1][2])){ msg.textContent = "Uma escala está cruzando com a outra. Confira as datas."; return; }
+  /* quem já foi escalado acompanha a data nova (mesma escala, mesmo culto) */
+  const troca = {};
+  FORM_ORIGINAL.forEach((b, i) => { const n = FORM_LISTA[i] && FORM_LISTA[i].slice().sort(); if(n) b.forEach((d, j) => { if(d !== n[j]) troca[d] = n[j]; }); });
+  btn.disabled = true; btn.textContent = "salvando...";
+  try{
+    const { error } = await sb.from("devocional").upsert({
+      data: CONFIG_BLOCOS.data, livro: CONFIG_BLOCOS.livro, capitulo: 0,
+      referencia: JSON.stringify({ v: 1, blocos: novos }), nome: "__config__", testamento: "NOVO"
+    }, { onConflict: "data" });
+    if(error) throw error;
+    if(Object.keys(troca).length){
+      const pessoas = {};
+      Object.keys(NOMES_PESSOAS).forEach(k => { const p = k.split("|"); if(troca[p[0]]) p[0] = troca[p[0]]; pessoas[p.join("|")] = NOMES_PESSOAS[k]; });
+      await salvarAjustes(NOMES_POSICOES, pessoas);
+      NOMES_PESSOAS = pessoas;
+    }
+    BLOCOS_SALVOS = novos; FORM_DATAS = false;
+    trocarBloco(Math.min(BLOCO_ATUAL, blocosEscala(QTD_BLOCOS).length - 1));
+    const nota = document.querySelector("#blocos .bl-nota");
+    if(nota) nota.insertAdjacentHTML("afterbegin", '<b style="color:var(--verde)">✅ Datas salvas.</b> ');
+  }catch(e){
+    btn.disabled = false; btn.textContent = "SALVAR DATAS";
+    msg.textContent = "Não deu para salvar as datas agora. Confira a internet e tente de novo.";
+  }
+}
+
 /* ---------- Início: exige login (obreiro e liderança veem a escala) ---------- */
 (async function(){
   const perfil = await exigirLogin();
@@ -758,7 +872,8 @@ function montarSeletor(){
     document.getElementById("conteudo").innerHTML = "<p style='text-align:center; color:var(--texto-suave); font-size:.85rem; padding:30px 10px;'>Atualize a página para carregar a escala.</p>";
     return;
   }
-  await carregarNomesPosicoes();
+  await Promise.all([carregarNomesPosicoes(), typeof carregarEscalas === "function" ? carregarEscalas() : null]);
+  montarBlocos();
   montarSeletor();
 })();
 </script>

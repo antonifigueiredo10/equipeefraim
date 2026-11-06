@@ -9,7 +9,7 @@ self.addEventListener("push", e => {
     body: d.body || "",
     icon: "/icon-192.png",
     badge: "/favicon-32.png",
-    tag: "devocional",
+    tag: d.tag || "devocional",
     renotify: true,
     vibrate: [120, 60, 120],
     data: { url: d.url || "/devocional.html" }

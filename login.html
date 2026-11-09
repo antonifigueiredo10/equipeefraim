@@ -226,7 +226,8 @@ if(!CONFIGURADO){
   document.getElementById("btn-entrar").disabled = true;
 }
 
-const DESTINO = new URLSearchParams(location.search).get("destino") || "index.html";
+/* so aceita pagina interna do app (nada de endereco externo nem javascript:) */
+const DESTINO = (d => /^[a-z0-9-]+\.html(#[\w-]*)?$/i.test(d) ? d : "index.html")(new URLSearchParams(location.search).get("destino") || "");
 
 /* Volta do guardião: conta ainda não liberada ou bloqueada pela liderança */
 const AVISO = new URLSearchParams(location.search).get("aviso");

@@ -611,11 +611,12 @@ async function render(){
   let html = "<tr><th>Obreiro</th>" + DATAS.map(d => `<th>${d.data.split("-").reverse().slice(0,2).join("/")}</th>`).join("") + "<th>Obs.</th></tr>";
   NOMES.forEach(n => {
     const r = porNome[n];
-    html += `<tr><td><b>${n}</b></td>` + DATAS.map(d => {
+    const escH = s => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    html += `<tr><td><b>${escH(n)}</b></td>` + DATAS.map(d => {
       const v = r ? r.respostas[d.data] : null;
       if(!v) return `<td><span class="tag pend">—</span></td>`;
-      return `<td><span class="tag ${v === "SIM" ? "sim" : "nao"}">${v}</span></td>`;
-    }).join("") + `<td>${r ? (r.obs || "") : ""}</td></tr>`;
+      return `<td><span class="tag ${v === "SIM" ? "sim" : "nao"}">${escH(v)}</span></td>`;
+    }).join("") + `<td>${r ? escH(r.obs) : ""}</td></tr>`;
   });
   document.getElementById("tabela").innerHTML = html;
 }

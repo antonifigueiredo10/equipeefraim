@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0B0B0D">
+<meta name="robots" content="noindex,nofollow">
+<title>Fé em Negócios · Aliançados</title>
+<meta name="description" content="Rede de negócios da igreja Aliançados. Cadastre onde você trabalha ou a sua empresa.">
+<meta property="og:title" content="Fé em Negócios · Aliançados">
+<meta property="og:description" content="Cadastre onde você trabalha ou a sua empresa. Quando um irmão precisar, ele encontra você.">
+<meta property="og:image" content="https://equipeefraim.com.br/icon-512.png">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,500&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --laranja:#F0834A; --laranja-claro:#F9A56E; --laranja-escuro:#D96A32;
+    --preto:#0B0B0D; --preto-card:#151518; --preto-campo:#0F0F12; --cinza-borda:#2A2A2F;
+    --branco:#F7F3EE; --texto-suave:#B8B2AA; --verde:#3DBB7A; --vermelho:#E5534B; --dourado:#E9C46A;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    background:var(--preto); color:var(--branco); font-family:'Poppins',system-ui,sans-serif; min-height:100vh;
+    background-image:radial-gradient(ellipse 90% 45% at 50% -8%, rgba(240,131,74,.22), transparent 62%);
+  }
+  .topo{max-width:620px; margin:0 auto; padding:30px 18px 6px; text-align:center;}
+  .selo{
+    width:86px; height:86px; margin:0 auto 14px; border-radius:24px; overflow:hidden;
+    box-shadow:0 0 0 1px rgba(240,131,74,.35), 0 10px 40px rgba(240,131,74,.25);
+  }
+  .selo img{width:100%; height:100%; display:block; object-fit:cover;}
+  .igreja{font-size:.66rem; letter-spacing:4px; text-transform:uppercase; color:var(--texto-suave); font-weight:500;}
+  h1{
+    font-family:'Playfair Display',serif; font-weight:800; font-size:clamp(2rem,9vw,2.9rem); line-height:1.05; margin-top:8px;
+    background:linear-gradient(180deg, #fff 30%, var(--laranja-claro) 75%, var(--laranja)); -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .filetes{display:flex; align-items:center; justify-content:center; gap:10px; margin:10px 0 0; color:var(--laranja); font-size:.68rem; letter-spacing:3px; text-transform:uppercase; font-weight:600;}
+  .filetes::before, .filetes::after{content:""; width:38px; height:1px; background:linear-gradient(90deg, transparent, var(--laranja));}
+  .filetes::after{transform:scaleX(-1);}
+  .chamada{color:var(--texto-suave); font-size:.92rem; line-height:1.65; margin:16px auto 0; max-width:480px;}
+  .chamada b{color:var(--branco); font-weight:600;}
+  .verso{font-family:'Playfair Display',serif; font-style:italic; color:var(--dourado); font-size:.86rem; margin-top:12px; opacity:.9;}
+
+  .beneficios{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-width:620px; margin:22px auto 0; padding:0 18px;}
+  .bnf{background:var(--preto-card); border:1px solid var(--cinza-borda); border-radius:14px; padding:12px 8px; text-align:center;}
+  .bnf .ic{font-size:1.3rem;}
+  .bnf .t{font-size:.7rem; font-weight:600; margin-top:4px; line-height:1.3;}
+  .bnf .s{font-size:.62rem; color:var(--texto-suave); margin-top:2px; line-height:1.35;}
+
+  main{max-width:620px; margin:0 auto; padding:20px 18px 50px;}
+  form, .ok{background:var(--preto-card); border:1px solid var(--cinza-borda); border-radius:22px; padding:22px 20px 24px; box-shadow:0 20px 60px rgba(0,0,0,.35);}
+  .etapa{display:flex; align-items:center; gap:10px; margin:22px 0 12px;}
+  .etapa:first-child{margin-top:0;}
+  .etapa .n{width:26px; height:26px; flex:none; border-radius:50%; background:var(--laranja); color:#1a0e06; font-weight:700; font-size:.78rem; display:flex; align-items:center; justify-content:center;}
+  .etapa .t{font-weight:600; font-size:.95rem;}
+  .etapa .t small{display:block; font-weight:400; font-size:.7rem; color:var(--texto-suave);}
+
+  .campo{margin-bottom:14px;}
+  label.r{display:block; font-size:.74rem; font-weight:600; color:var(--texto-suave); margin-bottom:6px; letter-spacing:.3px;}
+  label.r i{font-style:normal; color:var(--laranja);}
+  label.r em{font-style:normal; font-weight:400; opacity:.75;}
+  input[type=text], input[type=tel], select, textarea{
+    width:100%; background:var(--preto-campo); border:1.5px solid var(--cinza-borda); border-radius:12px; color:var(--branco);
+    font:400 1rem 'Poppins',sans-serif; padding:13px 14px; outline:none; transition:border-color .15s, box-shadow .15s; -webkit-appearance:none; appearance:none;
+  }
+  textarea{min-height:84px; resize:vertical; line-height:1.5;}
+  select{background-image:linear-gradient(45deg, transparent 50%, var(--laranja) 50%), linear-gradient(135deg, var(--laranja) 50%, transparent 50%);
+    background-position:calc(100% - 20px) 55%, calc(100% - 14px) 55%; background-size:6px 6px; background-repeat:no-repeat; padding-right:38px;}
+  select option{background:#1b1b1f; color:var(--branco);}
+  input::placeholder, textarea::placeholder{color:#6f6a64;}
+  input:focus, select:focus, textarea:focus{border-color:var(--laranja); box-shadow:0 0 0 3px rgba(240,131,74,.18);}
+  .campo.erro input, .campo.erro select, .campo.erro textarea{border-color:var(--vermelho);}
+  .campo .dica{font-size:.68rem; color:var(--texto-suave); margin-top:5px; line-height:1.45;}
+  .campo .msg-erro{font-size:.7rem; color:var(--vermelho); margin-top:5px; display:none;}
+  .campo.erro .msg-erro{display:block;}
+  .duas{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+
+  .vinculos{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .vinculos label{
+    display:flex; align-items:center; gap:10px; padding:12px; border-radius:12px; border:1.5px solid var(--cinza-borda); background:var(--preto-campo);
+    cursor:pointer; font-size:.8rem; line-height:1.3; transition:border-color .15s, background .15s;
+  }
+  .vinculos input{position:absolute; opacity:0; pointer-events:none;}
+  .vinculos .em{font-size:1.25rem; flex:none;}
+  .vinculos label:has(input:checked){border-color:var(--laranja); background:rgba(240,131,74,.1);}
+  .vinculos label:has(input:focus-visible){box-shadow:0 0 0 3px rgba(240,131,74,.25);}
+
+  .aceite{display:flex; gap:12px; align-items:flex-start; padding:14px; border-radius:14px; background:rgba(240,131,74,.06); border:1px solid rgba(240,131,74,.25); font-size:.76rem; line-height:1.55; color:var(--texto-suave); cursor:pointer; margin-top:6px;}
+  .aceite input{width:20px; height:20px; flex:none; margin-top:1px; accent-color:var(--laranja);}
+  .aceite b{color:var(--branco);}
+  .aceite.erro{border-color:var(--vermelho);}
+
+  .btn{
+    display:flex; align-items:center; justify-content:center; gap:8px; width:100%; margin-top:18px; padding:16px; border:0; border-radius:14px; cursor:pointer;
+    background:linear-gradient(135deg, var(--laranja-claro), var(--laranja) 50%, var(--laranja-escuro)); color:#1a0e06; font:700 1rem 'Poppins',sans-serif; letter-spacing:1.5px;
+    box-shadow:0 10px 28px rgba(240,131,74,.35); transition:transform .1s, filter .15s;
+  }
+  .btn:active{transform:scale(.985);}
+  .btn[disabled]{filter:grayscale(.6) brightness(.8); cursor:wait;}
+  .btn.sec{background:transparent; color:var(--laranja); border:1.5px solid var(--laranja); box-shadow:none; letter-spacing:.5px; font-size:.9rem; padding:13px;}
+  .btn.zap{background:#25D366; color:#062b14; box-shadow:0 10px 28px rgba(37,211,102,.25); letter-spacing:.5px; font-size:.92rem;}
+  .aviso-geral{display:none; margin-top:14px; padding:12px 14px; border-radius:12px; background:rgba(229,83,75,.12); border:1px solid rgba(229,83,75,.45); color:#ffb4ae; font-size:.8rem; line-height:1.5;}
+  .seguro{display:flex; align-items:center; justify-content:center; gap:6px; margin-top:12px; font-size:.68rem; color:var(--texto-suave);}
+
+  .ok{text-align:center; display:none;}
+  .ok .check{width:72px; height:72px; margin:4px auto 14px; border-radius:50%; background:rgba(61,187,122,.14); border:2px solid var(--verde); display:flex; align-items:center; justify-content:center;}
+  .ok .check svg{width:36px; height:36px;}
+  .ok h2{font-family:'Playfair Display',serif; font-size:1.6rem; font-weight:800;}
+  .ok p{color:var(--texto-suave); font-size:.88rem; line-height:1.6; margin-top:8px;}
+  .ok .ficha{text-align:left; margin:18px 0 4px; padding:14px 16px; border-radius:14px; background:var(--preto-campo); border:1px solid var(--cinza-borda); font-size:.82rem; line-height:1.7;}
+  .ok .ficha span{color:var(--texto-suave);}
+  .ok .link{display:inline-block; margin-top:14px; color:var(--texto-suave); font-size:.78rem; text-decoration:underline; background:none; border:0; cursor:pointer; font-family:inherit;}
+
+  footer{text-align:center; color:#6f6a64; font-size:.66rem; letter-spacing:1px; padding:0 18px 34px; line-height:1.7;}
+  @media (max-width:420px){
+    .duas, .vinculos{grid-template-columns:1fr;}
+    form, .ok{padding:18px 15px 20px; border-radius:18px;}
+    main{padding:16px 12px 40px;}
+    .beneficios{padding:0 12px; gap:6px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <div class="selo"><img src="icon-512.png" alt="Aliançados"></div>
+  <div class="igreja">Igreja Aliançados</div>
+  <h1>Fé em Negócios</h1>
+  <div class="filetes">Rede de negócios da igreja</div>
+  <p class="chamada">Cadastre <b>onde você trabalha</b> ou <b>a sua empresa</b>. Quando um irmão precisar de um serviço, ele encontra você primeiro.</p>
+  <p class="verso">“Tudo o que fizerem, façam de todo o coração, como para o Senhor.” · Cl 3.23</p>
+</header>
+
+<section class="beneficios" aria-label="Por que se cadastrar">
+  <div class="bnf"><div class="ic">🤝</div><div class="t">Irmão indica irmão</div><div class="s">quem precisa encontra você</div></div>
+  <div class="bnf"><div class="ic">📈</div><div class="t">Mais clientes</div><div class="s">para o seu negócio crescer</div></div>
+  <div class="bnf"><div class="ic">🔒</div><div class="t">Dados protegidos</div><div class="s">só a liderança acessa</div></div>
+</section>
+
+<main>
+  <form id="form" novalidate>
+    <div class="etapa"><span class="n">1</span><span class="t">Quem é você</span></div>
+    <div class="campo" data-c="nome">
+      <label class="r" for="nome">Nome completo <i>*</i></label>
+      <input type="text" id="nome" autocomplete="name" maxlength="80" placeholder="Ex.: Maria da Silva Souza">
+      <div class="msg-erro">Escreva o seu nome completo.</div>
+    </div>
+    <div class="campo" data-c="whatsapp">
+      <label class="r" for="whatsapp">WhatsApp <i>*</i></label>
+      <input type="tel" id="whatsapp" inputmode="numeric" autocomplete="tel-national" maxlength="16" placeholder="(67) 99999-9999">
+      <div class="msg-erro">Informe o WhatsApp com DDD.</div>
+      <div class="dica">É por ele que os irmãos vão falar com você.</div>
+    </div>
+
+    <div class="etapa"><span class="n">2</span><span class="t">Seu trabalho<small>conte onde você atua</small></span></div>
+    <div class="campo" data-c="vinculo">
+      <label class="r">Você é <i>*</i></label>
+      <div class="vinculos" id="vinculos"></div>
+      <div class="msg-erro">Escolha uma opção.</div>
+    </div>
+    <div class="campo" data-c="empresa">
+      <label class="r" for="empresa" id="rot-empresa">Empresa onde trabalha <i>*</i></label>
+      <input type="text" id="empresa" maxlength="100" placeholder="Ex.: Gráfica Nova Aliança">
+      <div class="msg-erro">Informe o nome da empresa.</div>
+    </div>
+    <div class="duas">
+      <div class="campo" data-c="funcao">
+        <label class="r" for="funcao">Sua função <i>*</i></label>
+        <input type="text" id="funcao" maxlength="80" placeholder="Ex.: Proprietário, Vendedora">
+        <div class="msg-erro">Informe a sua função.</div>
+      </div>
+      <div class="campo" data-c="ramo">
+        <label class="r" for="ramo">Ramo de atuação <i>*</i></label>
+        <select id="ramo"><option value="">Escolha o ramo</option></select>
+        <div class="msg-erro">Escolha o ramo.</div>
+      </div>
+    </div>
+    <div class="campo" data-c="ramo_outro" id="cx-outro" hidden>
+      <label class="r" for="ramo_outro">Qual ramo? <i>*</i></label>
+      <input type="text" id="ramo_outro" maxlength="60" placeholder="Ex.: Bordados, Chaveiro">
+      <div class="msg-erro">Diga qual é o ramo.</div>
+    </div>
+    <div class="campo" data-c="servicos">
+      <label class="r" for="servicos">O que a empresa faz ou oferece <em>(ajuda a encontrar você)</em></label>
+      <textarea id="servicos" maxlength="400" placeholder="Ex.: cartões de visita, banners, adesivos, convites de casamento"></textarea>
+    </div>
+    <div class="duas">
+      <div class="campo" data-c="cidade">
+        <label class="r" for="cidade">Cidade</label>
+        <input type="text" id="cidade" maxlength="60" placeholder="Campo Grande">
+      </div>
+      <div class="campo" data-c="instagram">
+        <label class="r" for="instagram">Instagram ou site <em>(opcional)</em></label>
+        <input type="text" id="instagram" maxlength="80" autocapitalize="off" placeholder="@suaempresa">
+      </div>
+    </div>
+
+    <label class="aceite" id="cx-aceite">
+      <input type="checkbox" id="aceite">
+      <span>Autorizo a liderança da <b>Igreja Aliançados</b> a guardar estes dados e a indicar o meu contato para irmãos que procurarem este tipo de serviço. Posso pedir para sair a qualquer momento.</span>
+    </label>
+
+    <div class="aviso-geral" id="aviso"></div>
+    <button type="submit" class="btn" id="enviar">CADASTRAR</button>
+    <div class="seguro">🔒 Os seus dados não ficam públicos neste site.</div>
+  </form>
+
+  <div class="ok" id="ok">
+    <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="#3DBB7A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+    <h2 id="ok-tit">Cadastro feito!</h2>
+    <p id="ok-txt">Obrigado por fazer parte da rede Fé em Negócios. Que Deus abençoe o seu trabalho.</p>
+    <div class="ficha" id="ficha"></div>
+    <button type="button" class="btn zap" id="convidar">Convidar outros irmãos pelo WhatsApp</button>
+    <button type="button" class="link" id="corrigir">Corrigir os meus dados</button>
+  </div>
+</main>
+
+<footer>IGREJA ALIANÇADOS · FÉ EM NEGÓCIOS<br>Mesmo WhatsApp de novo = atualiza o seu cadastro</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+/* página pública: o config.js esconde a página até o login; aqui não tem login */
+document.documentElement.classList.add("logado");
+mostrarInstalar = function(){};   /* nada de "instale o app dos obreiros" para a igreja */
+(function(){
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const CHAVE = "fe-negocios-meu";
+  const EMOJI = { dono: "🏢", autonomo: "🧰", funcionario: "💼", servidor: "🏛️" };
+
+  /* opções */
+  $("vinculos").innerHTML = Object.keys(FE_VINCULOS).map(k =>
+    '<label><input type="radio" name="vinculo" value="' + k + '"><span class="em">' + EMOJI[k] + '</span><span>' + FE_VINCULOS[k] + '</span></label>').join("");
+  $("ramo").insertAdjacentHTML("beforeend", FE_RAMOS.map(r => '<option>' + esc(r) + '</option>').join(""));
+
+  /* o rótulo da empresa muda conforme o vínculo */
+  const ROT_EMPRESA = {
+    dono: ["Nome da sua empresa", "Ex.: Gráfica Nova Aliança"],
+    autonomo: ["Nome do seu negócio ou serviço", "Ex.: Marcos Eletricista"],
+    funcionario: ["Empresa onde trabalha", "Ex.: Banco do Brasil"],
+    servidor: ["Órgão onde trabalha", "Ex.: Prefeitura de Campo Grande"]
+  };
+  document.querySelectorAll('input[name=vinculo]').forEach(r => r.addEventListener("change", () => {
+    const [rot, ph] = ROT_EMPRESA[r.value];
+    $("rot-empresa").innerHTML = rot + ' <i>*</i>';
+    $("empresa").placeholder = ph;
+    if(r.value === "servidor" && !$("ramo").value) $("ramo").value = "Serviço Público";
+    limparErro("vinculo");
+  }));
+  $("ramo").addEventListener("change", () => { $("cx-outro").hidden = $("ramo").value !== "Outro"; limparErro("ramo"); });
+
+  /* máscara do WhatsApp: (67) 99999-9999 */
+  function soDigitos(v){ let d = String(v || "").replace(/\D/g, ""); if(d.length > 11 && d.startsWith("55")) d = d.slice(2); return d.slice(0, 11); }
+  function mascara(d){
+    if(d.length <= 2) return d.length ? "(" + d : "";
+    if(d.length <= 6) return "(" + d.slice(0, 2) + ") " + d.slice(2);
+    if(d.length <= 10) return "(" + d.slice(0, 2) + ") " + d.slice(2, 6) + "-" + d.slice(6);
+    return "(" + d.slice(0, 2) + ") " + d.slice(2, 7) + "-" + d.slice(7);
+  }
+  $("whatsapp").addEventListener("input", e => { e.target.value = mascara(soDigitos(e.target.value)); limparErro("whatsapp"); });
+  ["nome", "empresa", "funcao", "ramo_outro"].forEach(id => $(id).addEventListener("input", () => limparErro(id)));
+  $("aceite").addEventListener("change", () => $("cx-aceite").classList.remove("erro"));
+
+  function campo(c){ return document.querySelector('.campo[data-c="' + c + '"]'); }
+  function erro(c){ const el = campo(c); if(el) el.classList.add("erro"); return false; }
+  function limparErro(c){ const el = campo(c); if(el) el.classList.remove("erro"); $("aviso").style.display = "none"; }
+  const nomeBonito = s => s.trim().replace(/\s+/g, " ").toLowerCase().replace(/(^|\s)(\p{L})/gu, (m, a, b) => a + b.toUpperCase())
+                            .replace(/\s(Da|De|Do|Das|Dos|E)\s/g, m => m.toLowerCase());
+
+  function ler(){
+    const v = document.querySelector('input[name=vinculo]:checked');
+    return {
+      nome: nomeBonito($("nome").value),
+      whatsapp: soDigitos($("whatsapp").value),
+      vinculo: v ? v.value : "",
+      empresa: $("empresa").value.trim().replace(/\s+/g, " "),
+      funcao: $("funcao").value.trim().replace(/\s+/g, " "),
+      ramo: $("ramo").value === "Outro" ? ($("ramo_outro").value.trim() ? "Outro: " + $("ramo_outro").value.trim() : "") : $("ramo").value,
+      servicos: $("servicos").value.trim(),
+      cidade: $("cidade").value.trim(),
+      instagram: $("instagram").value.trim(),
+      aceite: $("aceite").checked
+    };
+  }
+  function validar(d){
+    let ok = true, primeiro = null;
+    const marca = (c, cond) => { if(!cond){ ok = erro(c); primeiro = primeiro || c; } };
+    marca("nome", d.nome.length >= 3 && d.nome.includes(" "));
+    marca("whatsapp", d.whatsapp.length === 10 || d.whatsapp.length === 11);
+    marca("vinculo", !!d.vinculo);
+    marca("empresa", d.empresa.length >= 2);
+    marca("funcao", d.funcao.length >= 2);
+    if($("ramo").value === "Outro") marca("ramo_outro", !!d.ramo); else marca("ramo", !!d.ramo);
+    if(!d.aceite){ $("cx-aceite").classList.add("erro"); ok = false; primeiro = primeiro || "aceite"; }
+    if(primeiro){
+      const alvo = primeiro === "aceite" ? $("cx-aceite") : campo(primeiro);
+      alvo.scrollIntoView({ behavior: "smooth", block: "center" });
+      const inp = alvo.querySelector("input,select,textarea"); if(inp && primeiro !== "vinculo") setTimeout(() => inp.focus({ preventScroll: true }), 350);
+    }
+    return ok;
+  }
+
+  const ERROS = {
+    NOME_INVALIDO: "Confira o seu nome.", WHATSAPP_INVALIDO: "Confira o WhatsApp (DDD + número).",
+    EMPRESA_INVALIDA: "Confira o nome da empresa.", FUNCAO_INVALIDA: "Confira a sua função.", RAMO_INVALIDO: "Escolha o ramo.",
+    VINCULO_INVALIDO: "Escolha se você é dono, autônomo, funcionário ou servidor.", TEXTO_GRANDE: "Algum campo ficou grande demais. Resuma um pouco.",
+    SEM_CONSENTIMENTO: "Marque a autorização para enviar.", MUITOS_ENVIOS: "Muita gente cadastrando agora. Espere alguns minutos e tente de novo."
+  };
+
+  $("form").addEventListener("submit", async e => {
+    e.preventDefault();
+    const d = ler();
+    if(!validar(d)) return;
+    const btn = $("enviar");
+    btn.disabled = true; btn.textContent = "ENVIANDO...";
+    let resp = null, falha = "";
+    try{
+      if(!sb) throw new Error("SEM_CONEXAO");
+      const r = await sb.rpc("fe_negocios_cadastrar", {
+        p_nome: d.nome, p_whatsapp: d.whatsapp, p_empresa: d.empresa, p_funcao: d.funcao, p_ramo: d.ramo,
+        p_vinculo: d.vinculo, p_cidade: d.cidade || null, p_servicos: d.servicos || null, p_instagram: d.instagram || null, p_consentimento: true
+      });
+      if(r.error) falha = r.error.message || "ERRO"; else resp = r.data;
+    }catch(err){ falha = err.message || "SEM_CONEXAO"; }
+    btn.disabled = false; btn.textContent = "CADASTRAR";
+    if(falha){
+      const cod = Object.keys(ERROS).find(k => falha.includes(k));
+      $("aviso").textContent = cod ? ERROS[cod] : "Não deu para enviar agora. Confira a internet e tente de novo.";
+      $("aviso").style.display = "block";
+      return;
+    }
+    try{ localStorage.setItem(CHAVE, JSON.stringify(d)); }catch(err){}
+    mostrarOk(d, resp === "ATUALIZADO");
+  });
+
+  function mostrarOk(d, atualizado){
+    $("ok-tit").textContent = atualizado ? "Cadastro atualizado!" : "Cadastro feito!";
+    $("ok-txt").textContent = (atualizado ? "Os seus dados foram atualizados. " : "Obrigado por fazer parte da rede Fé em Negócios. ") + "Que Deus abençoe o seu trabalho.";
+    $("ficha").innerHTML =
+      '<span>Nome:</span> ' + esc(d.nome) + '<br>' +
+      '<span>WhatsApp:</span> ' + esc(mascara(d.whatsapp)) + '<br>' +
+      '<span>' + esc(FE_VINCULOS[d.vinculo]) + ':</span> ' + esc(d.empresa) + '<br>' +
+      '<span>Função:</span> ' + esc(d.funcao) + '<br>' +
+      '<span>Ramo:</span> ' + esc(d.ramo);
+    $("form").style.display = "none";
+    $("ok").style.display = "block";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  $("corrigir").onclick = () => { $("ok").style.display = "none"; $("form").style.display = "block"; preencher(); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  $("convidar").onclick = async () => {
+    const link = location.origin + location.pathname;
+    const txt = "Graça e paz! 🙏 A Igreja Aliançados criou a rede *Fé em Negócios*: cadastre onde você trabalha ou a sua empresa, e quando um irmão precisar de um serviço ele encontra você. Leva 1 minuto: " + link;
+    if(navigator.share){ try{ await navigator.share({ title: "Fé em Negócios · Aliançados", text: txt }); return; }catch(err){ if(err && err.name === "AbortError") return; } }
+    window.open("https://wa.me/?text=" + encodeURIComponent(txt), "_blank");
+  };
+
+  /* quem já enviou neste aparelho: preenche para corrigir */
+  function preencher(){
+    let d = null; try{ d = JSON.parse(localStorage.getItem(CHAVE) || "null"); }catch(err){}
+    if(!d) return;
+    $("nome").value = d.nome || ""; $("whatsapp").value = mascara(d.whatsapp || "");
+    const r = document.querySelector('input[name=vinculo][value="' + d.vinculo + '"]'); if(r){ r.checked = true; r.dispatchEvent(new Event("change")); }
+    $("empresa").value = d.empresa || ""; $("funcao").value = d.funcao || "";
+    if(String(d.ramo || "").startsWith("Outro: ")){ $("ramo").value = "Outro"; $("ramo_outro").value = d.ramo.slice(7); }
+    else $("ramo").value = d.ramo || "";
+    $("cx-outro").hidden = $("ramo").value !== "Outro";
+    $("servicos").value = d.servicos || ""; $("cidade").value = d.cidade || ""; $("instagram").value = d.instagram || "";
+    $("aceite").checked = true;
+  }
+  preencher();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0B0B0D">
+<meta name="robots" content="noindex,nofollow">
+<title>Fé em Negócios · Guia — Equipe Efraim | Aliançados</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,500&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --laranja:#F0834A; --laranja-claro:#F9A56E; --laranja-escuro:#D96A32;
+    --preto:#0B0B0D; --preto-card:#151518; --preto-campo:#0F0F12; --cinza-borda:#2A2A2F;
+    --branco:#F7F3EE; --texto-suave:#B8B2AA; --verde:#3DBB7A; --vermelho:#E5534B; --amarelo:#F2C94C;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--preto); color:var(--branco); font-family:'Poppins',system-ui,sans-serif; min-height:100vh;
+    background-image:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(240,131,74,.18), transparent 60%);
+  }
+  .hero{display:flex; align-items:center; gap:14px; max-width:680px; margin:0 auto; padding:16px 18px 0;}
+  .hero .ic{width:60px; height:60px; flex:none; filter:drop-shadow(0 0 18px rgba(240,131,74,.35));}
+  .hero .ic svg{width:100%; height:100%; display:block;}
+  .hero h1{font-family:'Playfair Display',serif; font-weight:800; font-size:clamp(1.25rem,5.4vw,1.7rem); letter-spacing:1px; line-height:1.15;}
+  .hero h1 span{color:var(--laranja);}
+  .hero .lema{color:var(--texto-suave); font-size:.66rem; letter-spacing:2.5px; text-transform:uppercase; margin-top:4px; font-weight:300;}
+  main{max-width:680px; margin:0 auto; padding:16px 18px 40px;}
+
+  .resumo{display:grid; grid-template-columns:repeat(3,1fr); gap:8px;}
+  .rs{background:var(--preto-card); border:1px solid var(--cinza-borda); border-radius:14px; padding:12px 10px; text-align:center; cursor:pointer;}
+  .rs b{display:block; font-size:1.45rem; font-weight:700; color:var(--laranja); line-height:1.1;}
+  .rs span{font-size:.64rem; color:var(--texto-suave); letter-spacing:1px; text-transform:uppercase;}
+  .rs.ativo{border-color:var(--laranja); background:rgba(240,131,74,.08);}
+
+  .link-cad{margin-top:12px; padding:14px; border-radius:16px; border:1px solid rgba(240,131,74,.35); background:linear-gradient(135deg, rgba(240,131,74,.14), var(--preto-card) 70%);}
+  .link-cad .t{font-size:.7rem; letter-spacing:2px; text-transform:uppercase; font-weight:700; color:var(--laranja);}
+  .link-cad .u{font-size:.8rem; margin-top:4px; word-break:break-all; color:var(--branco);}
+  .link-cad .bts{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;}
+  .bt{padding:9px 14px; border-radius:999px; border:1px solid var(--laranja); background:rgba(240,131,74,.1); color:var(--laranja); font:600 .76rem 'Poppins',sans-serif; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:6px;}
+  .bt.zap{border-color:#25D366; color:#25D366; background:rgba(37,211,102,.1);}
+  .bt.neutro{border-color:var(--cinza-borda); color:var(--texto-suave); background:transparent;}
+
+  .busca{position:sticky; top:0; z-index:5; margin:16px -18px 0; padding:10px 18px; background:linear-gradient(var(--preto) 75%, transparent);}
+  .busca input{
+    width:100%; background:var(--preto-campo); border:1.5px solid var(--cinza-borda); border-radius:14px; color:var(--branco);
+    font:400 1rem 'Poppins',sans-serif; padding:13px 14px 13px 42px; outline:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F0834A' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:14px 50%; background-size:18px;
+  }
+  .busca input:focus{border-color:var(--laranja); box-shadow:0 0 0 3px rgba(240,131,74,.18);}
+  .chips{display:flex; gap:6px; overflow-x:auto; padding:8px 0 2px; scrollbar-width:none;}
+  .chips::-webkit-scrollbar{display:none;}
+  .chip{flex:none; padding:7px 12px; border-radius:999px; border:1px solid var(--cinza-borda); background:var(--preto-card); color:var(--texto-suave); font:500 .72rem 'Poppins',sans-serif; cursor:pointer; white-space:nowrap;}
+  .chip i{font-style:normal; opacity:.7; margin-left:4px;}
+  .chip.ativo{border-color:var(--laranja); color:#1a0e06; background:var(--laranja); font-weight:600;}
+
+  .titulo-lista{display:flex; align-items:center; gap:10px; margin:14px 2px 8px; font-size:.7rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--laranja);}
+  .titulo-lista::after{content:""; flex:1; height:1px; background:linear-gradient(90deg, rgba(240,131,74,.5), transparent);}
+  .titulo-lista button{order:2; background:none; border:0; color:var(--texto-suave); font:500 .66rem 'Poppins',sans-serif; letter-spacing:1px; cursor:pointer; text-decoration:underline;}
+
+  .card{background:var(--preto-card); border:1px solid var(--cinza-borda); border-radius:16px; padding:14px; margin-bottom:10px;}
+  .card .cab{display:flex; gap:12px; align-items:flex-start;}
+  .av{width:46px; height:46px; flex:none; border-radius:14px; background:rgba(240,131,74,.12); border:1.5px solid rgba(240,131,74,.6); color:var(--laranja); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.8rem;}
+  .card .emp{font-weight:700; font-size:1rem; line-height:1.3;}
+  .card .pes{font-size:.8rem; color:var(--texto-suave); margin-top:2px;}
+  .card .pes b{color:var(--branco); font-weight:600;}
+  .tags{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;}
+  .tag{font-size:.64rem; padding:4px 9px; border-radius:999px; background:rgba(255,255,255,.05); border:1px solid var(--cinza-borda); color:var(--texto-suave);}
+  .tag.ramo{border-color:rgba(240,131,74,.45); color:var(--laranja-claro); background:rgba(240,131,74,.08);}
+  .tag.dono{border-color:rgba(242,201,76,.5); color:var(--amarelo); background:rgba(242,201,76,.08);}
+  .card .serv{font-size:.8rem; line-height:1.55; margin-top:10px; color:#ddd6cd;}
+  .card .acoes{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; align-items:center;}
+  .card .quando{margin-left:auto; font-size:.62rem; color:#7d776f;}
+  .card .tirar{background:none; border:0; color:#7d776f; font:500 .66rem 'Poppins',sans-serif; cursor:pointer; text-decoration:underline;}
+  mark{background:rgba(240,131,74,.35); color:inherit; border-radius:3px; padding:0 1px;}
+
+  .vazio{font-size:.86rem; color:var(--texto-suave); line-height:1.65; text-align:center; padding:30px 10px;}
+  .vazio b{color:var(--branco);}
+  .bloqueio{max-width:420px; margin:40px auto; text-align:center; color:var(--texto-suave); line-height:1.7; font-size:.9rem;}
+  @media (max-width:520px){ .hero{padding:14px 14px 0; gap:12px;} main{padding:12px 12px 36px;} .busca{margin:14px -12px 0; padding:10px 12px;} }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <span class="ic" id="ic"></span>
+  <div>
+    <h1>FÉ EM <span>NEGÓCIOS</span></h1>
+    <div class="lema">Guia de negócios da igreja · Aliançados</div>
+  </div>
+</div>
+
+<main id="conteudo"><p class="vazio">Carregando...</p></main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>
+const esc = s => String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const semAcento = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const fone = d => d && d.length === 11 ? "(" + d.slice(0, 2) + ") " + d.slice(2, 7) + "-" + d.slice(7) : d && d.length === 10 ? "(" + d.slice(0, 2) + ") " + d.slice(2, 6) + "-" + d.slice(6) : (d || "");
+const ramoBase = r => String(r || "").startsWith("Outro") ? "Outro" : r;
+const LINK_CADASTRO = location.origin + location.pathname.replace(/[^/]*$/, "") + "fe-em-negocios.html";
+
+let LISTA = [], RAMO = "", SO_DONOS = false;
+
+/* sinônimos simples: quem busca "grafica" acha "comunicação visual", "impressão" etc. */
+const SINONIMOS = {
+  grafica: ["grafica", "impressao", "comunicacao visual", "banner", "adesivo", "cartao"],
+  advogado: ["advog", "juridic", "direito"], contador: ["contab", "contador", "fiscal"],
+  mecanico: ["mecanic", "automotiv", "oficina"], pedreiro: ["construc", "reforma", "pedreiro", "obra"],
+  bolo: ["bolo", "doce", "confeit", "aliment"], cabelo: ["cabel", "salao", "beleza", "barbe"],
+  medico: ["medic", "saude", "clinica"], dentista: ["dentist", "odonto"], fotografo: ["fotograf", "foto", "video"],
+  eletricista: ["eletric", "energia"], computador: ["informatic", "tecnologia", "computador", "sistema"]
+};
+function termosDe(q){
+  return semAcento(q).split(/\s+/).filter(Boolean).map(t => {
+    const k = Object.keys(SINONIMOS).find(s => t.startsWith(s.slice(0, 5)) || s.startsWith(t) && t.length >= 4);
+    return k ? SINONIMOS[k] : [t];
+  });
+}
+function textoDe(p){ return semAcento([p.nome, p.empresa, p.funcao, p.ramo, p.cidade, p.servicos, p.instagram, FE_VINCULOS[p.vinculo]].join(" ")); }
+function marcar(txt, q){
+  let h = esc(txt);
+  const ts = semAcento(q).split(/\s+/).filter(t => t.length >= 2);
+  if(!ts.length) return h;
+  const base = semAcento(txt);
+  const faixas = [];
+  ts.forEach(t => { let i = base.indexOf(t); while(i >= 0){ faixas.push([i, i + t.length]); i = base.indexOf(t, i + t.length); } });
+  if(!faixas.length) return h;
+  faixas.sort((a, b) => a[0] - b[0]);
+  let out = "", pos = 0;
+  faixas.forEach(([a, b]) => { if(a < pos) return; out += esc(txt.slice(pos, a)) + "<mark>" + esc(txt.slice(a, b)) + "</mark>"; pos = b; });
+  return out + esc(txt.slice(pos));
+}
+function quando(iso){
+  const d = new Date(iso), h = new Date();
+  const dias = Math.floor((new Date(h.toDateString()) - new Date(d.toDateString())) / 864e5);
+  return dias === 0 ? "hoje" : dias === 1 ? "ontem" : dias < 30 ? "há " + dias + " dias" : d.toLocaleDateString("pt-BR");
+}
+
+function montarBase(){
+  document.getElementById("conteudo").innerHTML =
+    '<div class="resumo">' +
+      '<div class="rs" data-f="todos"><b id="n-total">0</b><span>cadastros</span></div>' +
+      '<div class="rs" data-f="donos"><b id="n-donos">0</b><span>empresas</span></div>' +
+      '<div class="rs" data-f="ramos"><b id="n-ramos">0</b><span>ramos</span></div>' +
+    '</div>' +
+    '<div class="link-cad"><div class="t">🔗 Link de cadastro para a igreja</div><div class="u">' + esc(LINK_CADASTRO) + '</div>' +
+      '<div class="bts"><button type="button" class="bt zap" id="b-enviar">Enviar no WhatsApp</button><button type="button" class="bt" id="b-copiar">Copiar link</button>' +
+      '<a class="bt neutro" href="fe-em-negocios.html" target="_blank">Ver a página</a></div></div>' +
+    '<div class="busca"><input type="search" id="q" placeholder="O que você procura? Ex.: gráfica, advogado, bolo" autocomplete="off">' +
+      '<div class="chips" id="chips"></div></div>' +
+    '<div class="titulo-lista"><span id="tit">Todos</span><button type="button" id="b-csv">baixar planilha</button></div>' +
+    '<div id="lista"></div>';
+  document.getElementById("q").addEventListener("input", desenhar);
+  document.querySelector('.rs[data-f="todos"]').onclick = () => { RAMO = ""; SO_DONOS = false; document.getElementById("q").value = ""; desenhar(); };
+  document.querySelector('.rs[data-f="donos"]').onclick = () => { SO_DONOS = !SO_DONOS; desenhar(); };
+  document.querySelector('.rs[data-f="ramos"]').onclick = () => document.getElementById("chips").scrollIntoView({ behavior: "smooth", block: "center" });
+  document.getElementById("b-copiar").onclick = async e => {
+    try{ await navigator.clipboard.writeText(LINK_CADASTRO); e.target.textContent = "Copiado ✓"; }catch(err){ prompt("Copie o link:", LINK_CADASTRO); }
+    setTimeout(() => { e.target.textContent = "Copiar link"; }, 2000);
+  };
+  document.getElementById("b-enviar").onclick = async () => {
+    const txt = "Graça e paz, igreja! 🙏\n\nCriamos a rede *Fé em Negócios* da Aliançados. Cadastre onde você trabalha ou a sua empresa: quando um irmão precisar de um serviço, ele encontra você primeiro.\n\nLeva 1 minuto 👉 " + LINK_CADASTRO;
+    if(navigator.share){ try{ await navigator.share({ title: "Fé em Negócios", text: txt }); return; }catch(err){ if(err && err.name === "AbortError") return; } }
+    window.open("https://wa.me/?text=" + encodeURIComponent(txt), "_blank");
+  };
+  document.getElementById("b-csv").onclick = baixarCsv;
+}
+
+function filtrados(){
+  const q = document.getElementById("q").value.trim();
+  const grupos = termosDe(q);
+  return LISTA.filter(p => {
+    if(RAMO && ramoBase(p.ramo) !== RAMO) return false;
+    if(SO_DONOS && !(p.vinculo === "dono" || p.vinculo === "autonomo")) return false;
+    if(!grupos.length) return true;
+    const t = textoDe(p);
+    return grupos.every(g => g.some(x => t.includes(x)));
+  });
+}
+
+function desenhar(){
+  const q = document.getElementById("q").value.trim();
+  const donos = LISTA.filter(p => p.vinculo === "dono" || p.vinculo === "autonomo").length;
+  const contagem = {};
+  LISTA.forEach(p => { const r = ramoBase(p.ramo); contagem[r] = (contagem[r] || 0) + 1; });
+  document.getElementById("n-total").textContent = LISTA.length;
+  document.getElementById("n-donos").textContent = donos;
+  document.getElementById("n-ramos").textContent = Object.keys(contagem).length;
+  document.querySelector('.rs[data-f="donos"]').classList.toggle("ativo", SO_DONOS);
+  document.querySelector('.rs[data-f="todos"]').classList.toggle("ativo", !RAMO && !SO_DONOS && !q);
+
+  const ramos = Object.keys(contagem).sort((a, b) => contagem[b] - contagem[a] || a.localeCompare(b));
+  document.getElementById("chips").innerHTML =
+    '<button type="button" class="chip' + (!RAMO ? " ativo" : "") + '" data-r="">Todos os ramos</button>' +
+    ramos.map(r => '<button type="button" class="chip' + (RAMO === r ? " ativo" : "") + '" data-r="' + esc(r) + '">' + esc(r) + '<i>' + contagem[r] + '</i></button>').join("");
+  document.querySelectorAll("#chips .chip").forEach(c => c.onclick = () => { RAMO = RAMO === c.dataset.r ? "" : c.dataset.r; desenhar(); });
+
+  const lista = filtrados().sort((a, b) =>
+    ((b.vinculo === "dono") - (a.vinculo === "dono")) || a.empresa.localeCompare(b.empresa, "pt-BR"));
+  const partes = [RAMO, SO_DONOS ? "empresas e autônomos" : "", q ? "“" + q + "”" : ""].filter(Boolean);
+  document.getElementById("tit").textContent = (partes.length ? partes.join(" · ") : "Todos") + " · " + lista.length;
+
+  const el = document.getElementById("lista");
+  if(!LISTA.length){
+    el.innerHTML = '<p class="vazio">Ainda ninguém se cadastrou.<br>Envie o <b>link de cadastro</b> no grupo da igreja para começar.</p>';
+    return;
+  }
+  if(!lista.length){
+    el.innerHTML = '<p class="vazio">Nenhum irmão encontrado para essa busca.<br>Tente outra palavra ou limpe os filtros.</p>';
+    return;
+  }
+  el.innerHTML = lista.map(p => {
+    const primeiro = p.nome.split(" ")[0];
+    const msg = "Graça e paz, " + primeiro + "! 🙏 Encontrei o seu contato no Fé em Negócios da Aliançados. ";
+    const ig = p.instagram ? (/^https?:\/\//i.test(p.instagram) ? p.instagram : /\./.test(p.instagram) && !p.instagram.startsWith("@") ? "https://" + p.instagram : "https://instagram.com/" + p.instagram.replace(/^@/, "")) : "";
+    return '<div class="card">' +
+      '<div class="cab"><div class="av">' + esc(iniciais(p.empresa)) + '</div><div style="flex:1;min-width:0">' +
+        '<div class="emp">' + marcar(p.empresa, q) + '</div>' +
+        '<div class="pes"><b>' + marcar(p.nome, q) + '</b> · ' + marcar(p.funcao, q) + '</div></div></div>' +
+      '<div class="tags"><span class="tag ramo">' + marcar(p.ramo, q) + '</span>' +
+        '<span class="tag' + (p.vinculo === "dono" ? " dono" : "") + '">' + esc(FE_VINCULOS[p.vinculo] || p.vinculo) + '</span>' +
+        (p.cidade ? '<span class="tag">📍 ' + marcar(p.cidade, q) + '</span>' : '') + '</div>' +
+      (p.servicos ? '<div class="serv">' + marcar(p.servicos, q) + '</div>' : '') +
+      '<div class="acoes">' +
+        '<a class="bt zap" target="_blank" href="https://wa.me/55' + esc(p.whatsapp) + '?text=' + encodeURIComponent(msg) + '">WhatsApp · ' + esc(fone(p.whatsapp)) + '</a>' +
+        (ig ? '<a class="bt neutro" target="_blank" rel="noopener" href="' + esc(ig) + '">' + esc(p.instagram) + '</a>' : '') +
+        '<span class="quando">' + (p.vezes > 1 ? "atualizado " : "cadastro ") + quando(p.atualizado_em || p.criado_em) + '</span>' +
+        '<button type="button" class="tirar" data-id="' + p.id + '">excluir</button>' +
+      '</div></div>';
+  }).join("");
+  el.querySelectorAll(".tirar").forEach(b => b.onclick = () => excluir(Number(b.dataset.id)));
+}
+
+async function excluir(id){
+  const p = LISTA.find(x => x.id === id);
+  if(!p || !confirm("Excluir o cadastro de " + p.nome + " (" + p.empresa + ")?")) return;
+  const { error } = await sb.from("fe_negocios").delete().eq("id", id);
+  if(error){ alert("Não deu para excluir: " + error.message); return; }
+  LISTA = LISTA.filter(x => x.id !== id);
+  desenhar();
+}
+
+function baixarCsv(){
+  const cols = [["nome","Nome"],["whatsapp","WhatsApp"],["empresa","Empresa"],["funcao","Função"],["ramo","Ramo"],["vinculo","Vínculo"],["cidade","Cidade"],["servicos","O que oferece"],["instagram","Instagram/site"],["criado_em","Cadastro"]];
+  const cel = v => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+  const linhas = [cols.map(c => cel(c[1])).join(";")].concat(filtrados().map(p => cols.map(([k]) =>
+    cel(k === "vinculo" ? FE_VINCULOS[p[k]] : k === "whatsapp" ? fone(p[k]) : k === "criado_em" ? new Date(p[k]).toLocaleDateString("pt-BR") : p[k])).join(";")));
+  const blob = new Blob(["﻿" + linhas.join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "fe-em-negocios.csv"; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+(async function(){
+  const perfil = await exigirLogin();
+  if(!perfil) return;
+  document.getElementById("ic").innerHTML = iconeCor("negocios");
+  montarBarraUsuario();
+  if(!podeVerFeNegocios()){
+    document.getElementById("conteudo").innerHTML = '<div class="bloqueio">🔒 O guia <b>Fé em Negócios</b> ainda está em preparação.<br>Em breve ele estará disponível para você.</div>';
+    return;
+  }
+  montarBase();
+  const { data, error } = await sb.from("fe_negocios").select("*").order("criado_em", { ascending: false });
+  if(error){
+    document.getElementById("lista").innerHTML = '<p class="vazio">Não deu para carregar os cadastros agora.<br><small>' + esc(error.message) + '</small></p>';
+    return;
+  }
+  LISTA = data || [];
+  desenhar();
+})();
+</script>
+</body>
+</html>

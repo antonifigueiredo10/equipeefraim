@@ -193,6 +193,30 @@ function pastoresQuePosso(){
   return GABINETE_PASTORES.filter(p => nomeSimples(p) === eu);
 }
 
+/* ======================= FÉ EM NEGÓCIOS (rede de negócios da igreja) =======================
+   Cadastro público em fe-em-negocios.html (sem login). O guia de busca (negocios.html) só o admin vê.
+   Para abrir a mais gente: mude esta lista E a função pode_ver_fe_negocios() do banco. */
+const FE_NEGOCIOS_VER = ["antonio"];
+function podeVerFeNegocios(){ return !!(EH_LIDER() && FE_NEGOCIOS_VER.includes(nomeSimples(PERFIL.nome))); }
+const FE_RAMOS = [
+  "Advocacia e Jurídico", "Agronegócio", "Alimentação e Restaurantes", "Automotivo e Mecânica",
+  "Beleza e Estética", "Comércio e Varejo", "Construção e Reformas", "Contabilidade e Finanças",
+  "Educação e Cursos", "Energia Solar e Elétrica", "Eventos e Festas", "Fotografia e Vídeo",
+  "Gráfica e Comunicação Visual", "Imóveis", "Indústria", "Limpeza e Serviços Gerais",
+  "Marketing e Design", "Moda e Confecção", "Móveis e Decoração", "Pet e Veterinária",
+  "Saúde e Bem-estar", "Seguros", "Serviço Público", "Tecnologia e Informática",
+  "Transporte e Logística", "Turismo e Viagens", "Outro"
+];
+const FE_VINCULOS = {
+  dono:        "Dono(a) ou sócio(a)",
+  autonomo:    "Autônomo(a) / profissional liberal",
+  funcionario: "Trabalho em uma empresa",
+  servidor:    "Servidor(a) público(a)"
+};
+ICONES_COR.negocios = '<rect x="5" y="15" width="38" height="26" rx="4" fill="#C98B5A"/><path d="M17 15v-4a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v4h-3v-3.5h-8V15z" fill="#8B5A3C"/>' +
+  '<path d="M5 22h38v4a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3z" fill="#B07A52"/><rect x="20" y="25" width="8" height="7" rx="1.5" fill="#F7C23C"/>' +
+  '<circle cx="38" cy="12" r="8" fill="#fff"/><rect x="36.6" y="6.5" width="2.8" height="11" rx="1" fill="#F0834A"/><rect x="33.5" y="9.4" width="9" height="2.8" rx="1" fill="#F0834A"/>';
+
 function montarNavInferior(){
   if(document.getElementById("nav-inferior")) return;
   const pag = location.pathname.split("/").pop() || "index.html";
@@ -235,6 +259,7 @@ function abrirPerfil(){
       '<button type="button" class="fp-op" data-a="avisos"><span>' + iconeCor("lembrete") + '</span><i class="fp-av">Avisos do devocional</i></button>' +
       '<a class="fp-op" href="manual.html"><span>' + iconeCor("devocional") + '</span>Como usar o app</a>' +
       '<button type="button" class="fp-op" data-a="senha"><span>' + iconeCor("escala") + '</span>Trocar minha senha</button>' +
+      (podeVerFeNegocios() ? '<a class="fp-op" href="negocios.html"><span>' + iconeCor("negocios") + '</span>Fé em Negócios · guia da igreja</a>' : '') +
       (EH_LIDER() ? '<a class="fp-op" href="index.html#admin"><span>' + iconeCor("todos") + '</span><i class="fp-apr">' + (EH_ADMIN() ? 'Admin: obreiros, aprovações e senhas' : 'Painel do líder') + '</i></a>' : '') +
       '<button type="button" class="fp-sair" data-a="sair">Sair do app</button>' +
     '</div>';

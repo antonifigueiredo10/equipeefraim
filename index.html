@@ -305,6 +305,7 @@
     <a href="devocional.html" style="display:inline-block; padding:12px 24px; background:transparent; border:1px solid var(--laranja); color:var(--laranja); border-radius:999px; text-decoration:none; font-weight:700; font-size:.85rem; letter-spacing:1px;">📖 PLANO DEVOCIONAL</a>
     <a href="celulas.html" style="display:inline-block; padding:12px 24px; background:transparent; border:1px solid var(--laranja); color:var(--laranja); border-radius:999px; text-decoration:none; font-weight:700; font-size:.85rem; letter-spacing:1px;">📍 CÉLULAS</a>
     <button type="button" id="btn-admin" onclick="abrirAdmin()" style="display:none; padding:12px 24px; background:#1D1D22; border:1px solid var(--branco); color:var(--branco); border-radius:999px; font:700 .85rem 'Poppins',sans-serif; letter-spacing:1px; cursor:pointer;">🔒 ADMIN<span id="admin-n" style="display:none; background:var(--laranja); color:#fff; border-radius:999px; padding:1px 8px; margin-left:8px; font-size:.75rem;"></span></button>
+    <a href="negocios.html" id="btn-negocios" style="display:none; padding:12px 24px; background:linear-gradient(135deg, rgba(242,201,76,.16), rgba(240,131,74,.12)); border:1px solid #E9C46A; color:#E9C46A; border-radius:999px; text-decoration:none; font-weight:700; font-size:.85rem; letter-spacing:1px;">💼 FÉ EM NEGÓCIOS</a>
   </div>
   <div class="demo" id="aviso-demo"></div>
 </div>
@@ -1293,6 +1294,8 @@ setInterval(() => { if(typeof EH_LIDER === "function" && EH_LIDER()) contarAguar
     }
     document.getElementById("link-admin").style.display = "block";
     document.getElementById("btn-admin").style.display = "inline-block";
+    /* Fé em Negócios: só o Antonio (FE_NEGOCIOS_VER no config.js) */
+    if(podeVerFeNegocios()) document.getElementById("btn-negocios").style.display = "inline-block";
     contarAguardando();
   }
   await carregarNomes();

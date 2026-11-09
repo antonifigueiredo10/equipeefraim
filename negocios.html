@@ -84,7 +84,37 @@
   .vazio b{color:var(--branco);}
   .bloqueio{max-width:420px; margin:40px auto; text-align:center; color:var(--texto-suave); line-height:1.7; font-size:.9rem;}
   @media (max-width:520px){ .hero{padding:14px 14px 0; gap:12px;} main{padding:12px 12px 36px;} .busca{margin:14px -12px 0; padding:10px 12px;} }
+
+  /* ---------- botão Claro / Escuro ---------- */
+  .tema{margin-left:auto; flex:none; display:flex; padding:3px; border-radius:999px; border:1px solid var(--cinza-borda); background:var(--preto-card);}
+  .tema button{border:0; background:transparent; color:var(--texto-suave); font:600 .7rem 'Poppins',sans-serif; padding:7px 11px; border-radius:999px; cursor:pointer; white-space:nowrap;}
+  .tema button.ativo{background:var(--laranja); color:#1a0e06;}
+  @media (max-width:420px){ .tema button span{display:none;} .tema button{padding:7px 10px; font-size:.85rem;} }
+
+  /* ---------- TEMA CLARO ---------- */
+  html[data-tema=claro]{
+    --preto:#F6F1EA; --preto-card:#FFFFFF; --preto-campo:#FFFFFF; --cinza-borda:#E4DCD1;
+    --branco:#1F1A16; --texto-suave:#6E655C; --laranja:#E0702F; --laranja-claro:#C9601F; --amarelo:#A87A12;
+  }
+  html[data-tema=claro] body{background-image:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(240,131,74,.16), transparent 60%);}
+  html[data-tema=claro] .card, html[data-tema=claro] .rs, html[data-tema=claro] .link-cad{box-shadow:0 2px 10px rgba(80,50,20,.06);}
+  html[data-tema=claro] .card .serv{color:#3A332D;}
+  html[data-tema=claro] .card .quando, html[data-tema=claro] .card .tirar{color:#958B80;}
+  html[data-tema=claro] .tag{background:#F6F1EA;}
+  html[data-tema=claro] .bt.zap{border-color:#1E9E52; color:#178043; background:rgba(37,211,102,.1);}
+  html[data-tema=claro] .chip.ativo, html[data-tema=claro] .tema button.ativo{color:#fff;}
+  html[data-tema=claro] mark{background:rgba(240,131,74,.28);}
+  html[data-tema=claro] #barra-usuario{background:#FFFFFF; border-bottom-color:#E4DCD1; color:#6E655C;}
+  html[data-tema=claro] #barra-usuario b{color:#1F1A16;}
+  html[data-tema=claro] #barra-usuario button{border-color:#E4DCD1; color:#6E655C;}
+  html[data-tema=claro] #nav-inferior{background:rgba(255,255,255,.97); border-top-color:#E4DCD1;}
+  html[data-tema=claro] #nav-inferior .ni{color:#7A7168;}
+  html[data-tema=claro] #nav-inferior .ni.ativo{color:#E0702F;}
 </style>
+<script>
+  /* aplica o tema escolhido antes de desenhar (sem piscar) */
+  try{ if(localStorage.getItem("efraim-tema-negocios") === "claro") document.documentElement.setAttribute("data-tema", "claro"); }catch(e){}
+</script>
 </head>
 <body>
 
@@ -93,6 +123,10 @@
   <div>
     <h1>FÉ EM <span>NEGÓCIOS</span></h1>
     <div class="lema">Guia de negócios da igreja · Aliançados</div>
+  </div>
+  <div class="tema" role="group" aria-label="Cor da tela">
+    <button type="button" data-tema="claro" title="Tela clara">☀️<span> Claro</span></button>
+    <button type="button" data-tema="escuro" title="Tela escura">🌙<span> Escuro</span></button>
   </div>
 </div>
 
@@ -108,6 +142,16 @@ const ramoBase = r => String(r || "").startsWith("Outro") ? "Outro" : r;
 const LINK_CADASTRO = location.origin + location.pathname.replace(/[^/]*$/, "") + "fe-em-negocios.html";
 
 let LISTA = [], RAMO = "", SO_DONOS = false;
+
+/* Claro / Escuro: lembrado neste aparelho */
+function aplicarTema(t){
+  if(t === "claro") document.documentElement.setAttribute("data-tema", "claro"); else document.documentElement.removeAttribute("data-tema");
+  document.querySelectorAll(".tema button").forEach(b => b.classList.toggle("ativo", b.dataset.tema === t));
+  const meta = document.querySelector('meta[name="theme-color"]'); if(meta) meta.content = t === "claro" ? "#F6F1EA" : "#0B0B0D";
+  try{ localStorage.setItem("efraim-tema-negocios", t); }catch(e){}
+}
+document.querySelectorAll(".tema button").forEach(b => b.onclick = () => aplicarTema(b.dataset.tema));
+aplicarTema(document.documentElement.getAttribute("data-tema") === "claro" ? "claro" : "escuro");
 
 /* sinônimos simples: quem busca "grafica" acha "comunicação visual", "impressão" etc. */
 const SINONIMOS = {

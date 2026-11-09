@@ -207,6 +207,33 @@ const FE_RAMOS = [
   "Saúde e Bem-estar", "Seguros", "Serviço Público", "Tecnologia e Informática",
   "Transporte e Logística", "Turismo e Viagens", "Outro"
 ];
+/* Plano anual (Mercado Pago, função fe-pagamento). Mudar o preço = aqui E na função E no banco (fe_registrar_pagamento). */
+const FE_PRECO = 97;
+const FE_PRECO_TXT = "R$ 97,00";
+const FE_URL_PAGAMENTO = SUPABASE_URL + "/functions/v1/fe-pagamento";
+async function feCriarPagamento(whatsapp, senha){
+  const r = await fetch(FE_URL_PAGAMENTO, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY },
+    body: JSON.stringify({ acao: "criar", whatsapp, senha })
+  });
+  const j = await r.json().catch(() => ({ erro: "RESPOSTA_INVALIDA" }));
+  if(!r.ok || j.erro || !j.link) throw new Error(j.erro || ("HTTP " + r.status));
+  return j.link;
+}
+const FE_ERROS_CONTA = {
+  SENHA_CURTA: "A senha precisa ter pelo menos 6 caracteres.",
+  SENHA_ERRADA: "Senha errada. Confira e tente de novo.",
+  SEM_CADASTRO: "Esse WhatsApp ainda não tem cadastro. Faça o cadastro primeiro.",
+  SEM_CONTA: "Esse WhatsApp ainda não assinou o plano.",
+  MUITAS_TENTATIVAS: "Muitas tentativas erradas. Espere 15 minutos e tente de novo.",
+  APARELHO_LIMITE: "A sua conta já trocou de aparelho este mês. Para liberar este aparelho, fale com a liderança.",
+  SESSAO_CAIU: "A sua conta entrou em outro aparelho. Entre de novo.",
+  PLANO_INATIVO: "O seu plano não está ativo.",
+  PAGAMENTO_NAO_CONFIGURADO: "O pagamento ainda está sendo configurado. Tente mais tarde.",
+  CONTA_PROTEGIDA: "Esse WhatsApp já tem conta no plano. Digite a sua senha para atualizar os dados."
+};
+function feErro(msg){ const k = Object.keys(FE_ERROS_CONTA).find(c => String(msg || "").includes(c)); return k ? FE_ERROS_CONTA[k] : "Não deu agora. Confira a internet e tente de novo."; }
 const FE_VINCULOS = {
   dono:        "Dono(a) ou sócio(a)",
   autonomo:    "Autônomo(a) / profissional liberal",

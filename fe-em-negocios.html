@@ -81,6 +81,23 @@
   .duas{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
 
   [hidden]{display:none !important;}
+  input[type=password]{width:100%; background:var(--preto-campo); border:1.5px solid var(--cinza-borda); border-radius:12px; color:var(--branco); font:400 1rem 'Poppins',sans-serif; padding:13px 14px; outline:none;}
+  input[type=password]:focus{border-color:var(--laranja); box-shadow:0 0 0 3px rgba(240,131,74,.18);}
+  .campo.erro input[type=password]{border-color:var(--vermelho);}
+  .plano{text-align:left; margin:20px 0 6px; padding:20px 18px; border-radius:18px; border:1.5px solid var(--dourado);
+    background:linear-gradient(160deg, rgba(233,196,106,.16), rgba(240,131,74,.08) 45%, var(--preto-campo) 85%);}
+  .pl-selo{font-size:.66rem; letter-spacing:3px; font-weight:700; color:var(--dourado);}
+  .pl-preco{margin-top:6px;}
+  .pl-preco b{font-family:'Playfair Display',serif; font-size:2rem; font-weight:800;}
+  .pl-preco span{color:var(--texto-suave); font-size:.85rem; margin-left:4px;}
+  .pl-lista{list-style:none; margin:10px 0 16px; font-size:.82rem; line-height:1.5;}
+  .pl-lista li{padding-left:24px; position:relative; margin-bottom:6px; color:var(--texto-suave);}
+  .pl-lista li::before{content:"✓"; position:absolute; left:0; color:var(--verde); font-weight:700;}
+  .pl-lista b{color:var(--branco); font-weight:600;}
+  .pl-dica{margin:-2px 0 4px;}
+  .pl-dica b{color:var(--branco);}
+  .pl-entrar{display:block; text-align:center; margin-top:12px; color:var(--dourado); font-size:.8rem;}
+  .topo-entrar{display:inline-block; margin-top:14px; font-size:.76rem; color:var(--dourado); text-decoration:none; border:1px solid rgba(233,196,106,.45); border-radius:999px; padding:7px 14px;}
   .foto-linha{display:flex; align-items:center; gap:14px; margin-bottom:16px;}
   .foto-cx{width:84px; height:84px; flex:none; border-radius:50%; border:2px dashed rgba(240,131,74,.6); background:rgba(240,131,74,.07); cursor:pointer; overflow:hidden; padding:0; color:var(--laranja); position:relative;}
   .foto-cx.com{border-style:solid; border-color:var(--laranja);}
@@ -150,6 +167,7 @@
   <div class="filetes">Rede de negócios da igreja</div>
   <p class="chamada">Cadastre <b>onde você trabalha</b> ou <b>a sua empresa</b>. Quando um irmão precisar de um serviço, ele encontra você primeiro.</p>
   <p class="verso">“Tudo o que fizerem, façam de todo o coração, como para o Senhor.” · Cl 3.23</p>
+  <a class="topo-entrar" href="fe-guia.html">⭐ Já é assinante? Entrar no guia</a>
 </header>
 
 <section class="beneficios" aria-label="Por que se cadastrar">
@@ -241,6 +259,12 @@
       <span>Autorizo a liderança da <b>Igreja Aliançados</b> a guardar estes dados e a indicar o meu contato para irmãos que procurarem este tipo de serviço. Posso pedir para sair a qualquer momento.</span>
     </label>
 
+    <div class="campo" data-c="senha_atual" id="cx-senha-atual" hidden>
+      <label class="r" for="senha_atual">Sua senha do plano <i>*</i></label>
+      <input type="password" id="senha_atual" maxlength="60" autocomplete="current-password" placeholder="A senha que você criou ao assinar">
+      <div class="dica">Esse WhatsApp já é assinante. Para mudar os dados, confirme a senha.</div>
+    </div>
+
     <div class="aviso-geral" id="aviso"></div>
     <button type="submit" class="btn" id="enviar">CADASTRAR</button>
     <div class="seguro">🔒 Os seus dados não ficam públicos neste site.</div>
@@ -251,6 +275,32 @@
     <h2 id="ok-tit">Cadastro feito!</h2>
     <p id="ok-txt">Obrigado por fazer parte da rede Fé em Negócios. Que Deus abençoe o seu trabalho.</p>
     <div class="ficha" id="ficha"></div>
+
+    <div class="plano" id="plano">
+      <div class="pl-selo">⭐ PLANO ANUAL</div>
+      <div class="pl-preco"><b id="pl-preco">R$ 97,00</b><span>/ano</span></div>
+      <ul class="pl-lista">
+        <li>Seu negócio <b>aparece no guia</b> da igreja</li>
+        <li>Você <b>encontra todos os irmãos</b> assinantes por ramo, serviço ou nome</li>
+        <li>Fala direto pelo <b>WhatsApp</b> de cada um</li>
+        <li>Pix, boleto ou cartão em até 12x pelo <b>Mercado Pago</b></li>
+      </ul>
+      <div class="campo" data-c="senha1">
+        <label class="r" for="senha1">Crie a sua senha de acesso <i>*</i></label>
+        <input type="password" id="senha1" maxlength="60" autocomplete="new-password" placeholder="Pelo menos 6 caracteres">
+        <div class="msg-erro">A senha precisa ter pelo menos 6 caracteres.</div>
+      </div>
+      <div class="campo" data-c="senha2">
+        <label class="r" for="senha2">Repita a senha <i>*</i></label>
+        <input type="password" id="senha2" maxlength="60" autocomplete="new-password">
+        <div class="msg-erro">As senhas não são iguais.</div>
+      </div>
+      <div class="dica pl-dica">O seu login é o seu WhatsApp. A conta vale para <b>um aparelho</b>: é pessoal, não dá para dividir.</div>
+      <div class="aviso-geral" id="aviso-plano"></div>
+      <button type="button" class="btn" id="assinar">ASSINAR COM MERCADO PAGO</button>
+      <a class="pl-entrar" href="fe-guia.html">Já sou assinante · entrar no guia</a>
+    </div>
+
     <button type="button" class="btn zap" id="convidar">Convidar outros irmãos pelo WhatsApp</button>
     <button type="button" class="link" id="corrigir">Corrigir os meus dados</button>
     <button type="button" class="link" id="outra">Cadastrar outra pessoa</button>
@@ -401,19 +451,51 @@ mostrarInstalar = function(){};   /* nada de "instale o app dos obreiros" para a
       const r = await sb.rpc("fe_negocios_cadastrar", {
         p_nome: d.nome, p_whatsapp: d.whatsapp, p_empresa: d.empresa, p_funcao: d.funcao, p_ramo: d.ramo,
         p_vinculo: d.vinculo, p_cidade: d.cidade || null, p_servicos: d.servicos || null, p_instagram: d.instagram || null, p_consentimento: true,
-        p_aniversario: d.aniversario || null, p_foto: FOTO || null
+        p_aniversario: d.aniversario || null, p_foto: FOTO || null,
+        p_senha: $("cx-senha-atual").hidden ? null : $("senha_atual").value
       });
       if(r.error) falha = r.error.message || "ERRO"; else resp = r.data;
     }catch(err){ falha = err.message || "SEM_CONEXAO"; }
     btn.disabled = false; btn.textContent = "CADASTRAR";
+    if(falha && falha.includes("CONTA_PROTEGIDA")){
+      const ja = !$("cx-senha-atual").hidden;
+      $("cx-senha-atual").hidden = false;
+      $("aviso").textContent = ja ? "Senha errada. Confira e tente de novo." : FE_ERROS_CONTA.CONTA_PROTEGIDA;
+      $("aviso").style.display = "block";
+      $("senha_atual").focus();
+      return;
+    }
     if(falha){
       const cod = Object.keys(ERROS).find(k => falha.includes(k));
       $("aviso").textContent = cod ? ERROS[cod] : "Não deu para enviar agora. Confira a internet e tente de novo.";
       $("aviso").style.display = "block";
       return;
     }
+    ULTIMO_ZAP = d.whatsapp;
+    SENHA_JA = $("cx-senha-atual").hidden ? "" : $("senha_atual").value;
     mostrarOk(d, resp === "ATUALIZADO");
   });
+
+  /* ---------- plano anual: cria/confere a senha e vai para o Mercado Pago ---------- */
+  let ULTIMO_ZAP = "", SENHA_JA = "";
+  $("pl-preco").textContent = FE_PRECO_TXT;
+  ["senha1", "senha2"].forEach(id => $(id).addEventListener("input", () => { limparErro(id); $("aviso-plano").style.display = "none"; }));
+  $("assinar").onclick = async () => {
+    let senha = SENHA_JA;
+    if(!senha){
+      senha = $("senha1").value;
+      if(senha.length < 6){ erro("senha1"); $("senha1").focus(); return; }
+      if(senha !== $("senha2").value){ erro("senha2"); $("senha2").focus(); return; }
+    }
+    const b = $("assinar"); b.disabled = true; b.textContent = "ABRINDO O MERCADO PAGO...";
+    try{
+      const link = await feCriarPagamento(ULTIMO_ZAP, senha);
+      location.href = link;
+    }catch(err){
+      b.disabled = false; b.textContent = "ASSINAR COM MERCADO PAGO";
+      $("aviso-plano").textContent = feErro(err.message); $("aviso-plano").style.display = "block";
+    }
+  };
 
   function mostrarOk(d, atualizado){
     $("ok-tit").textContent = atualizado ? "Cadastro atualizado!" : "Cadastro feito!";
@@ -426,6 +508,10 @@ mostrarInstalar = function(){};   /* nada de "instale o app dos obreiros" para a
       '<span>Ramo:</span> ' + esc(d.ramo) +
       (d.aniversario ? '<br><span>Aniversário:</span> ' + parseInt(d.aniversario.slice(3), 10) + ' de ' + MESES_ANIV[parseInt(d.aniversario.slice(0, 2), 10) - 1] : '') +
       (FOTO ? '<br><span>Foto:</span> enviada ✓' : '');
+    /* quem já é assinante (confirmou a senha): renova com a mesma senha, sem criar outra */
+    document.querySelector('.campo[data-c="senha1"]').hidden = !!SENHA_JA;
+    document.querySelector('.campo[data-c="senha2"]').hidden = !!SENHA_JA;
+    $("assinar").textContent = SENHA_JA ? "RENOVAR COM MERCADO PAGO" : "ASSINAR COM MERCADO PAGO";
     $("form").style.display = "none";
     $("ok").style.display = "block";
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -435,6 +521,7 @@ mostrarInstalar = function(){};   /* nada de "instale o app dos obreiros" para a
   $("corrigir").onclick = () => { $("ok").style.display = "none"; $("form").style.display = "block"; window.scrollTo({ top: 0, behavior: "smooth" }); };
   $("outra").onclick = () => {
     $("form").reset(); FOTO = ""; mostrarFoto(); $("cx-outro").hidden = true;
+    $("cx-senha-atual").hidden = true; SENHA_JA = ""; ULTIMO_ZAP = ""; $("senha1").value = $("senha2").value = "";
     $("rot-empresa").innerHTML = 'Empresa onde trabalha <i>*</i>';
     $("ok").style.display = "none"; $("form").style.display = "block"; window.scrollTo({ top: 0, behavior: "smooth" });
   };

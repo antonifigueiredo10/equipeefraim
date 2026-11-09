@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0B0B0D">
+<meta name="robots" content="noindex,nofollow">
+<title>Guia Fé em Negócios · Aliançados</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,500&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --laranja:#F0834A; --laranja-claro:#F9A56E; --laranja-escuro:#D96A32;
+    --preto:#0B0B0D; --preto-card:#151518; --preto-campo:#0F0F12; --cinza-borda:#2A2A2F;
+    --branco:#F7F3EE; --texto-suave:#B8B2AA; --verde:#3DBB7A; --vermelho:#E5534B; --dourado:#E9C46A;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  [hidden]{display:none !important;}
+  body{background:var(--preto); color:var(--branco); font-family:'Poppins',system-ui,sans-serif; min-height:100vh;
+    background-image:radial-gradient(ellipse 85% 45% at 50% -8%, rgba(240,131,74,.2), transparent 62%);}
+  .topo{display:flex; align-items:center; gap:12px; max-width:680px; margin:0 auto; padding:18px 18px 0;}
+  .topo .logo{width:54px; height:54px; flex:none; border-radius:15px; overflow:hidden; box-shadow:0 0 0 1px rgba(240,131,74,.35), 0 6px 24px rgba(240,131,74,.25);}
+  .topo .logo img{width:100%; height:100%; display:block; object-fit:cover;}
+  .topo h1{font-family:'Playfair Display',serif; font-weight:800; font-size:clamp(1.2rem,5.2vw,1.6rem); line-height:1.1;}
+  .topo h1 span{color:var(--laranja);}
+  .topo .sub{font-size:.62rem; letter-spacing:2.5px; text-transform:uppercase; color:var(--texto-suave); margin-top:3px;}
+  main{max-width:680px; margin:0 auto; padding:18px 18px 50px;}
+
+  .caixa{background:var(--preto-card); border:1px solid var(--cinza-borda); border-radius:20px; padding:22px 20px; box-shadow:0 20px 60px rgba(0,0,0,.35);}
+  .caixa h2{font-family:'Playfair Display',serif; font-size:1.45rem; font-weight:800; line-height:1.2;}
+  .caixa p.s{color:var(--texto-suave); font-size:.85rem; line-height:1.6; margin-top:6px;}
+  .campo{margin-top:14px;}
+  label{display:block; font-size:.74rem; font-weight:600; color:var(--texto-suave); margin-bottom:6px;}
+  input{width:100%; background:var(--preto-campo); border:1.5px solid var(--cinza-borda); border-radius:12px; color:var(--branco); font:400 1rem 'Poppins',sans-serif; padding:13px 14px; outline:none;}
+  input:focus{border-color:var(--laranja); box-shadow:0 0 0 3px rgba(240,131,74,.18);}
+  input::placeholder{color:#6f6a64;}
+  .btn{display:flex; align-items:center; justify-content:center; width:100%; margin-top:18px; padding:15px; border:0; border-radius:14px; cursor:pointer;
+    background:linear-gradient(135deg, var(--laranja-claro), var(--laranja) 50%, var(--laranja-escuro)); color:#1a0e06; font:700 .95rem 'Poppins',sans-serif; letter-spacing:1.5px; box-shadow:0 10px 28px rgba(240,131,74,.3);}
+  .btn[disabled]{filter:grayscale(.6) brightness(.8); cursor:wait;}
+  .aviso{display:none; margin-top:14px; padding:12px 14px; border-radius:12px; background:rgba(229,83,75,.12); border:1px solid rgba(229,83,75,.45); color:#ffb4ae; font-size:.8rem; line-height:1.5;}
+  .aviso.ok{background:rgba(61,187,122,.12); border-color:rgba(61,187,122,.5); color:#a6e8c4;}
+  .links{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:14px; font-size:.78rem;}
+  .links a{color:var(--dourado);}
+  .links span{color:var(--texto-suave);}
+  .preco{margin:16px 0 4px; padding:16px; border-radius:16px; border:1.5px solid var(--dourado); background:linear-gradient(160deg, rgba(233,196,106,.14), var(--preto-campo) 75%);}
+  .preco b{font-family:'Playfair Display',serif; font-size:1.8rem;}
+  .preco span{color:var(--texto-suave); font-size:.82rem;}
+  .preco ul{list-style:none; margin-top:8px; font-size:.8rem; color:var(--texto-suave); line-height:1.55;}
+  .preco li::before{content:"✓ "; color:var(--verde); font-weight:700;}
+  .espera{text-align:center;}
+  .roda{width:46px; height:46px; margin:6px auto 14px; border-radius:50%; border:4px solid rgba(240,131,74,.2); border-top-color:var(--laranja); animation:gira 1s linear infinite;}
+  @keyframes gira{to{transform:rotate(360deg);}}
+
+  /* guia */
+  .conta{display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:12px 14px; border-radius:14px; border:1px solid rgba(233,196,106,.45); background:rgba(233,196,106,.07); font-size:.78rem;}
+  .conta b{font-weight:600;}
+  .conta .pl{color:var(--dourado);}
+  .conta button{margin-left:auto; background:none; border:1px solid var(--cinza-borda); color:var(--texto-suave); border-radius:999px; padding:6px 14px; font:500 .72rem 'Poppins',sans-serif; cursor:pointer;}
+  .busca{position:sticky; top:0; z-index:5; margin:14px -18px 0; padding:10px 18px; background:linear-gradient(var(--preto) 75%, transparent);}
+  .busca input{padding-left:42px; border-radius:14px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F0834A' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:14px 50%; background-size:18px;}
+  .chips{display:flex; gap:6px; overflow-x:auto; padding:8px 0 2px; scrollbar-width:none;}
+  .chips::-webkit-scrollbar{display:none;}
+  .chip{flex:none; padding:7px 12px; border-radius:999px; border:1px solid var(--cinza-borda); background:var(--preto-card); color:var(--texto-suave); font:500 .72rem 'Poppins',sans-serif; cursor:pointer; white-space:nowrap;}
+  .chip i{font-style:normal; opacity:.7; margin-left:4px;}
+  .chip.ativo{border-color:var(--laranja); color:#1a0e06; background:var(--laranja); font-weight:600;}
+  .tit{display:flex; align-items:center; gap:10px; margin:14px 2px 8px; font-size:.7rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--laranja);}
+  .tit::after{content:""; flex:1; height:1px; background:linear-gradient(90deg, rgba(240,131,74,.5), transparent);}
+  .card{background:var(--preto-card); border:1px solid var(--cinza-borda); border-radius:16px; padding:14px; margin-bottom:10px;}
+  .card.eu{border-color:rgba(233,196,106,.5);}
+  .cab{display:flex; gap:12px; align-items:flex-start;}
+  .av{width:50px; height:50px; flex:none; border-radius:14px; background:rgba(240,131,74,.12); border:1.5px solid rgba(240,131,74,.6); color:var(--laranja); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.82rem; overflow:hidden;}
+  .av img{width:100%; height:100%; object-fit:cover; display:block;}
+  .emp{font-weight:700; font-size:1rem; line-height:1.3;}
+  .pes{font-size:.8rem; color:var(--texto-suave); margin-top:2px;}
+  .pes b{color:var(--branco); font-weight:600;}
+  .tags{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;}
+  .tag{font-size:.64rem; padding:4px 9px; border-radius:999px; background:rgba(255,255,255,.05); border:1px solid var(--cinza-borda); color:var(--texto-suave);}
+  .tag.ramo{border-color:rgba(240,131,74,.45); color:var(--laranja-claro); background:rgba(240,131,74,.08);}
+  .serv{font-size:.8rem; line-height:1.55; margin-top:10px; color:#ddd6cd;}
+  .acoes{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;}
+  .bt{padding:9px 14px; border-radius:999px; font:600 .76rem 'Poppins',sans-serif; text-decoration:none; display:inline-flex; align-items:center; gap:6px; border:1px solid var(--cinza-borda); color:var(--texto-suave);}
+  .bt.zap{border-color:#25D366; color:#25D366; background:rgba(37,211,102,.1);}
+  mark{background:rgba(240,131,74,.35); color:inherit; border-radius:3px; padding:0 1px;}
+  .vazio{font-size:.86rem; color:var(--texto-suave); line-height:1.65; text-align:center; padding:30px 10px;}
+  footer{text-align:center; color:#6f6a64; font-size:.64rem; letter-spacing:1px; padding:0 18px 30px;}
+  @media (max-width:520px){ main{padding:14px 12px 40px;} .topo{padding:14px 12px 0;} .busca{margin:12px -12px 0; padding:10px 12px;} .caixa{padding:18px 15px;} }
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <span class="logo"><img src="icon-512.png" alt="Igreja Aliançados"></span>
+  <div><h1>FÉ EM <span>NEGÓCIOS</span></h1><div class="sub">Guia dos assinantes · Aliançados</div></div>
+</header>
+
+<main>
+  <!-- entrar -->
+  <section class="caixa" id="v-entrar" hidden>
+    <h2>Entrar no guia</h2>
+    <p class="s">Use o WhatsApp do seu cadastro e a senha que você criou ao assinar.</p>
+    <form id="f-entrar" novalidate>
+      <div class="campo"><label for="e-zap">WhatsApp</label><input type="tel" id="e-zap" inputmode="numeric" autocomplete="username" maxlength="16" placeholder="(67) 99999-9999"></div>
+      <div class="campo"><label for="e-senha">Senha</label><input type="password" id="e-senha" autocomplete="current-password" maxlength="60"></div>
+      <div class="aviso" id="a-entrar"></div>
+      <button type="submit" class="btn" id="b-entrar">ENTRAR</button>
+    </form>
+    <div class="links"><a href="fe-em-negocios.html">Ainda não tem? Cadastre-se</a><span>Esqueceu a senha? Fale com a liderança.</span></div>
+  </section>
+
+  <!-- plano inativo -->
+  <section class="caixa" id="v-assinar" hidden>
+    <h2 id="as-tit">Seu plano não está ativo</h2>
+    <p class="s" id="as-txt">Assine para aparecer no guia e encontrar os irmãos.</p>
+    <div class="preco"><b id="as-preco">R$ 97,00</b> <span>/ano · Pix, boleto ou cartão em até 12x</span>
+      <ul><li>Seu negócio aparece no guia da igreja</li><li>Você busca todos os irmãos assinantes</li><li>Contato direto pelo WhatsApp</li></ul></div>
+    <div class="campo"><label for="as-senha">Confirme a sua senha</label><input type="password" id="as-senha" autocomplete="current-password" maxlength="60"></div>
+    <div class="aviso" id="a-assinar"></div>
+    <button type="button" class="btn" id="b-assinar">ASSINAR COM MERCADO PAGO</button>
+    <div class="links"><span></span><a href="#" id="as-sair">Sair</a></div>
+  </section>
+
+  <!-- esperando o pagamento -->
+  <section class="caixa espera" id="v-espera" hidden>
+    <div class="roda"></div>
+    <h2 id="es-tit">Confirmando o pagamento...</h2>
+    <p class="s" id="es-txt">Assim que o Mercado Pago confirmar, o seu acesso é liberado sozinho. Pode levar alguns segundos.</p>
+  </section>
+
+  <!-- guia -->
+  <section id="v-guia" hidden>
+    <div class="conta"><span>👤 <b id="g-nome"></b></span><span class="pl" id="g-plano"></span><button type="button" id="g-sair">Sair</button></div>
+    <div class="busca"><input type="search" id="q" placeholder="O que você procura? Ex.: gráfica, advogado, bolo" autocomplete="off"><div class="chips" id="chips"></div></div>
+    <div class="tit" id="tit">Todos</div>
+    <div id="lista"></div>
+  </section>
+</main>
+
+<footer>IGREJA ALIANÇADOS · FÉ EM NEGÓCIOS · conta pessoal, 1 aparelho por login</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="fe-comum.js"></script>
+<script>
+/* página pública (sem o login dos obreiros) */
+document.documentElement.classList.add("logado");
+mostrarInstalar = function(){};
+
+const $ = id => document.getElementById(id);
+const K_SESSAO = "fe-sessao", K_APARELHO = "fe-aparelho", K_ZAP = "fe-zap";
+const ler = k => { try{ return localStorage.getItem(k) || ""; }catch(e){ return ""; } };
+const gravar = (k, v) => { try{ v ? localStorage.setItem(k, v) : localStorage.removeItem(k); }catch(e){} };
+function aparelho(){
+  let a = ler(K_APARELHO);
+  if(!a){ a = (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2)); gravar(K_APARELHO, a); }
+  return a;
+}
+function soDigitos(v){ let d = String(v || "").replace(/\D/g, ""); if(d.length > 11 && d.startsWith("55")) d = d.slice(2); return d.slice(0, 11); }
+function mascara(d){ return d.length <= 2 ? (d.length ? "(" + d : "") : d.length <= 6 ? "(" + d.slice(0, 2) + ") " + d.slice(2) : d.length <= 10 ? "(" + d.slice(0, 2) + ") " + d.slice(2, 6) + "-" + d.slice(6) : "(" + d.slice(0, 2) + ") " + d.slice(2, 7) + "-" + d.slice(7); }
+$("e-zap").addEventListener("input", e => { e.target.value = mascara(soDigitos(e.target.value)); });
+const dataBR = iso => iso ? iso.slice(8, 10) + "/" + iso.slice(5, 7) + "/" + iso.slice(0, 4) : "";
+$("as-preco").textContent = FE_PRECO_TXT;
+
+function ver(v){ ["v-entrar", "v-assinar", "v-espera", "v-guia"].forEach(x => $(x).hidden = x !== v); }
+function aviso(id, txt, ok){ const a = $(id); a.textContent = txt; a.classList.toggle("ok", !!ok); a.style.display = txt ? "block" : "none"; }
+async function rpc(nome, args){ const r = await sb.rpc(nome, args); if(r.error) throw new Error(r.error.message || "ERRO"); return r.data; }
+
+let CONTA = null, LISTA = [], RAMO = "";
+
+/* ---------- entrar ---------- */
+$("f-entrar").addEventListener("submit", async e => {
+  e.preventDefault();
+  const zap = soDigitos($("e-zap").value), senha = $("e-senha").value;
+  if(zap.length < 10){ aviso("a-entrar", "Informe o WhatsApp com DDD."); return; }
+  if(!senha){ aviso("a-entrar", "Digite a sua senha."); return; }
+  const b = $("b-entrar"); b.disabled = true; b.textContent = "ENTRANDO..."; aviso("a-entrar", "");
+  try{
+    const r = await rpc("fe_entrar", { p_whatsapp: zap, p_senha: senha, p_aparelho: aparelho() });
+    gravar(K_SESSAO, r.token); gravar(K_ZAP, zap);
+    $("e-senha").value = "";
+    await abrir(r.trocou ? "Pronto! A sua conta agora está neste aparelho (o outro saiu)." : "");
+  }catch(err){ aviso("a-entrar", feErro(err.message)); }
+  b.disabled = false; b.textContent = "ENTRAR";
+});
+
+async function sairGuia(){
+  const t = ler(K_SESSAO);
+  if(t){ try{ await rpc("fe_sair", { p_token: t }); }catch(e){} }
+  gravar(K_SESSAO, ""); CONTA = null; ver("v-entrar");
+}
+$("g-sair").onclick = sairGuia;
+$("as-sair").onclick = e => { e.preventDefault(); sairGuia(); };
+
+/* ---------- abre o que cabe: guia, assinar ou entrar ---------- */
+async function abrir(msgOk){
+  const t = ler(K_SESSAO);
+  if(!t){ $("e-zap").value = mascara(ler(K_ZAP)); ver("v-entrar"); return; }
+  try{ CONTA = await rpc("fe_minha_conta", { p_token: t }); }
+  catch(err){
+    gravar(K_SESSAO, ""); $("e-zap").value = mascara(ler(K_ZAP)); ver("v-entrar");
+    if(String(err.message).includes("SESSAO_CAIU")) aviso("a-entrar", FE_ERROS_CONTA.SESSAO_CAIU);
+    return;
+  }
+  if(!CONTA.ativo){
+    $("as-tit").textContent = CONTA.plano_ate ? "O seu plano venceu em " + dataBR(CONTA.plano_ate) : "Olá, " + CONTA.nome.split(" ")[0] + "! Falta assinar";
+    $("as-txt").textContent = CONTA.plano_ate ? "Renove para continuar no guia e buscando os irmãos." : "Assine para aparecer no guia e encontrar os irmãos.";
+    $("b-assinar").textContent = CONTA.plano_ate ? "RENOVAR COM MERCADO PAGO" : "ASSINAR COM MERCADO PAGO";
+    ver("v-assinar"); return;
+  }
+  await carregarGuia();
+  if(msgOk) setTimeout(() => alert(msgOk), 50);
+}
+
+/* ---------- assinar / renovar ---------- */
+$("b-assinar").onclick = async () => {
+  const senha = $("as-senha").value;
+  if(!senha){ aviso("a-assinar", "Confirme a sua senha."); return; }
+  const b = $("b-assinar"), txt = b.textContent; b.disabled = true; b.textContent = "ABRINDO O MERCADO PAGO...";
+  try{ location.href = await feCriarPagamento(CONTA.whatsapp, senha); }
+  catch(err){ b.disabled = false; b.textContent = txt; aviso("a-assinar", feErro(err.message)); }
+};
+
+/* ---------- voltando do Mercado Pago ---------- */
+async function voltaDoPagamento(pg){
+  history.replaceState(null, "", location.pathname);
+  if(pg === "falhou"){ await abrir(); aviso("a-assinar", "O pagamento não foi concluído. Pode tentar de novo."); return; }
+  if(!ler(K_SESSAO)){
+    ver("v-entrar");
+    aviso("a-entrar", pg === "ok" ? "Pagamento recebido! Entre com o seu WhatsApp e a senha para usar o guia." : "Pagamento em análise. Quando for aprovado, entre com o seu WhatsApp e a senha.", true);
+    return;
+  }
+  ver("v-espera");
+  if(pg === "pendente"){ $("es-tit").textContent = "Pagamento em análise"; $("es-txt").textContent = "Pix e boleto podem levar alguns minutos. Esta tela libera sozinha quando o pagamento for aprovado."; }
+  for(let i = 0; i < 60; i++){
+    try{ const c = await rpc("fe_minha_conta", { p_token: ler(K_SESSAO) }); if(c.ativo){ await abrir(); return; } }catch(e){ await abrir(); return; }
+    await new Promise(r => setTimeout(r, 5000));
+  }
+  $("es-tit").textContent = "Ainda não chegou a confirmação";
+  $("es-txt").textContent = "Assim que o Mercado Pago confirmar, o acesso libera. Volte a esta página daqui a pouco.";
+}
+
+/* ---------- o guia ---------- */
+async function carregarGuia(){
+  try{ LISTA = await rpc("fe_guia", { p_token: ler(K_SESSAO) }) || []; }
+  catch(err){ gravar(K_SESSAO, ""); ver("v-entrar"); aviso("a-entrar", feErro(err.message)); return; }
+  $("g-nome").textContent = CONTA.nome;
+  $("g-plano").textContent = "⭐ plano até " + dataBR(CONTA.plano_ate);
+  ver("v-guia");
+  desenhar();
+}
+$("q").addEventListener("input", desenhar);
+function desenhar(){
+  const q = $("q").value.trim();
+  const cont = {}; LISTA.forEach(p => { const r = ramoBase(p.ramo); cont[r] = (cont[r] || 0) + 1; });
+  $("chips").innerHTML = '<button type="button" class="chip' + (!RAMO ? " ativo" : "") + '" data-r="">Todos os ramos</button>' +
+    Object.keys(cont).sort((a, b) => cont[b] - cont[a] || a.localeCompare(b)).map(r => '<button type="button" class="chip' + (RAMO === r ? " ativo" : "") + '" data-r="' + esc(r) + '">' + esc(r) + '<i>' + cont[r] + '</i></button>').join("");
+  document.querySelectorAll("#chips .chip").forEach(c => c.onclick = () => { RAMO = RAMO === c.dataset.r ? "" : c.dataset.r; desenhar(); });
+  const lista = LISTA.filter(p => (!RAMO || ramoBase(p.ramo) === RAMO) && bateBusca(p, q));
+  $("tit").textContent = [RAMO, q ? "“" + q + "”" : ""].filter(Boolean).join(" · ") + (RAMO || q ? " · " : "Todos · ") + lista.length;
+  if(!lista.length){ $("lista").innerHTML = '<p class="vazio">' + (LISTA.length ? "Nenhum irmão encontrado para essa busca.<br>Tente outra palavra." : "Você é o primeiro assinante! 🎉<br>Convide os irmãos para assinar também.") + '</p>'; return; }
+  $("lista").innerHTML = lista.map(p => {
+    const msg = "Graça e paz, " + p.nome.split(" ")[0] + "! 🙏 Encontrei o seu contato no Fé em Negócios da Aliançados. ";
+    const ig = linkInstagram(p.instagram);
+    return '<div class="card' + (p.eu ? " eu" : "") + '">' +
+      '<div class="cab">' + (fotoOk(p) ? '<div class="av"><img alt="" src="' + p.foto + '"></div>' : '<div class="av">' + esc(iniciais(p.nome)) + '</div>') +
+      '<div style="flex:1;min-width:0"><div class="emp">' + marcar(p.empresa, q) + (p.eu ? ' <span class="tag">você</span>' : '') + '</div>' +
+      '<div class="pes"><b>' + marcar(p.nome, q) + '</b> · ' + marcar(p.funcao, q) + '</div></div></div>' +
+      '<div class="tags"><span class="tag ramo">' + marcar(p.ramo, q) + '</span><span class="tag">' + esc(FE_VINCULOS[p.vinculo] || "") + '</span>' +
+        (p.cidade ? '<span class="tag">📍 ' + marcar(p.cidade, q) + '</span>' : '') + '</div>' +
+      (p.servicos ? '<div class="serv">' + marcar(p.servicos, q) + '</div>' : '') +
+      (p.eu ? '' : '<div class="acoes"><a class="bt zap" target="_blank" href="https://wa.me/55' + esc(p.whatsapp) + '?text=' + encodeURIComponent(msg) + '">WhatsApp · ' + esc(fone(p.whatsapp)) + '</a>' +
+        (ig ? '<a class="bt" target="_blank" rel="noopener" href="' + esc(ig) + '">' + esc(p.instagram) + '</a>' : '') + '</div>') +
+    '</div>';
+  }).join("");
+}
+/* se a conta entrar em outro aparelho, este cai na próxima vez que voltar à tela */
+document.addEventListener("visibilitychange", () => { if(!document.hidden && CONTA && CONTA.ativo) abrir(); });
+
+(function(){
+  const pg = new URLSearchParams(location.search).get("pg");
+  if(pg) voltaDoPagamento(pg); else abrir();
+})();
+</script>
+</body>
+</html>

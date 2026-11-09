@@ -27,6 +27,15 @@
   .hero{display:flex; align-items:center; gap:14px; max-width:680px; margin:0 auto; padding:16px 18px 0;}
   .hero .ic{width:60px; height:60px; flex:none; filter:drop-shadow(0 0 18px rgba(240,131,74,.35));}
   .hero .ic svg{width:100%; height:100%; display:block;}
+  .hero .ic.logo{border-radius:16px; overflow:hidden; filter:none; box-shadow:0 0 0 1px rgba(240,131,74,.35), 0 6px 24px rgba(240,131,74,.28);}
+  .hero .ic.logo img{width:100%; height:100%; object-fit:cover; display:block;}
+  .av img{width:100%; height:100%; object-fit:cover; display:block; border-radius:12px;}
+  .av.foto{padding:0; overflow:hidden; cursor:zoom-in;}
+  .tag.aniv{border-color:rgba(232,85,140,.45); color:#F08BB4; background:rgba(232,85,140,.08);}
+  .tag.aniv.mes{border-color:#E8558C; color:#fff; background:#E8558C;}
+  .chip.aniv.ativo{background:#E8558C; border-color:#E8558C; color:#fff;}
+  #zoom{position:fixed; inset:0; z-index:200; background:rgba(0,0,0,.82); display:flex; align-items:center; justify-content:center; padding:24px; cursor:zoom-out;}
+  #zoom img{max-width:min(92vw, 420px); border-radius:20px; box-shadow:0 20px 60px rgba(0,0,0,.6);}
   .hero h1{font-family:'Playfair Display',serif; font-weight:800; font-size:clamp(1.25rem,5.4vw,1.7rem); letter-spacing:1px; line-height:1.15;}
   .hero h1 span{color:var(--laranja);}
   .hero .lema{color:var(--texto-suave); font-size:.66rem; letter-spacing:2.5px; text-transform:uppercase; margin-top:4px; font-weight:300;}
@@ -104,6 +113,8 @@
   html[data-tema=claro] .bt.zap{border-color:#1E9E52; color:#178043; background:rgba(37,211,102,.1);}
   html[data-tema=claro] .chip.ativo, html[data-tema=claro] .tema button.ativo{color:#fff;}
   html[data-tema=claro] mark{background:rgba(240,131,74,.28);}
+  html[data-tema=claro] .tag.aniv{color:#C2185B;}
+  html[data-tema=claro] .tag.aniv.mes{color:#fff;}
   html[data-tema=claro] #barra-usuario{background:#FFFFFF; border-bottom-color:#E4DCD1; color:#6E655C;}
   html[data-tema=claro] #barra-usuario b{color:#1F1A16;}
   html[data-tema=claro] #barra-usuario button{border-color:#E4DCD1; color:#6E655C;}
@@ -119,7 +130,7 @@
 <body>
 
 <div class="hero">
-  <span class="ic" id="ic"></span>
+  <span class="ic logo"><img src="icon-512.png" alt="Igreja Aliançados"></span>
   <div>
     <h1>FÉ EM <span>NEGÓCIOS</span></h1>
     <div class="lema">Guia de negócios da igreja · Aliançados</div>
@@ -141,7 +152,11 @@ const fone = d => d && d.length === 11 ? "(" + d.slice(0, 2) + ") " + d.slice(2,
 const ramoBase = r => String(r || "").startsWith("Outro") ? "Outro" : r;
 const LINK_CADASTRO = location.origin + location.pathname.replace(/[^/]*$/, "") + "fe-em-negocios.html";
 
-let LISTA = [], RAMO = "", SO_DONOS = false;
+let LISTA = [], RAMO = "", SO_DONOS = false, ANIV_MES = false;
+const MES_ATUAL = String(new Date().getMonth() + 1).padStart(2, "0");
+const fazAnivNoMes = p => /^\d{2}-\d{2}$/.test(p.aniversario || "") && p.aniversario.slice(0, 2) === MES_ATUAL;
+const fotoOk = p => /^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(p.foto || "");
+const anivTexto = a => parseInt(a.slice(3), 10) + "/" + a.slice(0, 2);
 
 /* Claro / Escuro: lembrado neste aparelho */
 function aplicarTema(t){
@@ -224,6 +239,7 @@ function filtrados(){
   return LISTA.filter(p => {
     if(RAMO && ramoBase(p.ramo) !== RAMO) return false;
     if(SO_DONOS && !(p.vinculo === "dono" || p.vinculo === "autonomo")) return false;
+    if(ANIV_MES && !fazAnivNoMes(p)) return false;
     if(!grupos.length) return true;
     const t = textoDe(p);
     return grupos.every(g => g.some(x => t.includes(x)));
@@ -242,14 +258,18 @@ function desenhar(){
   document.querySelector('.rs[data-f="todos"]').classList.toggle("ativo", !RAMO && !SO_DONOS && !q);
 
   const ramos = Object.keys(contagem).sort((a, b) => contagem[b] - contagem[a] || a.localeCompare(b));
+  const nAniv = LISTA.filter(fazAnivNoMes).length;
   document.getElementById("chips").innerHTML =
+    (nAniv ? '<button type="button" class="chip aniv' + (ANIV_MES ? " ativo" : "") + '" id="chip-aniv">🎂 Aniversariantes de ' + MESES_ANIV[parseInt(MES_ATUAL, 10) - 1] + '<i>' + nAniv + '</i></button>' : '') +
     '<button type="button" class="chip' + (!RAMO ? " ativo" : "") + '" data-r="">Todos os ramos</button>' +
     ramos.map(r => '<button type="button" class="chip' + (RAMO === r ? " ativo" : "") + '" data-r="' + esc(r) + '">' + esc(r) + '<i>' + contagem[r] + '</i></button>').join("");
-  document.querySelectorAll("#chips .chip").forEach(c => c.onclick = () => { RAMO = RAMO === c.dataset.r ? "" : c.dataset.r; desenhar(); });
+  document.querySelectorAll("#chips .chip[data-r]").forEach(c => c.onclick = () => { RAMO = RAMO === c.dataset.r ? "" : c.dataset.r; desenhar(); });
+  const ca = document.getElementById("chip-aniv"); if(ca) ca.onclick = () => { ANIV_MES = !ANIV_MES; desenhar(); };
+  if(!nAniv) ANIV_MES = false;
 
   const lista = filtrados().sort((a, b) =>
     ((b.vinculo === "dono") - (a.vinculo === "dono")) || a.empresa.localeCompare(b.empresa, "pt-BR"));
-  const partes = [RAMO, SO_DONOS ? "empresas e autônomos" : "", q ? "“" + q + "”" : ""].filter(Boolean);
+  const partes = [ANIV_MES ? "aniversariantes do mês" : "", RAMO, SO_DONOS ? "empresas e autônomos" : "", q ? "“" + q + "”" : ""].filter(Boolean);
   document.getElementById("tit").textContent = (partes.length ? partes.join(" · ") : "Todos") + " · " + lista.length;
 
   const el = document.getElementById("lista");
@@ -266,12 +286,14 @@ function desenhar(){
     const msg = "Graça e paz, " + primeiro + "! 🙏 Encontrei o seu contato no Fé em Negócios da Aliançados. ";
     const ig = p.instagram ? (/^https?:\/\//i.test(p.instagram) ? p.instagram : /\./.test(p.instagram) && !p.instagram.startsWith("@") ? "https://" + p.instagram : "https://instagram.com/" + p.instagram.replace(/^@/, "")) : "";
     return '<div class="card">' +
-      '<div class="cab"><div class="av">' + esc(iniciais(p.empresa)) + '</div><div style="flex:1;min-width:0">' +
+      '<div class="cab">' + (fotoOk(p) ? '<div class="av foto" data-foto="' + p.id + '"><img alt="" src="' + p.foto + '"></div>' : '<div class="av">' + esc(iniciais(p.nome)) + '</div>') +
+      '<div style="flex:1;min-width:0">' +
         '<div class="emp">' + marcar(p.empresa, q) + '</div>' +
         '<div class="pes"><b>' + marcar(p.nome, q) + '</b> · ' + marcar(p.funcao, q) + '</div></div></div>' +
       '<div class="tags"><span class="tag ramo">' + marcar(p.ramo, q) + '</span>' +
         '<span class="tag' + (p.vinculo === "dono" ? " dono" : "") + '">' + esc(FE_VINCULOS[p.vinculo] || p.vinculo) + '</span>' +
-        (p.cidade ? '<span class="tag">📍 ' + marcar(p.cidade, q) + '</span>' : '') + '</div>' +
+        (p.cidade ? '<span class="tag">📍 ' + marcar(p.cidade, q) + '</span>' : '') +
+        (/^\d{2}-\d{2}$/.test(p.aniversario || "") ? '<span class="tag aniv' + (fazAnivNoMes(p) ? " mes" : "") + '">🎂 ' + anivTexto(p.aniversario) + (fazAnivNoMes(p) ? " · este mês" : "") + '</span>' : '') + '</div>' +
       (p.servicos ? '<div class="serv">' + marcar(p.servicos, q) + '</div>' : '') +
       '<div class="acoes">' +
         '<a class="bt zap" target="_blank" href="https://wa.me/55' + esc(p.whatsapp) + '?text=' + encodeURIComponent(msg) + '">WhatsApp · ' + esc(fone(p.whatsapp)) + '</a>' +
@@ -281,6 +303,11 @@ function desenhar(){
       '</div></div>';
   }).join("");
   el.querySelectorAll(".tirar").forEach(b => b.onclick = () => excluir(Number(b.dataset.id)));
+  el.querySelectorAll(".av.foto").forEach(a => a.onclick = () => {
+    const z = document.createElement("div"); z.id = "zoom";
+    z.innerHTML = '<img alt="" src="' + a.querySelector("img").src + '">';
+    z.onclick = () => z.remove(); document.body.appendChild(z);
+  });
 }
 
 async function excluir(id){
@@ -293,10 +320,10 @@ async function excluir(id){
 }
 
 function baixarCsv(){
-  const cols = [["nome","Nome"],["whatsapp","WhatsApp"],["empresa","Empresa"],["funcao","Função"],["ramo","Ramo"],["vinculo","Vínculo"],["cidade","Cidade"],["servicos","O que oferece"],["instagram","Instagram/site"],["criado_em","Cadastro"]];
+  const cols = [["nome","Nome"],["whatsapp","WhatsApp"],["empresa","Empresa"],["funcao","Função"],["ramo","Ramo"],["vinculo","Vínculo"],["cidade","Cidade"],["servicos","O que oferece"],["instagram","Instagram/site"],["aniversario","Aniversário"],["criado_em","Cadastro"]];
   const cel = v => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
   const linhas = [cols.map(c => cel(c[1])).join(";")].concat(filtrados().map(p => cols.map(([k]) =>
-    cel(k === "vinculo" ? FE_VINCULOS[p[k]] : k === "whatsapp" ? fone(p[k]) : k === "criado_em" ? new Date(p[k]).toLocaleDateString("pt-BR") : p[k])).join(";")));
+    cel(k === "vinculo" ? FE_VINCULOS[p[k]] : k === "whatsapp" ? fone(p[k]) : k === "criado_em" ? new Date(p[k]).toLocaleDateString("pt-BR") : k === "aniversario" ? (p[k] ? p[k].slice(3) + "/" + p[k].slice(0, 2) : "") : p[k])).join(";")));
   const blob = new Blob(["﻿" + linhas.join("\r\n")], { type: "text/csv;charset=utf-8" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob); a.download = "fe-em-negocios.csv"; a.click();
@@ -306,7 +333,6 @@ function baixarCsv(){
 (async function(){
   const perfil = await exigirLogin();
   if(!perfil) return;
-  document.getElementById("ic").innerHTML = iconeCor("negocios");
   montarBarraUsuario();
   if(!podeVerFeNegocios()){
     document.getElementById("conteudo").innerHTML = '<div class="bloqueio">🔒 O guia <b>Fé em Negócios</b> ainda está em preparação.<br>Em breve ele estará disponível para você.</div>';
